@@ -6,10 +6,12 @@ import { getTranslations } from "next-intl/server";
 import { API_URL, SESSION_COOKIE, REFRESH_COOKIE } from "@/lib/auth";
 import { peekJwtPayload } from "@/lib/jwt";
 import { StaffSidebar } from "@/components/StaffSidebar";
+import { TicketLiveRefresh } from "@/components/TicketLiveRefresh";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TicketDetailSidebar } from "./TicketDetailSidebar";
+import { CustomerTicketProgress } from "./CustomerTicketProgress";
 import { TicketMessageThread } from "./TicketMessageThread";
 import { TicketReplyComposer } from "./TicketReplyComposer";
 import { TicketSummaryPanel } from "./TicketSummaryPanel";
@@ -89,14 +91,6 @@ const CREATED_VIA_KEY: Record<"ai" | "phone" | "email" | "in_person" | "other", 
   email: "createdViaEmail",
   in_person: "createdViaInPerson",
   other: "createdViaOther",
-};
-
-const STATUS_KEY: Record<TicketDetailResponse["status"], string> = {
-  new: "statusNew",
-  in_progress: "statusInProgress",
-  answered: "statusAnswered",
-  escalated: "statusEscalated",
-  closed: "statusClosed",
 };
 
 // Story 9: the first ticket-detail page — staff-only (agent/admin/subadmin),
@@ -217,6 +211,7 @@ export default async function TicketDetailPage({
     <div className="flex min-h-[calc(100vh-57px)]">
       {isStaffViewer && <StaffSidebar active="tickets" />}
       <main className="min-w-0 flex-1 p-4 md:p-8">
+        <TicketLiveRefresh token={accessToken} ticketId={ticket.id} />
         <div className="mx-auto w-full max-w-4xl">
           <nav className="mb-4 text-sm text-muted-foreground">
             <Link href="/tickets" className="hover:text-foreground hover:underline">
@@ -228,32 +223,31 @@ export default async function TicketDetailPage({
           <div className={`gap-6 ${isStaffViewer ? "grid md:grid-cols-[1fr_18rem]" : "flex flex-col"}`}>
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="text-xl">{ticket.subject}</CardTitle>
-                    {/* Story 63: only a staff-created ticket carries a
-                        meaningful channel — "customer_portal" and legacy
-                        (null) tickets render no badge at all. */}
-                    {isStaffViewer && ticket.createdVia && ticket.createdVia !== "customer_portal" && (
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 gap-1 ${CREATED_VIA_BADGE_CLASS[ticket.createdVia]}`}
-                      >
-                        <span aria-hidden="true">{CREATED_VIA_EMOJI[ticket.createdVia]}</span>
-                        {t(CREATED_VIA_KEY[ticket.createdVia])}
-                      </Badge>
-                    )}
-                  </div>
-                  {/* Story 60: customer-facing read-only view shows status inline
-                      here instead of in the staff-only sidebar Card below. */}
-                  {!isStaffViewer && (
-                    <Badge variant="outline" className="shrink-0">
-                      {t(STATUS_KEY[ticket.status])}
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className="text-xl">{ticket.subject}</CardTitle>
+                  {/* Story 63: only a staff-created ticket carries a
+                      meaningful channel — "customer_portal" and legacy
+                      (null) tickets render no badge at all. */}
+                  {isStaffViewer && ticket.createdVia && ticket.createdVia !== "customer_portal" && (
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 gap-1 ${CREATED_VIA_BADGE_CLASS[ticket.createdVia]}`}
+                    >
+                      <span aria-hidden="true">{CREATED_VIA_EMOJI[ticket.createdVia]}</span>
+                      {t(CREATED_VIA_KEY[ticket.createdVia])}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                {/* Story 60/36 follow-up: a progress stepper replaces the old
+                    bare status Badge for the customer's own view — see
+                    CustomerTicketProgress.tsx for why "escalated" is folded
+                    into "In Progress" and how the engagement line never
+                    names the assigned agent. */}
+                {!isStaffViewer && (
+                  <CustomerTicketProgress status={ticket.status} hasAssignedAgent={Boolean(ticket.assignedAgent)} />
+                )}
                 <p className="whitespace-pre-wrap text-sm">{ticket.description}</p>
                 {isStaffViewer && (
                   <div className="flex flex-col gap-1 border-t border-border pt-4">

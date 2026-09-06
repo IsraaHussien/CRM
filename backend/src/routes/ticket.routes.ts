@@ -313,9 +313,10 @@ router.post(
 
     // Wakes any staff queue that's currently open — a new ticket (and its
     // auto-assignment above, already reflected on `ticket` by this point)
-    // should appear without a manual refresh. No customer room: the creator
-    // already has this ticket's data in the response below.
-    emitTicketUpdated(ticket.id);
+    // should appear without a manual refresh. customerId is included too:
+    // on a staff-created ticket (Story 57), the customer it's opened on
+    // behalf of may have their own list open in another tab.
+    emitTicketUpdated(ticket.id, customer._id.toString());
 
     res.status(201).json({
       id: ticket._id.toString(),

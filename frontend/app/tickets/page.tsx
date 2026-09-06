@@ -9,6 +9,7 @@ import { CustomerTicketList, type CustomerTicketRow } from "./CustomerTicketList
 import { StaffTicketQueue, type StaffTicketRow } from "./StaffTicketQueue";
 import { CustomerSupportSummary } from "./CustomerSupportSummary";
 import type { CustomerChatRow } from "../chats/CustomerChatList";
+import { TicketLiveRefresh } from "@/components/TicketLiveRefresh";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Tickets");
@@ -160,6 +161,7 @@ export default async function TicketsPage({
 
     return (
       <main className="min-h-[calc(100vh-57px)] p-4 md:p-8">
+        <TicketLiveRefresh token={token} />
         <div className="mx-auto w-full max-w-3xl">
           <CustomerSupportSummary summary={summary} recentChats={recentChats} />
         </div>
@@ -188,6 +190,7 @@ export default async function TicketsPage({
     <div className="flex min-h-[calc(100vh-57px)]">
       <StaffSidebar active="tickets" />
       <main className="min-w-0 flex-1 p-4 md:p-8">
+        <TicketLiveRefresh token={token} />
         <StaffTicketQueue
           tickets={data.tickets as StaffTicketRow[]}
           total={data.total}
