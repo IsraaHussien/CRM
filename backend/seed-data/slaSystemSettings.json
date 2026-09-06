@@ -1,0 +1,14 @@
+[
+  {
+    "_id": "default",
+    "atRiskPercent": 75,
+    "scanIntervalMinutes": 1,
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.818Z"
+    },
+    "__v": 0
+  }
+]

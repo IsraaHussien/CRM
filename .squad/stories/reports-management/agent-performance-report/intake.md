@@ -33,6 +33,9 @@ Agent performance report
 ## Acceptance criteria
 
 ```
+- Volume handled breaks out tickets resolved vs. live chats handled
+  (conversations the agent actually responded to after escalation), not
+  just one combined count.
 - Metrics comparable across agents or over a selected period.
 - Individual agents can view their own performance metrics.
 - Admin can reassign work directly from this view if one agent is

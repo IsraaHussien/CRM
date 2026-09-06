@@ -17,6 +17,7 @@ export type TicketHistoryEventKind =
   | "internal_note_added"
   | "chat_participant_joined"
   | "chat_participant_left"
+  | "chat_inquiry"
   | "sla_at_risk"
   | "sla_breached";
 
@@ -156,6 +157,21 @@ export async function buildTicketHistory(
     });
   }
 
+  // ai-features/live-chat: always the ticket's own customer (see
+  // ITicketChatInquiryHistoryEntry's doc comment) — reuses the same
+  // customer/role fallback as the "created" event above rather than another
+  // batched lookup, since there's nobody else it could ever be.
+  for (const entry of ticket.chatInquiryHistory) {
+    events.push({
+      kind: "chat_inquiry",
+      at: entry.at,
+      actor: ticket.customer
+        ? { id: ticket.customer._id.toString(), name: ticket.customer.name, role: "customer" }
+        : null,
+      data: { conversationId: entry.conversation.toString() },
+    });
+  }
+
   // sla-automation Story 28: written by the periodic SLA monitor, not a
   // person — no changedBy to resolve, so actor is always null.
   for (const entry of ticket.slaHistory) {
@@ -169,6 +185,11 @@ export async function buildTicketHistory(
 
   const messageFilter: Record<string, unknown> = { parentType: "ticket", parentId: ticket._id };
   if (options.viewerRole === "customer") {
+    // agent-workspace Story 24 — internal notes must NEVER be returned to
+    // the customer. Landed with Story 13; re-verified by Story 24, which is
+    // the feature that actually starts creating internal notes. Excluded in
+    // the DB query rather than by dropping "internal_note_added" events
+    // afterwards, so the rows never load at all.
     messageFilter.internal = { $ne: true };
   }
   const messages = await Message.find(messageFilter)

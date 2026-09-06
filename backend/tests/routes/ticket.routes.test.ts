@@ -1507,6 +1507,97 @@ describe("PATCH /api/v1/tickets/:id/status (Story 11)", () => {
     expect((await Ticket.findById(ticket.id))!.status).toBe("in_progress");
   });
 
+  // customer-portal Story 37: a customer's one self-service transition —
+  // reopening their own closed ticket. No permission grant involved at all.
+  it("lets a customer reopen their own closed ticket", async () => {
+    const { user: customer, token } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id, { status: "closed" });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "in_progress" });
+
+    expect(res.status).toBe(200);
+    expect((await Ticket.findById(ticket.id))!.status).toBe("in_progress");
+  });
+
+  it("returns 403 when a customer tries to reopen a ticket that isn't theirs", async () => {
+    const { user: owner } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(owner.id, { status: "closed" });
+    const { token } = await seedUser({ role: "customer" });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "in_progress" });
+
+    expect(res.status).toBe(403);
+    expect((await Ticket.findById(ticket.id))!.status).toBe("closed");
+  });
+
+  it("returns 403 when a customer tries any transition other than reopening a closed ticket", async () => {
+    const { user: customer, token } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id, { status: "new" });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "in_progress" });
+
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 403 when a customer tries to close their own ticket", async () => {
+    const { user: customer, token } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id, { status: "new" });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "closed" });
+
+    expect(res.status).toBe(403);
+  });
+
+  // customer-portal Story 39: closing a ticket triggers the "rate your
+  // experience" email.
+  it("sends a resolution email when a ticket transitions into closed", async () => {
+    const sendEmailMock = vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const ticket = await seedTicket({ status: "in_progress" });
+    const { token } = await seedUser({
+      role: "agent",
+      permissions: ["tickets:change_status", "tickets:close_reopen"],
+    });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "closed" });
+
+    expect(res.status).toBe(200);
+    expect(sendEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ html: expect.stringContaining(`/feedback/ticket/${ticket.id}`) })
+    );
+  });
+
+  it("does not re-send the resolution email for a same-state closed -> closed PATCH", async () => {
+    const sendEmailMock = vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const ticket = await seedTicket({ status: "closed" });
+    const { token } = await seedUser({
+      role: "agent",
+      permissions: ["tickets:change_status", "tickets:close_reopen"],
+    });
+
+    const res = await request(app)
+      .patch(`/api/v1/tickets/${ticket.id}/status`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ status: "closed" });
+
+    expect(res.status).toBe(200);
+    expect(sendEmailMock).not.toHaveBeenCalled();
+  });
+
   it("returns 400 for an illegal transition (closed -> answered)", async () => {
     const ticket = await seedTicket({ status: "closed" });
     const { token } = await seedUser({
@@ -2596,6 +2687,335 @@ describe("GET /api/v1/tickets/:id/messages — customer ownership + internal fil
       .set("Authorization", `Bearer ${agentToken}`);
     expect(agentRes.status).toBe(200);
     expect(agentRes.body).toHaveLength(2);
+  });
+});
+
+describe("GET /api/v1/tickets/internal-note-taggables (agent-workspace Story 24)", () => {
+  it("returns 403 for a caller without tickets:post_internal_note", async () => {
+    const { token } = await seedUser({ role: "agent", permissions: ["tickets:escalate"] });
+    const res = await request(app)
+      .get("/api/v1/tickets/internal-note-taggables")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(403);
+  });
+
+  it("returns active staff sorted by name, excluding the caller, customers, and deactivated accounts", async () => {
+    const { user: caller, token } = await seedUser({
+      role: "agent",
+      name: "Aaa Caller",
+      permissions: ["tickets:post_internal_note"],
+    });
+    const { user: zed } = await seedUser({ role: "subadmin", name: "Zed Subadmin" });
+    const { user: bob } = await seedUser({ role: "admin", name: "Bob Admin" });
+    await seedUser({ role: "agent", name: "Ghost Agent", isActive: false });
+    await seedUser({ role: "customer", name: "Cust Omer" });
+
+    const res = await request(app)
+      .get("/api/v1/tickets/internal-note-taggables")
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.map((u: { id: string }) => u.id)).toEqual([bob.id, zed.id]);
+    expect(res.body.map((u: { id: string }) => u.id)).not.toContain(caller.id);
+    expect(res.body[0]).toMatchObject({ name: "Bob Admin", role: "admin" });
+  });
+});
+
+describe("POST /api/v1/tickets/:id/internal-notes (agent-workspace Story 24)", () => {
+  const NOTE_PERMS = ["tickets:post_internal_note"];
+
+  it("returns 401 without a token", async () => {
+    const ticket = await seedTicket();
+    const res = await request(app).post(`/api/v1/tickets/${ticket.id}/internal-notes`).send({ text: "psst" });
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 403 for a customer — even the customer who created the ticket", async () => {
+    const { user: customer, token } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id);
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "let me in" });
+
+    expect(res.status).toBe(403);
+    expect(await Message.countDocuments({ parentId: ticket._id })).toBe(0);
+  });
+
+  it("returns 403 for an agent without tickets:post_internal_note", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: ["tickets:reply"] });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "note" });
+
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 404 for a malformed or nonexistent ticket id", async () => {
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+
+    const malformed = await request(app)
+      .post("/api/v1/tickets/not-an-id/internal-notes")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "note" });
+    expect(malformed.status).toBe(404);
+
+    const missing = await request(app)
+      .post(`/api/v1/tickets/${new mongoose.Types.ObjectId().toHexString()}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "note" });
+    expect(missing.status).toBe(404);
+  });
+
+  it("returns 400 for empty/whitespace-only text", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "   " });
+
+    expect(res.status).toBe(400);
+  });
+
+  it("creates an internal: true agent message with no tags and no notifications", async () => {
+    const ticket = await seedTicket();
+    const { user: agent, token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "Checked the logs, nothing obvious." });
+
+    expect(res.status).toBe(201);
+    expect(res.body.internal).toBe(true);
+    expect(res.body.senderType).toBe("agent");
+    expect(res.body.taggedUsers).toEqual([]);
+
+    const stored = await Message.findById(res.body.id);
+    expect(stored!.internal).toBe(true);
+    expect(stored!.senderId!.toString()).toBe(agent.id);
+    expect(await Notification.countDocuments({ type: "ticket_internal_note_mention" })).toBe(0);
+  });
+
+  it("lets an admin post with no explicit grant (implicit admin pass) and does not flip the ticket to answered", async () => {
+    const ticket = await seedTicket({ status: "new" });
+    const { token } = await seedUser({ role: "admin" });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "Taking a look." });
+
+    expect(res.status).toBe(201);
+    const reloaded = await Ticket.findById(ticket.id);
+    expect(reloaded!.status).toBe("new");
+  });
+
+  it("notifies exactly one tagged colleague each, and neither the author nor the customer", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id);
+    const { user: author, token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const { user: colleague } = await seedUser({ role: "agent", name: "Colleague" });
+    const { user: boss } = await seedUser({ role: "admin", name: "Boss" });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "Second opinion?", taggedUserIds: [colleague.id, boss.id] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.taggedUsers).toHaveLength(2);
+    expect(res.body.taggedUsers.map((u: { id: string }) => u.id).sort()).toEqual([colleague.id, boss.id].sort());
+
+    const notifications = await Notification.find({ type: "ticket_internal_note_mention" });
+    expect(notifications).toHaveLength(2);
+    expect(notifications.every((n) => n.ticketId!.toString() === ticket.id)).toBe(true);
+    const recipients = notifications.map((n) => n.recipient.toString()).sort();
+    expect(recipients).toEqual([colleague.id, boss.id].sort());
+    expect(recipients).not.toContain(author.id);
+    expect(recipients).not.toContain(customer.id);
+
+    // Persisted on the Message, not only echoed in the 201 — so the thread
+    // still renders mention chips after a reload.
+    const stored = await Message.findById(res.body.id);
+    expect(stored!.taggedUserIds.map((id) => id.toString()).sort()).toEqual([colleague.id, boss.id].sort());
+
+    const reread = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/messages`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(reread.status).toBe(200);
+    expect(reread.body[0].taggedUsers.map((u: { name: string }) => u.name).sort()).toEqual(["Boss", "Colleague"]);
+    expect(reread.body[0].taggedUsers.map((u: { role: string }) => u.role).sort()).toEqual(["admin", "agent"]);
+  });
+
+  it("dedupes a repeated id into a single notification", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const { user: colleague } = await seedUser({ role: "agent" });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "Double-tagged", taggedUserIds: [colleague.id, colleague.id] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.taggedUsers).toHaveLength(1);
+    expect(await Notification.countDocuments({ type: "ticket_internal_note_mention" })).toBe(1);
+  });
+
+  it("silently drops the author's own id — 201, one fewer notification, no error", async () => {
+    const ticket = await seedTicket();
+    const { user: author, token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const { user: colleague } = await seedUser({ role: "agent" });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "Note to self and one other", taggedUserIds: [author.id, colleague.id] });
+
+    expect(res.status).toBe(201);
+    expect(res.body.taggedUsers.map((u: { id: string }) => u.id)).toEqual([colleague.id]);
+    const notifications = await Notification.find({ type: "ticket_internal_note_mention" });
+    expect(notifications).toHaveLength(1);
+    expect(notifications[0].recipient.toString()).toBe(colleague.id);
+  });
+
+  it("returns 400 with a per-id reason for a non-existent tagged id", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const ghostId = new mongoose.Types.ObjectId().toHexString();
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "who?", taggedUserIds: [ghostId] });
+
+    expect(res.status).toBe(400);
+    expect(res.body.taggedUserIdErrors[ghostId]).toBeTruthy();
+    expect(await Message.countDocuments({ parentId: ticket._id })).toBe(0);
+  });
+
+  it("returns 400 when a customer's id is tagged", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const { user: customer } = await seedUser({ role: "customer" });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "leak attempt", taggedUserIds: [customer.id] });
+
+    expect(res.status).toBe(400);
+    expect(res.body.taggedUserIdErrors[customer.id]).toBeTruthy();
+    expect(await Notification.countDocuments({ type: "ticket_internal_note_mention" })).toBe(0);
+  });
+
+  it("returns 400 when a deactivated staff account is tagged", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const { user: retired } = await seedUser({ role: "agent", isActive: false });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "still around?", taggedUserIds: [retired.id] });
+
+    expect(res.status).toBe(400);
+    expect(res.body.taggedUserIdErrors[retired.id]).toBeTruthy();
+  });
+
+  it("returns 400 for a malformed (non-ObjectId) tagged id, before any DB write", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "bad id", taggedUserIds: ["not-an-object-id"] });
+
+    expect(res.status).toBe(400);
+    expect(await Message.countDocuments({ parentId: ticket._id })).toBe(0);
+  });
+
+  it("returns 400 when more than 20 colleagues are tagged", async () => {
+    const ticket = await seedTicket();
+    const { token } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+    const ids = Array.from({ length: 21 }, () => new mongoose.Types.ObjectId().toHexString());
+
+    const res = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({ text: "spam", taggedUserIds: ids });
+
+    expect(res.status).toBe(400);
+  });
+
+  // The hard privacy boundary this whole story hinges on.
+  it("hides the posted note from the ticket's own customer on every customer-reachable read", async () => {
+    const { user: customer, token: customerToken } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id);
+    const { token: agentToken } = await seedUser({ role: "agent", permissions: NOTE_PERMS });
+
+    const posted = await request(app)
+      .post(`/api/v1/tickets/${ticket.id}/internal-notes`)
+      .set("Authorization", `Bearer ${agentToken}`)
+      .send({ text: "SECRET-INTERNAL-NOTE" });
+    expect(posted.status).toBe(201);
+
+    const customerMessages = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/messages`)
+      .set("Authorization", `Bearer ${customerToken}`);
+    expect(customerMessages.status).toBe(200);
+    expect(customerMessages.body).toHaveLength(0);
+    expect(JSON.stringify(customerMessages.body)).not.toContain("SECRET-INTERNAL-NOTE");
+
+    const customerHistory = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/history`)
+      .set("Authorization", `Bearer ${customerToken}`);
+    expect(customerHistory.status).toBe(200);
+    expect(
+      customerHistory.body.events.some((e: { kind: string }) => e.kind === "internal_note_added")
+    ).toBe(false);
+
+    // ...while staff still see it on both surfaces.
+    const agentMessages = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/messages`)
+      .set("Authorization", `Bearer ${agentToken}`);
+    expect(agentMessages.body).toHaveLength(1);
+    expect(agentMessages.body[0].internal).toBe(true);
+
+    const agentHistory = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/history`)
+      .set("Authorization", `Bearer ${agentToken}`);
+    expect(agentHistory.body.events.some((e: { kind: string }) => e.kind === "internal_note_added")).toBe(true);
+  });
+
+  it("omits the `internal` flag entirely from a customer-facing message DTO", async () => {
+    const { user: customer, token: customerToken } = await seedUser({ role: "customer" });
+    const ticket = await seedTicketFor(customer.id);
+    const { user: agent } = await seedUser({ role: "agent" });
+    await Message.create({
+      parentType: "ticket",
+      parentId: ticket._id,
+      senderType: "agent",
+      senderId: agent._id,
+      text: "public reply",
+      internal: false,
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/tickets/${ticket.id}/messages`)
+      .set("Authorization", `Bearer ${customerToken}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0]).not.toHaveProperty("internal");
   });
 });
 

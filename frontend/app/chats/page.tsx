@@ -5,12 +5,19 @@ import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { StaffSidebar } from "@/components/StaffSidebar";
 import { API_URL, REFRESH_COOKIE, SESSION_COOKIE } from "@/lib/auth";
+import { peekJwtPayload } from "@/lib/jwt";
 import { formatDateTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { CustomerChatList, type CustomerChatRow } from "./CustomerChatList";
 
+// customer-portal Story 37: a customer landing here now too (see the
+// role branch below) needs a title that isn't staff-voiced.
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("AgentChats");
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  const isCustomer = token ? peekJwtPayload(token).role === "customer" : false;
+  const t = await getTranslations(isCustomer ? "MyChats" : "AgentChats");
   return { title: t("metaTitle"), robots: { index: false, follow: false } };
 }
 
@@ -39,13 +46,17 @@ const STATUS_BADGE_CLASS: Record<ConversationRow["status"], string> = {
 // Story 18: minimal staff "Chats" surface — an agent's own assigned live
 // chats, or every active one for an admin (Story 20's full unified
 // dashboard is a later, separate feature; this is deliberately small).
+//
+// customer-portal Story 37: one route, role-branched — same "one route,
+// role-branched" pattern frontend/app/tickets/page.tsx already established
+// for Story 36/60. A customer sees their own conversations, any status
+// (CustomerChatList); staff see the existing filtered table below.
 export default async function ChatsPage({
   searchParams,
 }: {
   searchParams: Promise<{ _refreshed?: string }>;
 }) {
   const { _refreshed } = await searchParams;
-  const t = await getTranslations("AgentChats");
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   const hasRefreshToken = Boolean(cookieStore.get(REFRESH_COOKIE)?.value);
@@ -56,6 +67,10 @@ export default async function ChatsPage({
     }
     redirect("/");
   }
+
+  const { role } = peekJwtPayload(token);
+  const isCustomer = role === "customer";
+  const t = await getTranslations(isCustomer ? "MyChats" : "AgentChats");
 
   const res = await fetch(`${API_URL}/api/v1/conversations`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -75,6 +90,17 @@ export default async function ChatsPage({
     redirect("/dashboard");
   }
   const data: { conversations: ConversationRow[] } = await res.json();
+
+  if (isCustomer) {
+    return (
+      <main className="min-h-[calc(100vh-57px)] p-4 md:p-8">
+        <div className="mx-auto w-full max-w-3xl">
+          <h1 className="mb-6 text-xl font-bold tracking-tight md:text-2xl">{t("heading")}</h1>
+          <CustomerChatList conversations={data.conversations as CustomerChatRow[]} />
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-57px)]">

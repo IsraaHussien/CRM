@@ -1,0 +1,962 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "name": "Admin One",
+    "email": "admin@azmsquad.com",
+    "passwordHash": "$2b$10$y6cQn0yU3i5sw6SqvltbpOWT9xOO8PhyC.cLRTVE6hLX6uWjSOiFu",
+    "role": "admin",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000001",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:19.925Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:19.925Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb4c"
+    },
+    "name": "Admin Two",
+    "email": "admin2@azmsquad.com",
+    "passwordHash": "$2b$10$hKZk4NG898QW7rkJ5fV6k.6uKDS5ci34SwbZ5aFKqdHgthyt188hK",
+    "role": "admin",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000002",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.040Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.040Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb4f"
+    },
+    "name": "Demo Customer",
+    "email": "demo@azmsquad.com",
+    "passwordHash": "$2b$10$ntx2mjnniZiP6x8WV4fHue5jJpi5zcNRNeuxLHAQ62PmcUtvNmdwO",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000003",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.108Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.108Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb52"
+    },
+    "name": "Dina Kamal",
+    "email": "dina.kamal@azmsquad.com",
+    "passwordHash": "$2b$10$c7INsd1oLpqDAJMZrpFCVusHrKXyOR4O8QiRZtstfyj8kojO76gC.",
+    "role": "subadmin",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "staff:view_list",
+      "staff:view_account",
+      "sla:targets_view",
+      "sla:targets_edit",
+      "kb:faq_view_list",
+      "kb:faq_create",
+      "kb:faq_edit",
+      "kb:article_view_list",
+      "kb:article_create",
+      "kb:article_edit",
+      "reports:view",
+      "reports:export",
+      "tickets:categories_view",
+      "tickets:categories_edit",
+      "tickets:export_history",
+      "audit:view"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000004",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.170Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.170Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "name": "Omar Nasser",
+    "email": "omar.nasser@azmsquad.com",
+    "passwordHash": "$2b$10$X/db6F/iuHxVnU8BwO2mUOwIjgfol5W2j7nEI6jPoL1zZBlb7nfk2",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reassign",
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "tickets:escalate",
+      "chats:manage",
+      "customers:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000005",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.242Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.242Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "name": "Layla Haddad",
+    "email": "layla.haddad@azmsquad.com",
+    "passwordHash": "$2b$10$YkZxdDS/pZdykNMZ.WdQU.tOmBon0Pdt/bs0NqIcZk6H5BCgwmTg6",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reassign",
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "chats:manage",
+      "customers:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000006",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.311Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.311Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb5b"
+    },
+    "name": "Youssef Amin",
+    "email": "youssef.amin@azmsquad.com",
+    "passwordHash": "$2b$10$/g7qHpOil1/tab3u2FTISur2/MGOSD/wHjupMXSlDl0Ig9sVF6AZS",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reassign",
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "tickets:escalate",
+      "chats:manage",
+      "customers:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000007",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.369Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.369Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb5e"
+    },
+    "name": "Mona Saleh",
+    "email": "mona.saleh@azmsquad.com",
+    "passwordHash": "$2b$10$2Hee7DqQ2sCvAIiQEZc8nusLVpFnqOCP7mceoJRdp.a5kW8H4lWmm",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reply",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000008",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.435Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.435Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb61"
+    },
+    "name": "Karim Adel",
+    "email": "karim.adel@azmsquad.com",
+    "passwordHash": "$2b$10$n8MicxwU.WTw7CQ9mE1Fb.CeqvkepxsiM.7HMWx.a7GhM3Jcmx1rK",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reassign",
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "tickets:escalate",
+      "customers:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000009",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.495Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.495Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "name": "Nour Fathy",
+    "email": "nour.fathy@azmsquad.com",
+    "passwordHash": "$2b$10$dcd8bem3CVtktjZSA5X3OeHfDuEaqqHVAsqTT98ZufpHlXEqpqx5G",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reassign",
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "tickets:escalate",
+      "chats:manage",
+      "customers:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000010",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.555Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.555Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb67"
+    },
+    "name": "Hassan Ali",
+    "email": "hassan.ali@azmsquad.com",
+    "passwordHash": "$2b$10$E9h7hOcz6Aw75mWU6ZBB.u89i2zSpemNF8d3RvVQESkuWhf9UvAli",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "tickets:reply",
+      "tickets:change_status"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000011",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.615Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.615Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "name": "Rania Fouad",
+    "email": "rania.fouad@azmsquad.com",
+    "passwordHash": "$2b$10$ycUdOyQM2g9d5yduo2afR.Ax4IXM8PHzAkVMVlDtoUONKOIQPotby",
+    "role": "agent",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": true,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [
+      "reports:view",
+      "ai:override_category",
+      "tickets:create_for_customer",
+      "tickets:categorize",
+      "tickets:change_priority",
+      "tickets:reply",
+      "tickets:post_internal_note",
+      "tickets:change_status",
+      "tickets:close_reopen",
+      "tickets:escalate",
+      "chats:manage",
+      "ai:summarize"
+    ],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000012",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.672Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.672Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "name": "Sara Ibrahim",
+    "email": "sara.ibrahim@example.com",
+    "passwordHash": "$2b$10$dLLG2vKZfbkEj0GDe1whruUD/vvETYNH88B3fVa3Y6t1WST5ibIJS",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000013",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.728Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.728Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "name": "Ahmed Mostafa",
+    "email": "ahmed.mostafa@example.com",
+    "passwordHash": "$2b$10$ssSo3PEda82DZdDxhXOk0OOBRY5GJx6mZD/BRxNj2DUoUMerYIcDC",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000014",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.788Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.788Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb73"
+    },
+    "name": "Nadia El-Sayed",
+    "email": "nadia.elsayed@example.com",
+    "passwordHash": "$2b$10$.yXyp8ZVoV.kETXS.9J2w.cE3D5sOI.8fVPNs8aNxVMBB0IEoGlGK",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000015",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.846Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.846Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb76"
+    },
+    "name": "John Carter",
+    "email": "john.carter@example.com",
+    "passwordHash": "$2b$10$AI2I7F7hOde09MjOXorL8OZvKf0KHDYB3Wq5XMUvtPo.RQy2xAlNO",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [
+      {
+        "text": "VIP account — enterprise plan, prefers phone follow-up over email.",
+        "_id": {
+          "$oid": "6a990f4c46d45770d748bb77"
+        },
+        "createdAt": {
+          "$date": "2026-09-03T06:10:20.904Z"
+        },
+        "updatedAt": {
+          "$date": "2026-09-03T06:10:20.904Z"
+        }
+      }
+    ],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000016",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.905Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.905Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4c46d45770d748bb7a"
+    },
+    "name": "Fatima Zahra",
+    "email": "fatima.zahra@example.com",
+    "passwordHash": "$2b$10$wMLKLnnxO2uh4yE6MAQAtO5AwGRxhlfBEMlBnbu3kUJVJYPioMrhW",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000017",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:20.963Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:20.963Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "name": "Michael Chen",
+    "email": "michael.chen@example.com",
+    "passwordHash": "$2b$10$98Sj2j7FAVcF8TFWk73ziuAwEtIelGveDAY0XHE0ahxUHKfF6yiU.",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000018",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.023Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.023Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb80"
+    },
+    "name": "Yara Khalil",
+    "email": "yara.khalil@example.com",
+    "passwordHash": "$2b$10$ceNQq7pOhG3qX047QD/AF.qwmr9zDxIp./b5tRUV7RkSRwqlS6XBu",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000019",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.080Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.080Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb83"
+    },
+    "name": "David Brown",
+    "email": "david.brown@example.com",
+    "passwordHash": "$2b$10$mVSwawxdJtwWxmTTc2IB/.CuK1UVqM1f2noZ3zv3q0i31kE9nX0Qq",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000020",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.144Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.144Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "name": "Salma Reda",
+    "email": "salma.reda@example.com",
+    "passwordHash": "$2b$10$TjWRRUfq7BhK6xHQ6fR2y.5fkNYQzEIAn2/.zCsUNEM.3Rj6NIF4a",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [
+      {
+        "text": "Has asked twice about a bulk/team discount — flag to sales if it ever exists.",
+        "_id": {
+          "$oid": "6a990f4d46d45770d748bb87"
+        },
+        "createdAt": {
+          "$date": "2026-09-03T06:10:21.206Z"
+        },
+        "updatedAt": {
+          "$date": "2026-09-03T06:10:21.206Z"
+        }
+      }
+    ],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000021",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.206Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.206Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "name": "Chris Anderson",
+    "email": "chris.anderson@example.com",
+    "passwordHash": "$2b$10$35OwfYiQUIvP80IjmALJS.dDqvPmW5xiKOQY90bUGmCn12oo22ZvS",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": false,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000022",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.269Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.269Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb8d"
+    },
+    "name": "Huda Mansour",
+    "email": "huda.mansour@example.com",
+    "passwordHash": "$2b$10$AtW6S6aPOHOZ5T60qL8T4OHk0cgDOMXG74IwxlXslDvCXBVbcpYRK",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000023",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.334Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.334Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "name": "Peter Wilson",
+    "email": "peter.wilson@example.com",
+    "passwordHash": "$2b$10$qLY2caxMx1CaHiV4zEvYx./ptXoQxvEueUYrt6it4hLGxG4Kl9y8y",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000024",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.401Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.401Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb93"
+    },
+    "name": "Rania Tawfik",
+    "email": "rania.tawfik@example.com",
+    "passwordHash": "$2b$10$rjFyKxUhzknhslFLIczSwexw/e37ErMtWPBB.hTMfWRlDxMZpWkHm",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": false,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000025",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.466Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.466Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb96"
+    },
+    "name": "Laura Smith",
+    "email": "laura.smith@example.com",
+    "passwordHash": "$2b$10$dxrqXvpf8uXgtL/qebT/tOjWtDNFQ3uMj/87hnoi77jdsD1.O56me",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [
+      {
+        "text": "Reported a billing discrepancy in the past that turned out to be a currency-display bug, not a real overcharge.",
+        "_id": {
+          "$oid": "6a990f4d46d45770d748bb97"
+        },
+        "createdAt": {
+          "$date": "2026-09-03T06:10:21.536Z"
+        },
+        "updatedAt": {
+          "$date": "2026-09-03T06:10:21.536Z"
+        }
+      }
+    ],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000026",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.536Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.536Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb9a"
+    },
+    "name": "Khaled Fahmy",
+    "email": "khaled.fahmy@example.com",
+    "passwordHash": "$2b$10$RU6MJDNSlsrPLZn36oFppuuyoE3bM5T9Kp9p.tKE6lB3jlotu3JcC",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000027",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.604Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.604Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bb9d"
+    },
+    "name": "Emma Davis",
+    "email": "emma.davis@example.com",
+    "passwordHash": "$2b$10$NwnzjNepU0EpdsRHfgEJneFtRti9WPP5.jg0vrccCxgLdwtqi1b5a",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000028",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.669Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.669Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba0"
+    },
+    "name": "Mostafa Zaki",
+    "email": "mostafa.zaki@example.com",
+    "passwordHash": "$2b$10$O/kLgi0M7Pe5sAxlLNZBSuLOmaL7dqMg4YvjKRR41UTeLoAmtCNWS",
+    "role": "customer",
+    "preferredLanguage": "ar",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000029",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.733Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.733Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "name": "Grace Lee",
+    "email": "grace.lee@example.com",
+    "passwordHash": "$2b$10$DFLMfxkzyLcdxb8hvtlYbuF5V/rCwizmh0SkVIxOxJjZnFrbCYKsO",
+    "role": "customer",
+    "preferredLanguage": "en",
+    "pendingEmail": null,
+    "emailConfirmToken": null,
+    "emailConfirmTokenExpiresAt": null,
+    "isOnline": false,
+    "internalNotes": [],
+    "isActive": true,
+    "permissions": [],
+    "isDeleted": false,
+    "attachments": [],
+    "membershipNumber": "0000000030",
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.810Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.810Z"
+    },
+    "__v": 0
+  }
+]

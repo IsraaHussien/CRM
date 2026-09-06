@@ -14,6 +14,8 @@
     "seed:admin": "tsx scripts/seed-admin.ts",
     "seed:demo": "tsx scripts/seed-demo-customer.ts",
     "seed:sla-defaults": "tsx scripts/seed-default-sla-target.ts",
+    "seed:demo-full": "tsx scripts/seed-demo-full.ts",
+    "seed:import-demo-data": "tsx scripts/import-demo-data.ts",
     "backfill:membership-numbers": "tsx scripts/backfill-membership-numbers.ts",
     "backfill:ticket-numbers": "tsx scripts/backfill-ticket-numbers.ts",
     "backfill:chat-permission": "tsx scripts/backfill-chat-permission.ts"

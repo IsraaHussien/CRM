@@ -1,0 +1,3161 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe9"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "text": "Hi! I'm having trouble exporting a report — it just spins and fails every time.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.848Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.849Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbec"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Sorry to hear that — could you tell me which report and roughly how large it is (how many rows)?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.850Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.851Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbef"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "text": "It's the monthly usage report, probably a few thousand rows.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.852Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.853Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbf2"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Thanks. Large exports over 2,000 rows can occasionally time out — I'd suggest trying again in a few minutes, or exporting a smaller date range. Would you like me to open a ticket so the team can look at your account directly?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": {
+      "subject": "Export feature keeps timing out",
+      "description": "Customer's monthly usage report export (~a few thousand rows) fails/times out repeatedly."
+    },
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.854Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.855Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbf5"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "text": "Yes please, that would help.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.856Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.856Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbfb"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "text": "I was charged for two subscriptions this month, that can't be right.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.859Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.859Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbfe"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I can see one active subscription on your account. Let me pull your last two invoices to check for a duplicate charge.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.860Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.861Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc01"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I do see two charges dated the same day — that's unusual enough that I'd like to bring in a teammate to review your billing directly.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.862Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.863Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc04"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "text": "Okay, thank you.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.864Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.865Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc07"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "system",
+    "senderId": null,
+    "text": "Layla Haddad joined the conversation.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.866Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.866Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc0a"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "text": "Hi, I'm Layla — I can confirm this was a duplicate charge from our payment processor retrying a failed webhook. I'm refunding the extra charge now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.867Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.868Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc0d"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "text": "That's a relief, thank you for checking so quickly.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.868Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.869Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc10"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "text": "Of course — you should see the refund within 3-5 business days. Anything else I can help with?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.871Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.872Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc13"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "text": "No, that's all — appreciate it!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.872Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.873Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc19"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "I keep getting logged out every few minutes, it's making the app unusable.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.875Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.876Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc1c"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I can help with that — could you tell me a bit more about when this started happening?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.877Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.878Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc1f"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "It's been happening since yesterday, pretty consistently.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.878Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.879Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc22"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Thanks for the detail. Let me check a few things on your account.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.880Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.881Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc25"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "I've tried on both my phone and my laptop, same issue on both.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.882Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.883Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc28"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I looked into it and here's what I'm seeing on our end so far.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": {
+      "type": "faq",
+      "id": "6a990f4d46d45770d748bbbc",
+      "title": {
+        "en": "Related FAQ",
+        "ar": "سؤال شائع ذو صلة"
+      }
+    },
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.884Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.885Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc2b"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "That's interesting, I hadn't noticed that before.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.886Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.887Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc2e"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "That's a good question — let me check our help center for the exact steps.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.887Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.888Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc31"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Okay, let me try that now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.889Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.889Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc34"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I found something that might be exactly what you need, one moment.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.890Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.890Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc37"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Hmm, still seeing the same thing on my end.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.891Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.892Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc3a"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Does that resolve it on your end, or is it still happening?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.894Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.895Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc3d"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Oh, that actually makes sense now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.895Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.897Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc40"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "This needs a closer look than I can give — bringing in a teammate now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.898Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.900Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc43"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "system",
+    "senderId": null,
+    "text": "Nour Fathy joined the conversation.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.901Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.901Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc46"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Thanks for bearing with me — I've got your account open now, taking a closer look.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.902Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.903Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc49"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Is there anything I need to do on my side after that?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.904Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.905Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc4c"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "I can confirm what you're seeing, and I want to get this right rather than guess — give me a moment.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.906Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.907Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc4f"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Got it, thank you for explaining.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.908Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.909Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc52"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Found it — this is a known edge case, here's what's actually happening on our end.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.910Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.911Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc55"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "That's helpful context, I appreciate it.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.913Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.913Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc58"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "I've made an adjustment on your account, could you try again on your end?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.914Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.915Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc5b"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Just to double check, does this affect my other devices too?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.916Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.916Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc5e"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "That's expected behavior actually, let me explain why.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": {
+      "type": "article",
+      "id": "6a990f4d46d45770d748bbc0",
+      "title": {
+        "en": "Related help article",
+        "ar": "مقالة مساعدة ذات صلة"
+      },
+      "slug": "updating-your-profile"
+    },
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.917Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.918Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc61"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "It's been happening since yesterday, pretty consistently.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.919Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.920Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc64"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Appreciate your patience — this one took a bit of digging.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.920Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.921Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc67"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "I've tried on both my phone and my laptop, same issue on both.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.922Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.923Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc6a"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "I'll keep monitoring your account for the next day to make sure this is fully resolved.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.924Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.924Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc6d"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "That's interesting, I hadn't noticed that before.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.925Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.926Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc70"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Thanks for bearing with me — I've got your account open now, taking a closer look.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.926Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.927Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc73"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Okay, let me try that now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.928Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.928Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc76"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Glad we got that sorted — reach out any time if it comes back.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.929Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.930Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc79"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "text": "Will do, thanks for all the help today!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.930Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.931Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc7f"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "I can't figure out how to change my notification preferences, is that possible?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.933Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.934Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc82"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I can help with that — could you tell me a bit more about when this started happening?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.934Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.935Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc85"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "It's been happening since yesterday, pretty consistently.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.936Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.936Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc88"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Thanks for the detail. Let me check a few things on your account.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.937Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.938Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc8b"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "I've tried on both my phone and my laptop, same issue on both.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.939Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.939Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc8e"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I looked into it and here's what I'm seeing on our end so far.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": {
+      "type": "faq",
+      "id": "6a990f4d46d45770d748bbb5",
+      "title": {
+        "en": "Related FAQ",
+        "ar": "سؤال شائع ذو صلة"
+      }
+    },
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.940Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.941Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc91"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "That's interesting, I hadn't noticed that before.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.942Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.942Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc94"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "That's a good question — let me check our help center for the exact steps.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.943Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.944Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc97"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Okay, let me try that now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.945Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.945Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc9a"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "I found something that might be exactly what you need, one moment.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.946Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.947Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc9d"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Hmm, still seeing the same thing on my end.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.949Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.950Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bca0"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "Does that resolve it on your end, or is it still happening?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.951Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.952Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bca3"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Oh, that actually makes sense now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.953Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.954Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bca6"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "ai",
+    "senderId": null,
+    "text": "This needs a closer look than I can give — bringing in a teammate now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.955Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.956Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bca9"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "system",
+    "senderId": null,
+    "text": "Rania Fouad joined the conversation.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.956Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.957Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcac"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Thanks for bearing with me — I've got your account open now, taking a closer look.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.958Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.958Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcaf"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Is there anything I need to do on my side after that?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.959Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.960Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcb2"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "I can confirm what you're seeing, and I want to get this right rather than guess — give me a moment.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.960Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.961Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcb5"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Got it, thank you for explaining.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.962Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.963Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcb8"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Found it — this is a known edge case, here's what's actually happening on our end.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.965Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.966Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcbb"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "That's helpful context, I appreciate it.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.967Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.967Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcbe"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "I've made an adjustment on your account, could you try again on your end?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.968Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.969Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcc1"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Just to double check, does this affect my other devices too?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.969Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.970Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcc4"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "That's expected behavior actually, let me explain why.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": {
+      "type": "article",
+      "id": "6a990f4d46d45770d748bbb9",
+      "title": {
+        "en": "Related help article",
+        "ar": "مقالة مساعدة ذات صلة"
+      },
+      "slug": "getting-started-with-your-account"
+    },
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.971Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.972Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcc7"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "It's been happening since yesterday, pretty consistently.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.972Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.973Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcca"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Appreciate your patience — this one took a bit of digging.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.973Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.974Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bccd"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "I've tried on both my phone and my laptop, same issue on both.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.975Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.975Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcd0"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "I'll keep monitoring your account for the next day to make sure this is fully resolved.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.976Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.977Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcd3"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "That's interesting, I hadn't noticed that before.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.977Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.978Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcd6"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Thanks for bearing with me — I've got your account open now, taking a closer look.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.979Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.979Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcd9"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Okay, let me try that now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.980Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.981Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcdc"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Glad we got that sorted — reach out any time if it comes back.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.981Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.982Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcdf"
+    },
+    "parentType": "conversation",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "text": "Will do, thanks for all the help today!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.983Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.984Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bce6"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "text": "I moved recently and my invoices still show my old address. Can you update it?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.990Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.991Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bce9"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Thanks for reaching out! I can update that for you — could you confirm the new address?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.991Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.992Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcec"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "text": "Sure, it's 14 Nile Corniche, Cairo, Egypt.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.993Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.993Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcef"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "All set — your billing address is updated and will show on your next invoice.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.994Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.994Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcf2"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "text": "Perfect, thank you!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.995Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.995Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcf9"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bcf5"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb76"
+    },
+    "text": "Our whole team is locked out since this morning. This is blocking work — please treat as urgent.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.999Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.000Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bcfc"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bcf5"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb76"
+    },
+    "text": "Any update? This is blocking our whole team.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.002Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.003Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bcff"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4d46d45770d748bcf5"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb4c"
+    },
+    "text": "Apologies for the delay — I'm on this now and looking into your account directly.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.006Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.009Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd06"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb83"
+    },
+    "text": "My last two invoices list a service I never signed up for.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.023Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.024Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd09"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb5b"
+    },
+    "text": "Taking a look — this looks like it might be a billing-team issue, routing it over to make sure it's fixed correctly.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.025Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.027Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd0c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "senderType": "system",
+    "senderId": null,
+    "text": "This ticket was reassigned from Youssef Amin to Karim Adel.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.028Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.028Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd0f"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "senderType": "system",
+    "senderId": null,
+    "text": "This ticket was reassigned from Karim Adel to Omar Nasser.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.029Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.030Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd12"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Sorry for the back-and-forth — I can confirm that line item was billed in error and has been removed. A corrected invoice is on its way.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.032Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.033Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd19"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd15"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb8d"
+    },
+    "text": "I see two charges for the same subscription this billing cycle.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.037Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.037Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd1c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd15"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "text": "Looking into it now — double-charges usually mean a duplicate payment attempt went through, moving this to Billing to check the ledger.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.038Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.039Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd1f"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd15"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "text": "Confirmed a duplicate charge on our end — since it involves a live payment, I've bumped the priority so it gets refunded faster.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.039Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.040Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd26"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd22"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb96"
+    },
+    "text": "I tried resetting my password three times and now I can't log in at all.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.044Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.044Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd29"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd22"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb67"
+    },
+    "text": "I can see the lock on your account — this needs an access-level unlock I can't perform myself, escalating to a senior agent now.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.045Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.046Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd2c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd22"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Unlocked your account and sent a fresh reset link to your email — let us know once you're back in.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.047Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.048Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd33"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd2f"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "text": "Every time I try to export my report as CSV it spins forever and then fails.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.053Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.054Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd36"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd2f"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "text": "Thanks — that's a known issue with very large exports. I've re-run yours in the background; you should see it land in a few minutes.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.055Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.056Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd3d"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd39"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Logging this on your behalf per our call — thanks for the suggestion, I've passed it to the product team.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.060Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.060Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd40"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd39"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "text": "Internal note: third request for dark mode on mobile this quarter — worth flagging in the roadmap review.",
+    "internal": true,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.061Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.061Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd47"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "text": "Changes I make on mobile don't show up on web until hours later, sometimes not at all.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.066Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.066Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd4a"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Thanks for the detail — can you tell me roughly how long the delay usually is, and does it happen on Wi-Fi and mobile data both?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.067Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.068Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd4d"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "text": "Usually 3-4 hours, and yes, both Wi-Fi and mobile data.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.069Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.070Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd50"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Got it. I checked your account's sync logs and see several failed sync jobs — looks like it's retrying but silently failing. I'm escalating this to engineering with your log excerpt.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.070Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.071Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd53"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "text": "Okay — it's still happening today too, for what it's worth.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.072Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.073Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd56"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Understood, keeping this open. Engineering identified a bad sync token on your account specifically — I've reset it, could you try again and let me know?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.073Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.074Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd59"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "text": "Just tested — changes are syncing within a minute now. Looks fixed!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.075Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.076Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd5c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Glad to hear it. I'll keep an eye on your sync logs for the next few days and close this out — reopen if it comes back.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.077Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.077Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd5f"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "text": "Still working fine, thank you for sticking with it.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.078Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.078Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd62"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "text": "Great to hear — closing this ticket now. Reach out any time if it resurfaces.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.079Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.080Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd69"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "text": "Attaching a screenshot — the checkout page just goes white after I click 'Pay'.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.086Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.087Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd6c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb5b"
+    },
+    "text": "Thanks for the screenshot — could you also share the browser console log? Right-click > Inspect > Console, then a screenshot of any red errors.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.087Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.088Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd6f"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "text": "Attached — there's a 'Content Security Policy' error in there, not sure if that's relevant.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.089Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.089Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd72"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb5b"
+    },
+    "text": "That's exactly the culprit — a CSP rule was blocking our payment widget on Safari specifically. Fix is deployed, could you try again?",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.090Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.091Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd75"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "text": "Just checked out successfully, thank you!",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.092Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.092Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd7c"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd78"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb9d"
+    },
+    "text": "I was told I'd get a refund for a duplicate charge two weeks ago, still nothing.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.097Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.098Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd7f"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd78"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb5e"
+    },
+    "text": "Confirmed — I've submitted the refund on our end, it should land in 5-7 business days.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.099Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.100Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd82"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd78"
+    },
+    "senderType": "customer",
+    "senderId": {
+      "$oid": "6a990f4d46d45770d748bb9d"
+    },
+    "text": "It's been more than two weeks now and still no refund on my statement — reopening this.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.100Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.101Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd85"
+    },
+    "parentType": "ticket",
+    "parentId": {
+      "$oid": "6a990f4e46d45770d748bd78"
+    },
+    "senderType": "agent",
+    "senderId": {
+      "$oid": "6a990f4c46d45770d748bb5e"
+    },
+    "text": "Sorry about that — I see the original refund request stalled on our payment processor's side. Resubmitting manually now and will confirm once it clears.",
+    "internal": false,
+    "taggedUserIds": [],
+    "aiTicketSuggestion": null,
+    "aiKbSuggestion": null,
+    "attachments": [],
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.102Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.103Z"
+    },
+    "__v": 0
+  }
+]

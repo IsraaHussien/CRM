@@ -34,7 +34,7 @@ function DashboardTile({
   href: string;
   enabled: boolean;
   icon: LucideIcon;
-  accent: "--primary" | "--chart-2" | "--chart-3";
+  accent: "--primary" | "--chart-2" | "--chart-3" | "--chart-4";
   title: string;
   body: string;
   note: string;
@@ -164,6 +164,10 @@ export default async function DashboardPage({
   const canViewTickets = true;
   const canViewCustomers = role === "admin" || permissions.includes("customers:manage");
   const canViewAccounts = role === "admin" || permissions.includes("staff:view_list");
+  // reports-management Stories 40/41: reports:view is agent-grantable by
+  // default (DEFAULT_PERMISSIONS_BY_ROLE), not admin/subadmin-tier only —
+  // same shape as canViewCustomers above, not canViewAccounts.
+  const canViewReports = role === "admin" || permissions.includes("reports:view");
 
   // agent-workspace Story 35: the triage board is "my assigned queue", so it
   // renders for role `agent` only — admins/sub-admins are never auto-assigned
@@ -229,16 +233,16 @@ export default async function DashboardPage({
             disabledNote={t("noAccessNote")}
           />
 
-          <div className="relative flex min-h-[168px] flex-col justify-between overflow-hidden rounded-2xl border border-dashed border-border p-5 opacity-70">
-            <div className="grid size-10 place-items-center rounded-xl bg-muted text-muted-foreground">
-              <BarChart3 className="size-5" />
-            </div>
-            <div>
-              <h2 className="text-base font-bold">{t("reportsTileTitle")}</h2>
-              <p className="mt-0.5 max-w-[30ch] text-sm text-muted-foreground">{t("reportsTileBody")}</p>
-            </div>
-            <span className="text-xs text-muted-foreground">{t("comingLater")}</span>
-          </div>
+          <DashboardTile
+            href="/admin/reports"
+            enabled={canViewReports}
+            icon={BarChart3}
+            accent="--chart-4"
+            title={t("reportsTileTitle")}
+            body={t("reportsTileBody")}
+            note={t("reportsTileNote")}
+            disabledNote={t("noAccessNote")}
+          />
         </div>
       </main>
     </div>

@@ -69,7 +69,7 @@ None.
 ## Extra notes (optional)
 
 - Follow the same `parentType`/`parentId` pattern already established by `Message.ts` for referencing either a ticket or conversation, for consistency.
-- "Prompt appears once resolved" is primarily a FRONTEND trigger (show a feedback modal/banner when the customer views a closed/resolved item they haven't yet rated) — backend just needs a submission endpoint plus a way to check "has this customer already given feedback for this item" (to avoid re-prompting/re-submitting).
+- **Chosen UI direction: Option C, "emailed follow-up page."** A "Rate your experience" link goes out in the resolution email (ticket → the existing close/answer email per Story 56's `email.service.ts` pattern; conversation → a new resolution email, since Story 19 close-a-live-chat may not currently send one — check and add if missing) and opens a focused, full-page rating (stars 1-5 + optional comment, no page chrome needed beyond the site header). **Also surface the same entry point in-app** — a "Rate this" action on the ticket-detail page / chat-history row once it's closed/resolved (reusing the merged Story 36/37 "My Support" hub and ticket-detail page), for a customer who never opens the email. Treat the emailed link and the in-app entry point as the same page/flow, not two builds — both just need to reach `/feedback/:parentType/:parentId` (or similar), gated so only the owning customer can submit, and idempotent (already-submitted → read-only receipt, not a re-prompt).
 - One feedback entry per ticket/conversation per customer — enforce with a compound unique index (`parentType`, `parentId`, `customer`) so a second submission attempt fails cleanly rather than creating duplicates.
 
 ## Technical hints (optional)

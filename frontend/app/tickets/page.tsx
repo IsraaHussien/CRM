@@ -7,6 +7,9 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { CustomerTicketList, type CustomerTicketRow } from "./CustomerTicketList";
 import { StaffTicketQueue, type StaffTicketRow } from "./StaffTicketQueue";
+import { CustomerSupportSummary } from "./CustomerSupportSummary";
+import type { CustomerChatRow } from "../chats/CustomerChatList";
+import { TicketLiveRefresh } from "@/components/TicketLiveRefresh";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Tickets");
@@ -100,7 +103,26 @@ export default async function TicketsPage({
       })
     );
   }
-  const [res, categoriesRes] = await Promise.all(fetches);
+  // customer-portal Story 37: the "My Support" summary strip's data,
+  // fetched alongside the ticket list rather than after it — both requests
+  // fire concurrently. Supplementary, not critical: a failure here degrades
+  // to zeros/an empty recent-chats list rather than failing the whole page,
+  // same "degrade to empty" convention as tickets/[id]/actions.ts's
+  // listAssignableAgents.
+  const customerExtrasFetch = !isStaff
+    ? Promise.all([
+        fetch(`${API_URL}/api/v1/me/support-summary`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }),
+        fetch(`${API_URL}/api/v1/conversations`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        }),
+      ])
+    : Promise.resolve(null);
+
+  const [[res, categoriesRes], customerExtrasRes] = await Promise.all([Promise.all(fetches), customerExtrasFetch]);
 
   if (res.status === 401) {
     if (!_refreshed) {
@@ -124,8 +146,25 @@ export default async function TicketsPage({
   } = await res.json();
 
   if (!isStaff) {
+    let summary = { openTickets: 0, activeChats: 0, resolvedRecently: 0 };
+    let recentChats: CustomerChatRow[] = [];
+    if (customerExtrasRes) {
+      const [summaryRes, conversationsRes] = customerExtrasRes;
+      if (summaryRes.ok) {
+        summary = await summaryRes.json();
+      }
+      if (conversationsRes.ok) {
+        const conversationsData: { conversations: CustomerChatRow[] } = await conversationsRes.json();
+        recentChats = conversationsData.conversations.slice(0, 3);
+      }
+    }
+
     return (
       <main className="min-h-[calc(100vh-57px)] p-4 md:p-8">
+        <TicketLiveRefresh token={token} />
+        <div className="mx-auto w-full max-w-3xl">
+          <CustomerSupportSummary summary={summary} recentChats={recentChats} />
+        </div>
         <CustomerTicketList
           tickets={data.tickets as CustomerTicketRow[]}
           total={data.total}
@@ -151,6 +190,7 @@ export default async function TicketsPage({
     <div className="flex min-h-[calc(100vh-57px)]">
       <StaffSidebar active="tickets" />
       <main className="min-w-0 flex-1 p-4 md:p-8">
+        <TicketLiveRefresh token={token} />
         <StaffTicketQueue
           tickets={data.tickets as StaffTicketRow[]}
           total={data.total}

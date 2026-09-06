@@ -3,6 +3,8 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 import { Message } from "../../src/models/Message";
 import { Conversation } from "../../src/models/Conversation";
 import { User } from "../../src/models/User";
+import { Ticket } from "../../src/models/Ticket";
+import { AuditLog } from "../../src/models/AuditLog";
 import * as geminiService from "../../src/services/gemini.service";
 import { getAiReply, evaluateTicketSuggestion } from "../../src/services/liveChatAi.service";
 
@@ -22,6 +24,8 @@ beforeEach(async () => {
   await Message.deleteMany({});
   await Conversation.deleteMany({});
   await User.deleteMany({});
+  await Ticket.deleteMany({});
+  await AuditLog.deleteMany({});
   vi.restoreAllMocks();
 });
 
@@ -43,7 +47,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("customer", "Hello?");
     vi.spyOn(geminiService, "generateText").mockResolvedValue("  Sure, I can help!  ");
 
-    const reply = await getAiReply(parentId.toHexString());
+    const reply = await getAiReply(parentId.toHexString(), "Hello?");
 
     expect(reply).toBe("Sure, I can help!");
   });
@@ -52,7 +56,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("customer", "Hello?");
     vi.spyOn(geminiService, "generateText").mockResolvedValue(null);
 
-    const reply = await getAiReply(parentId.toHexString());
+    const reply = await getAiReply(parentId.toHexString(), "Hello?");
 
     expect(reply).toBeNull();
   });
@@ -61,7 +65,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("customer", "Hello?");
     vi.spyOn(geminiService, "generateText").mockResolvedValue("   ");
 
-    const reply = await getAiReply(parentId.toHexString());
+    const reply = await getAiReply(parentId.toHexString(), "Hello?");
 
     expect(reply).toBeNull();
   });
@@ -72,7 +76,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("agent", "Human follow-up");
     const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
 
-    await getAiReply(parentId.toHexString());
+    await getAiReply(parentId.toHexString(), "First message");
 
     const prompt = spy.mock.calls[0][0];
     const customerIdx = prompt.indexOf("Customer: First message");
@@ -89,7 +93,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("agent", "Internal note", { internal: true });
     const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
 
-    await getAiReply(parentId.toHexString());
+    await getAiReply(parentId.toHexString(), "Visible message");
 
     const prompt = spy.mock.calls[0][0];
     expect(prompt).not.toContain("Should be excluded");
@@ -102,7 +106,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     }
     const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
 
-    await getAiReply(parentId.toHexString());
+    await getAiReply(parentId.toHexString(), "msg-24");
 
     const prompt = spy.mock.calls[0][0];
     expect(prompt).not.toContain("msg-0\n");
@@ -114,7 +118,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
       throw new Error("db down");
     });
 
-    const reply = await getAiReply(parentId.toHexString());
+    const reply = await getAiReply(parentId.toHexString(), "");
 
     expect(reply).toBeNull();
   });
@@ -136,7 +140,7 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     });
     const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
 
-    await getAiReply(conversation.id);
+    await getAiReply(conversation.id, "I need help");
 
     const prompt = spy.mock.calls[0][0];
     expect(prompt).toContain("Sara Ahmed");
@@ -148,10 +152,94 @@ describe("liveChatAi.service.ts getAiReply (Story 15)", () => {
     await seedMessage("customer", "Hello?");
     const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
 
-    await getAiReply(parentId.toHexString());
+    await getAiReply(parentId.toHexString(), "Hello?");
 
     const prompt = spy.mock.calls[0][0];
     expect(prompt).not.toContain("Customer identity");
+  });
+});
+
+describe("liveChatAi.service.ts getAiReply — ticket-context grounding (ai-features/live-chat)", () => {
+  async function seedCustomerWithTicket(overrides: Partial<{ status: string; category: string | null }> = {}) {
+    const customer = await User.create({
+      name: "Sara Ahmed",
+      email: `sara-${new mongoose.Types.ObjectId().toHexString()}@example.com`,
+      passwordHash: "irrelevant-for-these-tests",
+      role: "customer",
+    });
+    const ticket = await Ticket.create({
+      subject: "Payment did not go through",
+      description: "Details here",
+      customer: customer._id,
+      category: overrides.category ?? "Billing",
+      priority: "medium",
+      status: overrides.status ?? "in_progress",
+    });
+    const conversation = await Conversation.create({ customer: customer._id, status: "ai_handling" });
+    return { customer, ticket, conversation };
+  }
+
+  it("grounds the prompt in the real ticket when the message names the customer's own ticket", async () => {
+    const { ticket, conversation } = await seedCustomerWithTicket({ status: "in_progress" });
+    const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
+
+    await getAiReply(conversation.id, `What's happening with TCK-${ticket.ticketNumber}?`);
+
+    const prompt = spy.mock.calls[0][0];
+    expect(prompt).toContain(`TCK-${ticket.ticketNumber}`);
+    expect(prompt).toContain("in_progress");
+    expect(prompt).toMatch(/do not guess or invent/i);
+  });
+
+  it("records the inquiry on the ticket's chatInquiryHistory and logs ticket_referenced_in_chat", async () => {
+    const { ticket, conversation } = await seedCustomerWithTicket();
+    vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
+
+    await getAiReply(conversation.id, `Any update on TCK-${ticket.ticketNumber}?`);
+
+    const stored = await Ticket.findById(ticket._id);
+    expect(stored!.chatInquiryHistory).toHaveLength(1);
+    expect(stored!.chatInquiryHistory[0].conversation.toString()).toBe(conversation.id);
+
+    const entry = await AuditLog.findOne({ action: "ticket_referenced_in_chat", targetId: ticket._id });
+    expect(entry).not.toBeNull();
+    expect(entry!.actor!.toString()).toBe(String(conversation.customer));
+  });
+
+  it("does not record a second inquiry entry for a repeated mention in the same conversation", async () => {
+    const { ticket, conversation } = await seedCustomerWithTicket();
+    vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
+
+    await getAiReply(conversation.id, `Any update on TCK-${ticket.ticketNumber}?`);
+    await getAiReply(conversation.id, `Still waiting on TCK-${ticket.ticketNumber}...`);
+
+    const stored = await Ticket.findById(ticket._id);
+    expect(stored!.chatInquiryHistory).toHaveLength(1);
+    expect(await AuditLog.countDocuments({ action: "ticket_referenced_in_chat" })).toBe(1);
+  });
+
+  it("never grounds in, or leaks the existence of, another customer's ticket", async () => {
+    const { ticket: foreignTicket } = await seedCustomerWithTicket();
+    const { conversation } = await seedCustomerWithTicket();
+    const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
+
+    await getAiReply(conversation.id, `What about TCK-${foreignTicket.ticketNumber}?`);
+
+    const prompt = spy.mock.calls[0][0];
+    expect(prompt).not.toContain("do not guess or invent");
+    expect(await AuditLog.countDocuments({ action: "ticket_referenced_in_chat" })).toBe(0);
+    expect((await Ticket.findById(foreignTicket._id))!.chatInquiryHistory).toHaveLength(0);
+  });
+
+  it("ignores a message with no ticket reference", async () => {
+    const { conversation } = await seedCustomerWithTicket();
+    const spy = vi.spyOn(geminiService, "generateText").mockResolvedValue("ok");
+
+    await getAiReply(conversation.id, "Hello, I have a question.");
+
+    const prompt = spy.mock.calls[0][0];
+    expect(prompt).not.toMatch(/do not guess or invent/i);
+    expect(await AuditLog.countDocuments({ action: "ticket_referenced_in_chat" })).toBe(0);
   });
 });
 

@@ -1,0 +1,932 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bce2"
+    },
+    "subject": "How do I update my billing address?",
+    "description": "I moved recently and my invoices still show my old address. Can you update it?",
+    "customer": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "category": "General Inquiry",
+    "priority": "low",
+    "status": "closed",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb6d"
+        },
+        "changedAt": {
+          "$date": "2026-08-04T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-04T06:30:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-04T08:10:19.440Z"
+        }
+      },
+      {
+        "status": "closed",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-04T11:10:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-04T08:10:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-05T06:10:19.440Z"
+      },
+      "breached": false,
+      "atRiskAlerted": false
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4c46d45770d748bb6d"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "slaHistory": [],
+    "ticketNumber": 1,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.988Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.989Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bcf5"
+    },
+    "subject": "Cannot log in — production outage on our end",
+    "description": "Our whole team is locked out since this morning. This is blocking work — please treat as urgent.",
+    "customer": {
+      "$oid": "6a990f4c46d45770d748bb76"
+    },
+    "assignedAgent": null,
+    "category": "Technical Issue",
+    "priority": "urgent",
+    "status": "escalated",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb76"
+        },
+        "changedAt": {
+          "$date": "2026-08-12T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "escalated",
+        "changedBy": {
+          "$oid": "6a990f4b46d45770d748bb41"
+        },
+        "changedAt": {
+          "$date": "2026-08-12T06:26:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-12T06:21:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-12T06:26:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-12T06:25:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-12T08:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": {
+      "$oid": "6a990f4c46d45770d748bb4c"
+    },
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4c46d45770d748bb76"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 2,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.998Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.998Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd02"
+    },
+    "subject": "Wrong item keeps showing on my invoice",
+    "description": "My last two invoices list a service I never signed up for.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb83"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "category": "Billing",
+    "priority": "medium",
+    "status": "answered",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb83"
+        },
+        "changedAt": {
+          "$date": "2026-08-16T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedAt": {
+          "$date": "2026-08-16T06:40:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-18T06:10:19.440Z"
+        }
+      }
+    ],
+    "assignedAgentHistory": [
+      {
+        "assignedAgent": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedAt": {
+          "$date": "2026-08-16T06:10:19.440Z"
+        }
+      },
+      {
+        "assignedAgent": {
+          "$oid": "6a990f4c46d45770d748bb61"
+        },
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedAt": {
+          "$date": "2026-08-16T07:10:19.440Z"
+        }
+      },
+      {
+        "assignedAgent": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb61"
+        },
+        "changedAt": {
+          "$date": "2026-08-17T06:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-16T06:44:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-16T06:56:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-16T06:55:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-16T12:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb83"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 3,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.018Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.021Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd15"
+    },
+    "subject": "Charged twice this month",
+    "description": "I see two charges for the same subscription this billing cycle.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb8d"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "category": "Technical Issue",
+    "priority": "high",
+    "status": "in_progress",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb8d"
+        },
+        "changedAt": {
+          "$date": "2026-08-22T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb58"
+        },
+        "changedAt": {
+          "$date": "2026-08-22T06:35:19.440Z"
+        }
+      }
+    ],
+    "categoryHistory": [
+      {
+        "category": "Billing",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb58"
+        },
+        "changedAt": {
+          "$date": "2026-08-22T06:50:19.440Z"
+        }
+      }
+    ],
+    "priorityHistory": [
+      {
+        "priority": "medium",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb58"
+        },
+        "changedAt": {
+          "$date": "2026-08-22T06:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-22T06:32:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-22T06:41:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-22T06:40:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-22T10:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb8d"
+    },
+    "createdVia": "customer_portal",
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 4,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.035Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.036Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd22"
+    },
+    "subject": "Account locked after failed password reset",
+    "description": "I tried resetting my password three times and now I can't log in at all.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb96"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb67"
+    },
+    "category": "Account Access",
+    "priority": "high",
+    "status": "escalated",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb96"
+        },
+        "changedAt": {
+          "$date": "2026-08-25T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb67"
+        },
+        "changedAt": {
+          "$date": "2026-08-25T06:20:19.440Z"
+        }
+      },
+      {
+        "status": "escalated",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb67"
+        },
+        "changedAt": {
+          "$date": "2026-08-25T06:45:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-25T06:32:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-25T06:40:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-25T10:10:19.440Z"
+      },
+      "breached": false,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb96"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 5,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.042Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.043Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd2f"
+    },
+    "subject": "Export feature keeps timing out",
+    "description": "Every time I try to export my report as CSV it spins forever and then fails.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "category": "Technical Issue",
+    "priority": "medium",
+    "status": "answered",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb7d"
+        },
+        "changedAt": {
+          "$date": "2026-08-27T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb64"
+        },
+        "changedAt": {
+          "$date": "2026-08-27T06:25:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb64"
+        },
+        "changedAt": {
+          "$date": "2026-08-27T07:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-27T06:32:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-27T06:41:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-27T06:40:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-27T10:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "createdVia": "ai",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 6,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.051Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.052Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd39"
+    },
+    "subject": "Requesting a feature: dark mode on mobile",
+    "description": "Customer called in asking whether dark mode is coming to the mobile app — logging as a feature request.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bba0"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "category": "Feature Request",
+    "priority": "low",
+    "status": "answered",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb6a"
+        },
+        "changedAt": {
+          "$date": "2026-08-29T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb6a"
+        },
+        "changedAt": {
+          "$date": "2026-08-29T06:15:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-29T07:40:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-29T08:15:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-29T08:10:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-30T06:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "createdVia": "phone",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 7,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.058Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.059Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd43"
+    },
+    "subject": "Recurring sync failures between mobile and web",
+    "description": "Changes I make on mobile don't show up on web until hours later, sometimes not at all.",
+    "customer": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb55"
+    },
+    "category": "Technical Issue",
+    "priority": "high",
+    "status": "closed",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb70"
+        },
+        "changedAt": {
+          "$date": "2026-08-23T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-23T07:10:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-24T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb70"
+        },
+        "changedAt": {
+          "$date": "2026-08-24T09:10:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-26T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "closed",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb55"
+        },
+        "changedAt": {
+          "$date": "2026-08-27T06:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-23T06:32:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-23T10:15:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-23T06:40:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-23T10:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4c46d45770d748bb70"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 8,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.064Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.065Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd65"
+    },
+    "subject": "Checkout page shows a blank screen on Safari",
+    "description": "Attaching a screenshot — the checkout page just goes white after I click 'Pay'.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb5b"
+    },
+    "category": "Technical Issue",
+    "priority": "high",
+    "status": "answered",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb86"
+        },
+        "changedAt": {
+          "$date": "2026-08-28T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedAt": {
+          "$date": "2026-08-28T06:30:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5b"
+        },
+        "changedAt": {
+          "$date": "2026-08-28T11:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-28T06:32:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-28T06:40:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-28T10:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb86"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 9,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.083Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.085Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4e46d45770d748bd78"
+    },
+    "subject": "Refund never arrived",
+    "description": "I was told I'd get a refund for a duplicate charge two weeks ago, still nothing.",
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb9d"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb5e"
+    },
+    "category": "Refunds",
+    "priority": "medium",
+    "status": "in_progress",
+    "statusHistory": [
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb9d"
+        },
+        "changedAt": {
+          "$date": "2026-08-20T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "answered",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5e"
+        },
+        "changedAt": {
+          "$date": "2026-08-20T09:10:19.440Z"
+        }
+      },
+      {
+        "status": "closed",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5e"
+        },
+        "changedAt": {
+          "$date": "2026-08-21T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "new",
+        "changedBy": {
+          "$oid": "6a990f4d46d45770d748bb9d"
+        },
+        "changedAt": {
+          "$date": "2026-08-29T06:10:19.440Z"
+        }
+      },
+      {
+        "status": "in_progress",
+        "changedBy": {
+          "$oid": "6a990f4c46d45770d748bb5e"
+        },
+        "changedAt": {
+          "$date": "2026-08-29T08:10:19.440Z"
+        }
+      }
+    ],
+    "slaHistory": [
+      {
+        "event": "at_risk",
+        "at": {
+          "$date": "2026-08-20T06:55:19.440Z"
+        }
+      },
+      {
+        "event": "breached",
+        "at": {
+          "$date": "2026-08-20T07:15:19.440Z"
+        }
+      }
+    ],
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-20T07:10:19.440Z"
+      },
+      "resolutionTargetAt": {
+        "$date": "2026-08-20T14:10:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "escalatedTo": null,
+    "sourceConversation": null,
+    "createdBy": {
+      "$oid": "6a990f4d46d45770d748bb9d"
+    },
+    "createdVia": "customer_portal",
+    "categoryHistory": [],
+    "priorityHistory": [],
+    "assignedAgentHistory": [],
+    "chatPresenceHistory": [],
+    "ticketNumber": 10,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:22.095Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:22.096Z"
+    },
+    "__v": 0
+  }
+]

@@ -137,3 +137,25 @@ export const replyToTicketBodySchema = z.object({
     `reply text must be at most ${REPLY_TEXT_MAX_LENGTH} characters`
   ),
 });
+
+// agent-workspace Story 24: POST /:id/internal-notes body. `text` mirrors
+// replyToTicketBodySchema's limit exactly (REPLY_TEXT_MAX_LENGTH) rather
+// than picking its own — an internal note and a reply are the same Message
+// document with a different `internal` flag, so a divergent cap would only
+// be a surprise. `taggedUserIds` is shape-only (well-formed ObjectIds,
+// capped at 20 so one note can't fan out into notification spam); "must be
+// an active agent/admin/subadmin, not a customer" is a DB lookup that stays
+// inline in the route handler, same as every other DB-dependent rule here.
+export const MAX_INTERNAL_NOTE_TAGS = 20;
+
+export const postInternalNoteBodySchema = z.object({
+  text: requiredString("note text is required").max(
+    REPLY_TEXT_MAX_LENGTH,
+    `note text must be at most ${REPLY_TEXT_MAX_LENGTH} characters`
+  ),
+  taggedUserIds: z
+    .array(objectIdSchema("taggedUserIds must contain valid user ids"))
+    .max(MAX_INTERNAL_NOTE_TAGS, `you can tag at most ${MAX_INTERNAL_NOTE_TAGS} colleagues on one note`)
+    .optional()
+    .default([]),
+});

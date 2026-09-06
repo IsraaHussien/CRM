@@ -1,13 +1,14 @@
 # SEED_DEMO_DATA_PROMPT.md — Prompt for a full realistic demo-data seed
 
-> **Status: spec only, not implemented.** This file is a prompt to hand to an
-> AI coding agent (or a human) in a *future* session — nobody should run it
-> automatically just because it exists. It describes the target end-state
-> for a "Seed Demo Data" feature: a script (and, later, an admin-triggered
-> endpoint) that wipes this project's database and repopulates it with
-> realistic, high-volume demo data so the app can be explored, demoed, or
-> used to test AI ticket/chat summarization against genuinely long history.
->
+> **Status: implemented.** `backend/scripts/seed-demo-full.ts` implements
+> this spec — see "Implementation notes" below, updated to reflect what
+> actually shipped. The generated dataset is committed to the repo as
+> `backend/seed-data/*.json`; run `npm run seed:import-demo-data` in
+> `backend/` to load it (no external API key needed, no regeneration
+> required — see the repo root README's "Demo data" section). This file is
+> kept as the spec/rationale document, not just a historical artifact — the
+> "10 ticket scenarios" and "knowledge base" sections below describe exactly
+> what `seed-demo-full.ts` builds.
 > Read `CLAUDE.md` first — this prompt assumes and must follow every
 > convention in it (TypeScript strict mode, services layer, i18n bilingual
 > content, permission model, SLA model, etc.). Where this prompt is silent
@@ -186,19 +187,62 @@ public Help Center demoable with real content instead of an empty state.
 
 ## Implementation notes
 
-- New file: `backend/scripts/seed-demo-full.ts`, same pattern as the
-  existing scripts (`dotenv/config`, connect via `MONGODB_URI`, disconnect
-  at the end, `main().catch(...)` with `process.exit(1)` on failure).
-- New `package.json` script: `"seed:demo-full": "tsx scripts/seed-demo-full.ts"`.
-- Guard the wipe behind an explicit environment check
-  (`NODE_ENV !== "production"`, matching this repo's existing dev-only
-  tooling conventions) so it can never accidentally run against a
-  production `MONGODB_URI`.
-- Keep it deterministic enough to be readable (a fixed cast of named
-  customers/agents/scenarios, per "Accounts to create" and "The ~10 ticket
-  scenarios" above) rather than fully randomized — the point is a
-  convincing demo/test dataset a human can navigate and reason about, not
-  fuzz-test volume.
+- `backend/scripts/seed-demo-full.ts`, same pattern as the existing scripts
+  (`dotenv/config`, connect via `MONGODB_URI`, disconnect at the end,
+  `main().catch(...)` with `process.exit(1)` on failure). Guarded behind
+  `NODE_ENV !== "production"` so the wipe can never accidentally run
+  against a production `MONGODB_URI`. `npm run seed:demo-full` in `backend/`.
+- Deterministic, not randomized (a fixed, named cast of customers/agents/
+  scenarios) — the point is a convincing demo/test dataset a human can
+  navigate and reason about, not fuzz-test volume.
+- After seeding, it exports every collection to `backend/seed-data/*.json`
+  (see "Committing the dataset to the repo" below) via a hand-rolled
+  recursive Extended-JSON-style walk (`$oid` / `$date` markers) — **not**
+  `JSON.stringify(docs, replacer)`. Both `ObjectId` and `Date` define their
+  own `toJSON()`, and `JSON.stringify` always calls a value's own `toJSON()`
+  first and hands the *already-stringified* result to the replacer — a
+  replacer never actually sees the original `ObjectId`/`Date` instance, so
+  a replacer-based version of this silently no-ops (this was caught by
+  actually round-tripping the exported fixtures back through
+  `import-demo-data.ts` against a live server, not by inspection — see that
+  script's comments).
+- Any ticket left in `new`/`in_progress`/`answered` status (i.e.,
+  deliberately not escalated/closed by the scenario) must have
+  `sla.breached: true` already set. The live SLA monitor
+  (`slaMonitor.service.ts`) scans exactly that status set every tick and
+  auto-escalates (forcing `status: "escalated"`) the first open ticket it
+  finds past its resolution target with `breached: false` — and every
+  scenario here is backdated by days, so its resolution target is
+  necessarily already in the past. Leaving `breached: false` on a
+  should-stay-open ticket means the monitor silently rewrites its status
+  within the first scan interval after the server starts. (Conversations
+  don't have this failure mode — breach flips `sla.breached` but never
+  forces `status`, confirmed empirically — but were still seeded
+  pre-breached for consistency with what the monitor would do to them
+  anyway.)
+
+## Committing the dataset to the repo
+
+The generated dataset lives at `backend/seed-data/*.json` (one file per
+collection: `users`, `ticketCategories`, `slaTargets`, `slaSystemSettings`,
+`tickets`, `conversations`, `messages`, `faqs`, `helpArticles`) and is
+committed — MongoDB itself has no single portable "database file" the way
+SQLite does (a running `mongod` owns its own binary WiredTiger storage
+files), so a JSON export per collection, loaded back in by
+`backend/scripts/import-demo-data.ts` (`npm run seed:import-demo-data`), is
+the practical equivalent of "the database is in the repo." Chosen over a
+`mongodump` binary archive because it's readable/diffable in a PR and needs
+nothing beyond Node (already a project dependency) to restore — no
+`mongorestore` CLI required. `import-demo-data.ts` wipes the same
+collections `seed-demo-full.ts` does, then inserts each fixture file
+directly via the native driver (`Model.collection.insertMany`, bypassing
+Mongoose validation/hooks) so original `_id`s and cross-document references
+are preserved exactly, and reseeds the `membershipNumber`/`ticketNumber`
+counters from the highest imported value so anything created by hand
+afterward continues the sequence correctly. Regenerate the fixtures (and
+re-commit them) by re-running `npm run seed:demo-full` whenever this
+script's scenarios change.
+
 - If/when this becomes the backend for the frontend's "Seed Demo Data"
   button (see `frontend/app/login/LoginForm.tsx`), it should be wrapped by
   an admin-only, permissioned route (per CLAUDE.md's "every route needs a

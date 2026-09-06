@@ -42,7 +42,20 @@ trends over time, so that I understand the team's overall workload.
 ## Acceptance criteria
 
 ```
-- Filterable by date range, category, and channel (chat/ticket).
+- Scoped to tickets only — live chat is a route into ticket creation (an
+  escalated chat can become a ticket), not a second channel this report
+  tracks; live-chat-specific volume belongs to Story 42's agent metrics
+  instead.
+- Filterable by date range (with day/week/month grouping for the trend
+  view) and category.
+- Also breaks volume down **by source** — `Ticket.createdVia`
+  (`customer_portal | ai | phone | email | in_person | other`, set by
+  ticket-management Story 63) — reusing the existing labels/colors
+  `StaffTicketQueue.tsx` already defines for this field
+  (`SOURCE_LABEL_KEY`, `SOURCE_BADGE_CLASS`: customer_portal→primary,
+  ai→`--channel-ai`, phone→`--channel-phone`, email→`--channel-email`,
+  in_person→`--channel-in-person`, other→`--channel-other`), not a new
+  palette.
 - Exportable (CSV/PDF).
 - Trends shown visually as well as in tables.
 ```
@@ -61,7 +74,7 @@ None.
 ## Dependencies
 
 - **Blocked by / related ids:** ticket-management (Stories 8-13) and live-chat (Stories 14-19) for the underlying data.
-- **Depends on code areas or other stories:** `backend/src/models/Ticket.ts`, `backend/src/models/Conversation.ts` — aggregation queries (Mongoose `aggregate()`) grouped by `createdAt` (date range), `category`, and channel (ticket vs. conversation, i.e. which collection).
+- **Depends on code areas or other stories:** `backend/src/models/Ticket.ts` — aggregation queries (Mongoose `aggregate()`) grouped by `createdAt` (date range), `category`, and `createdVia` (source). ticket-management Story 63 (`createdBy`/`createdVia` fields) and `frontend/app/tickets/StaffTicketQueue.tsx` (existing source label/emoji/color mapping to reuse verbatim).
 
 ## Extra notes (optional)
 

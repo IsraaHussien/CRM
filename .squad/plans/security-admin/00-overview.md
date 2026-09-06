@@ -8,7 +8,7 @@ Entry point for the **security-admin** feature. Stories execute in order by thei
 |----|------|-------|------------|------------|
 | 08 | `08-story-manage-user-accounts.md` | Manage user accounts | 45 | — |
 | 09 | `09-story-configure-roles-and-permissions.md` | Configure roles and permissions | 46 | 08 |
-| 10 | _not yet planned_ | Review audit logs | 47 | 08, 09 |
+| 10 | `34-story-review-audit-logs.md` | Review audit logs | 47 | 08, 09 |
 | 11 | _not yet planned_ | System configuration | 48 | 09, 10 |
 
 ## Dependency notes

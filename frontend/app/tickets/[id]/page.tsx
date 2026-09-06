@@ -6,12 +6,16 @@ import { getTranslations } from "next-intl/server";
 import { API_URL, SESSION_COOKIE, REFRESH_COOKIE } from "@/lib/auth";
 import { peekJwtPayload } from "@/lib/jwt";
 import { StaffSidebar } from "@/components/StaffSidebar";
+import { TicketLiveRefresh } from "@/components/TicketLiveRefresh";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { TicketDetailSidebar } from "./TicketDetailSidebar";
+import { CustomerTicketProgress } from "./CustomerTicketProgress";
 import { TicketMessageThread } from "./TicketMessageThread";
 import { TicketReplyComposer } from "./TicketReplyComposer";
 import { TicketSummaryPanel } from "./TicketSummaryPanel";
+import { ReopenTicketButton } from "./ReopenTicketButton";
 import { getTicketHistory } from "./actions";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -49,7 +53,12 @@ export interface TicketMessage {
   text: string;
   senderType: "customer" | "agent" | "ai" | "system";
   sender: { id: string; name: string } | null;
-  internal: boolean;
+  // agent-workspace Story 24: optional because a customer-facing response
+  // omits the field entirely — the customer surface doesn't acknowledge the
+  // concept of an internal message, it doesn't just report `false`.
+  internal?: boolean;
+  // Only present on an internal note read by a staff viewer.
+  taggedUsers?: { id: string; name: string; role: string }[];
   attachments: TicketMessageAttachment[];
   createdAt: string;
 }
@@ -82,14 +91,6 @@ const CREATED_VIA_KEY: Record<"ai" | "phone" | "email" | "in_person" | "other", 
   email: "createdViaEmail",
   in_person: "createdViaInPerson",
   other: "createdViaOther",
-};
-
-const STATUS_KEY: Record<TicketDetailResponse["status"], string> = {
-  new: "statusNew",
-  in_progress: "statusInProgress",
-  answered: "statusAnswered",
-  escalated: "statusEscalated",
-  closed: "statusClosed",
 };
 
 // Story 9: the first ticket-detail page — staff-only (agent/admin/subadmin),
@@ -175,6 +176,11 @@ export default async function TicketDetailPage({
   const canCategorize = isStaffViewer && (isViewerAdmin || viewerPermissions.includes("tickets:categorize"));
   const canChangePriority = isStaffViewer && (isViewerAdmin || viewerPermissions.includes("tickets:change_priority"));
   const canReply = isStaffViewer && (isViewerAdmin || viewerPermissions.includes("tickets:reply"));
+  // agent-workspace Story 24: independently grantable from tickets:reply —
+  // an internal note is never emailed to the customer and never flips the
+  // ticket to "answered", so an account can hold one key without the other.
+  const canPostInternalNote =
+    isStaffViewer && (isViewerAdmin || viewerPermissions.includes("tickets:post_internal_note"));
   const canReassign = isStaffViewer && (isViewerAdmin || viewerPermissions.includes("tickets:reassign"));
   // Story 11: two independent keys, same "check separately" shape as the
   // other per-field booleans above — an account can hold either without
@@ -205,6 +211,7 @@ export default async function TicketDetailPage({
     <div className="flex min-h-[calc(100vh-57px)]">
       {isStaffViewer && <StaffSidebar active="tickets" />}
       <main className="min-w-0 flex-1 p-4 md:p-8">
+        <TicketLiveRefresh token={accessToken} ticketId={ticket.id} />
         <div className="mx-auto w-full max-w-4xl">
           <nav className="mb-4 text-sm text-muted-foreground">
             <Link href="/tickets" className="hover:text-foreground hover:underline">
@@ -216,32 +223,31 @@ export default async function TicketDetailPage({
           <div className={`gap-6 ${isStaffViewer ? "grid md:grid-cols-[1fr_18rem]" : "flex flex-col"}`}>
             <Card>
               <CardHeader>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <CardTitle className="text-xl">{ticket.subject}</CardTitle>
-                    {/* Story 63: only a staff-created ticket carries a
-                        meaningful channel — "customer_portal" and legacy
-                        (null) tickets render no badge at all. */}
-                    {isStaffViewer && ticket.createdVia && ticket.createdVia !== "customer_portal" && (
-                      <Badge
-                        variant="outline"
-                        className={`shrink-0 gap-1 ${CREATED_VIA_BADGE_CLASS[ticket.createdVia]}`}
-                      >
-                        <span aria-hidden="true">{CREATED_VIA_EMOJI[ticket.createdVia]}</span>
-                        {t(CREATED_VIA_KEY[ticket.createdVia])}
-                      </Badge>
-                    )}
-                  </div>
-                  {/* Story 60: customer-facing read-only view shows status inline
-                      here instead of in the staff-only sidebar Card below. */}
-                  {!isStaffViewer && (
-                    <Badge variant="outline" className="shrink-0">
-                      {t(STATUS_KEY[ticket.status])}
+                <div className="flex flex-wrap items-center gap-2">
+                  <CardTitle className="text-xl">{ticket.subject}</CardTitle>
+                  {/* Story 63: only a staff-created ticket carries a
+                      meaningful channel — "customer_portal" and legacy
+                      (null) tickets render no badge at all. */}
+                  {isStaffViewer && ticket.createdVia && ticket.createdVia !== "customer_portal" && (
+                    <Badge
+                      variant="outline"
+                      className={`shrink-0 gap-1 ${CREATED_VIA_BADGE_CLASS[ticket.createdVia]}`}
+                    >
+                      <span aria-hidden="true">{CREATED_VIA_EMOJI[ticket.createdVia]}</span>
+                      {t(CREATED_VIA_KEY[ticket.createdVia])}
                     </Badge>
                   )}
                 </div>
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
+                {/* Story 60/36 follow-up: a progress stepper replaces the old
+                    bare status Badge for the customer's own view — see
+                    CustomerTicketProgress.tsx for why "escalated" is folded
+                    into "In Progress" and how the engagement line never
+                    names the assigned agent. */}
+                {!isStaffViewer && (
+                  <CustomerTicketProgress status={ticket.status} hasAssignedAgent={Boolean(ticket.assignedAgent)} />
+                )}
                 <p className="whitespace-pre-wrap text-sm">{ticket.description}</p>
                 {isStaffViewer && (
                   <div className="flex flex-col gap-1 border-t border-border pt-4">
@@ -257,15 +263,37 @@ export default async function TicketDetailPage({
                   ) : (
                     <span className="text-xs uppercase tracking-wide text-muted-foreground">{t("thread")}</span>
                   )}
-                  <TicketMessageThread messages={messages} ticketId={ticket.id} />
+                  <TicketMessageThread messages={messages} ticketId={ticket.id} staffViewer={isStaffViewer} />
                   {/* Story 61 (deferred): customer email replies aren't captured yet — see USER_STORIES.md. */}
                   {isStaffViewer && <p className="text-xs italic text-muted-foreground">{t("emailReplyComingSoon")}</p>}
+                  {/* customer-portal Story 37: reopen affordance — only the
+                      ticket's own customer, only when closed. */}
+                  {!isStaffViewer && isLocked && <ReopenTicketButton ticketId={ticket.id} />}
+                  {/* customer-portal Story 39: coexists with the reopen
+                      button above — reopening and rating are independent
+                      actions on a closed ticket. */}
+                  {!isStaffViewer && isLocked && (
+                    <Button asChild variant="link" size="sm" className="self-start px-0">
+                      <Link href={`/feedback/ticket/${ticket.id}`}>{t("rateThisTicket")}</Link>
+                    </Button>
+                  )}
                   {/* Story 11: a closed ticket is read-only — the composer never
                       renders, regardless of canReply, until it's reopened. */}
                   {isLocked && isStaffViewer && (
                     <p className="text-xs italic text-muted-foreground">{t("ticketClosedReadOnly")}</p>
                   )}
-                  {canReply && !isLocked && <TicketReplyComposer ticketId={ticket.id} />}
+                  {/* agent-workspace Story 24: the composer renders whenever
+                      the viewer can do EITHER thing — an account holding only
+                      tickets:post_internal_note still needs a way in, and one
+                      holding only tickets:reply sees exactly what it saw
+                      before this story. */}
+                  {(canReply || canPostInternalNote) && !isLocked && (
+                    <TicketReplyComposer
+                      ticketId={ticket.id}
+                      canReply={canReply}
+                      canPostInternalNote={canPostInternalNote}
+                    />
+                  )}
                 </div>
               </CardContent>
             </Card>

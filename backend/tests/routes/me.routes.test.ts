@@ -58,6 +58,59 @@ describe("GET /api/v1/me/status", () => {
   });
 });
 
+describe("GET /api/v1/me/support-summary (customer-portal Story 37)", () => {
+  it("returns 401 without a token", async () => {
+    const res = await request(app).get("/api/v1/me/support-summary");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 403 for a non-customer", async () => {
+    const { token } = await seedUser("agent@example.com", { role: "agent" });
+    const res = await request(app).get("/api/v1/me/support-summary").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(403);
+  });
+
+  it("counts open/active/recently-resolved items scoped to the caller, excluding other customers' and old resolutions", async () => {
+    const { user: customer, token } = await seedUser();
+    const { user: otherCustomer } = await seedUser("other@example.com");
+
+    await Ticket.create({ subject: "a", description: "d", customer: customer._id, status: "new" });
+    await Ticket.create({ subject: "b", description: "d", customer: customer._id, status: "in_progress" });
+    await Ticket.create({
+      subject: "c",
+      description: "d",
+      customer: customer._id,
+      status: "closed",
+    });
+    const closedOld = await Ticket.create({
+      subject: "d",
+      description: "d",
+      customer: customer._id,
+      status: "closed",
+    });
+    // Mongoose's timestamps plugin re-stamps updatedAt on every update call
+    // unless explicitly disabled — { timestamps: false } is what lets this
+    // backdate actually stick, simulating a resolution outside the 30-day window.
+    await Ticket.findByIdAndUpdate(
+      closedOld._id,
+      { updatedAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000) },
+      { timestamps: false }
+    );
+    // Not this customer's — must not be counted.
+    await Ticket.create({ subject: "e", description: "d", customer: otherCustomer._id, status: "new" });
+
+    await Conversation.create({ customer: customer._id, status: "ai_handling" });
+    await Conversation.create({ customer: customer._id, status: "resolved" });
+
+    const res = await request(app).get("/api/v1/me/support-summary").set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.openTickets).toBe(2);
+    expect(res.body.activeChats).toBe(1);
+    expect(res.body.resolvedRecently).toBe(2); // closedRecent (ticket) + resolvedRecent (chat)
+  });
+});
+
 describe("PATCH /api/v1/me/availability (Story 21, minimal)", () => {
   it("returns 401 without a token", async () => {
     const res = await request(app).patch("/api/v1/me/availability").send({ isOnline: true });

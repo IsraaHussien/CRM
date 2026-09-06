@@ -8,7 +8,8 @@ import * as slaSystemSettingsModule from "../../src/models/SlaSystemSettings";
 import * as notificationService from "../../src/services/notification.service";
 import * as ticketEscalationService from "../../src/services/ticketEscalation.service";
 import * as conversationEscalationService from "../../src/services/conversationEscalation.service";
-import { scanSlaOnce } from "../../src/services/slaMonitor.service";
+import { AuditLog } from "../../src/models/AuditLog";
+import { scanSlaOnce, closeAbandonedConversationsOnce } from "../../src/services/slaMonitor.service";
 
 let mongod: MongoMemoryServer;
 
@@ -27,6 +28,7 @@ beforeEach(async () => {
   await Ticket.deleteMany({});
   await Conversation.deleteMany({});
   await Notification.deleteMany({});
+  await AuditLog.deleteMany({});
   vi.restoreAllMocks();
 });
 
@@ -324,5 +326,43 @@ describe("scanSlaOnce (sla-automation Story 28)", () => {
     expect((await Ticket.findById(goodTicket._id))!.sla.breached).toBe(true);
     expect(await Notification.findOne({ recipient: agent2._id, type: "sla_breached" })).not.toBeNull();
     expect(errorSpy).toHaveBeenCalled();
+  });
+});
+
+// Mongoose's `timestamps: true` strips a user-supplied `updatedAt` from a
+// query-based update, same reasoning as setTicketSlaWindow/
+// setConversationSlaWindow above using the raw collection for `createdAt`.
+async function backdateConversationUpdatedAt(conversationId: mongoose.Types.ObjectId, updatedAt: Date) {
+  await Conversation.collection.updateOne({ _id: conversationId }, { $set: { updatedAt } });
+}
+
+describe("closeAbandonedConversationsOnce (live-chat)", () => {
+  it("resolves a conversation idle past the abandonment threshold and logs chat_closed", async () => {
+    const now = new Date("2026-01-01T12:00:00Z");
+    const conversation = await seedConversation({ status: "ai_handling" });
+    await backdateConversationUpdatedAt(conversation._id, new Date(now.getTime() - 31 * MIN));
+
+    const closed = await closeAbandonedConversationsOnce(now);
+
+    expect(closed).toBe(1);
+    expect((await Conversation.findById(conversation._id))!.status).toBe("resolved");
+    const entry = await AuditLog.findOne({ action: "chat_closed", targetId: conversation.id });
+    expect(entry).not.toBeNull();
+    expect(entry!.metadata.reason).toBe("abandoned");
+  });
+
+  it("leaves a conversation alone before the threshold and once already resolved", async () => {
+    const now = new Date("2026-01-01T12:00:00Z");
+    const recent = await seedConversation({ status: "escalated" });
+    await backdateConversationUpdatedAt(recent._id, new Date(now.getTime() - 5 * MIN));
+    const alreadyResolved = await seedConversation({ status: "resolved" });
+    await backdateConversationUpdatedAt(alreadyResolved._id, new Date(now.getTime() - 60 * MIN));
+
+    const closed = await closeAbandonedConversationsOnce(now);
+
+    expect(closed).toBe(0);
+    expect((await Conversation.findById(recent._id))!.status).toBe("escalated");
+    expect((await Conversation.findById(alreadyResolved._id))!.status).toBe("resolved");
+    expect(await AuditLog.countDocuments({ action: "chat_closed" })).toBe(0);
   });
 });

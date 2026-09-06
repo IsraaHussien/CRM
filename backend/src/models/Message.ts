@@ -53,6 +53,15 @@ export interface IMessage extends Document {
   senderId: Types.ObjectId | null;
   text: string;
   internal: boolean;
+  // agent-workspace Story 24: colleagues explicitly tagged on an internal
+  // note (always empty on a non-internal message). Persisted rather than
+  // derived from the Notification rows it produces, so the thread can render
+  // mention chips on every reload — a notification is a best-effort side
+  // effect that may legitimately be missing, and is deleted/read
+  // independently of the note it points at. Deduped and validated
+  // (active agent/admin/subadmin, never a customer, never the author) at the
+  // POST /:id/internal-notes call site.
+  taggedUserIds: Types.ObjectId[];
   attachments: IMessageAttachment[];
   // Story 62 (live-chat): set on an "ai" message when Gemini's classifier
   // decided this reply should offer a one-click "open a ticket" suggestion.
@@ -74,6 +83,7 @@ const messageSchema = new Schema<IMessage>(
 
     text: { type: String, required: true },
     internal: { type: Boolean, default: false },
+    taggedUserIds: [{ type: Schema.Types.ObjectId, ref: "User" }],
 
     attachments: [
       {

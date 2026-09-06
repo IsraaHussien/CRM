@@ -12,6 +12,7 @@ import { Message } from "../../src/models/Message";
 import { Notification } from "../../src/models/Notification";
 import { Ticket } from "../../src/models/Ticket";
 import * as liveChatAiService from "../../src/services/liveChatAi.service";
+import * as emailService from "../../src/services/email.service";
 
 vi.mock("../../src/services/liveChatAi.service", () => ({
   getAiReply: vi.fn(),
@@ -803,6 +804,29 @@ describe("chat.socket.ts conversation:claim / conversation:unclaim", () => {
     socket.disconnect();
   });
 
+  // customer-portal Story 39: resolving a conversation triggers the "rate
+  // your experience" email, mirroring ticket.routes.ts's PATCH /:id/status.
+  it("sends a resolution email when a conversation transitions into resolved", async () => {
+    const sendEmailMock = vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const { user, token } = await seedUser();
+    const conversation = await Conversation.create({ customer: user._id, status: "escalated" });
+    const socket = await joinedSocket(conversation.id, token);
+
+    const closed = new Promise((resolve) => socket.on("conversation:closed", resolve));
+    socket.emit("conversation:close", { conversationId: conversation.id });
+    await closed;
+    // The email send happens after a real (unmocked) User.findById lookup,
+    // which the client-visible "closed" broadcast does not wait on — give
+    // it a tick to actually complete server-side before asserting.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+
+    expect(sendEmailMock).toHaveBeenCalledWith(
+      expect.objectContaining({ html: expect.stringContaining(`/feedback/conversation/${conversation.id}`) })
+    );
+
+    socket.disconnect();
+  });
+
   it("lets the assigned agent close via conversation:close (Story 19)", async () => {
     const { user: customer, token: customerToken } = await seedUser("customer");
     const { user: agent, token: agentToken } = await seedUser("agent");
@@ -869,6 +893,7 @@ describe("chat.socket.ts conversation:claim / conversation:unclaim", () => {
   });
 
   it("closing an already-resolved conversation emits conversation:closed to the caller but does not re-broadcast (Story 19)", async () => {
+    const sendEmailMock = vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
     const { user: customer, token: customerToken } = await seedUser("customer");
     const { user: agent, token: agentToken } = await seedUser("agent");
     const conversation = await Conversation.create({
@@ -890,6 +915,9 @@ describe("chat.socket.ts conversation:claim / conversation:unclaim", () => {
     // Give the (absent) room broadcast a tick to have arrived if it wrongly fired.
     await new Promise((resolve) => setTimeout(resolve, 50));
     expect(customerBroadcasts).toBe(0);
+    // customer-portal Story 39: an already-resolved conversation must not
+    // re-send the resolution email either.
+    expect(sendEmailMock).not.toHaveBeenCalled();
 
     customerSocket.disconnect();
     agentSocket.disconnect();

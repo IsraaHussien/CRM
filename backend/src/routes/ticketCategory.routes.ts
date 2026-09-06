@@ -7,6 +7,7 @@ import type { PermissionKey } from "../constants/permissions";
 import { TicketCategory, ITicketCategory } from "../models/TicketCategory";
 import { validateBody } from "../middleware/validate";
 import { createTicketCategoryBodySchema, updateTicketCategoryBodySchema } from "../validation/ticketCategory.schema";
+import { recordAuditLog } from "../services/auditLog.service";
 
 const router = express.Router();
 
@@ -103,6 +104,15 @@ router.post(
       throw err;
     }
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_category_created",
+      targetType: "TicketCategory",
+      targetId: category.id,
+      metadata: { name: category.name },
+      ipAddress: req.ip,
+    });
+
     res.status(201).json(toCategoryResponse(category));
   }
 );
@@ -137,20 +147,38 @@ router.patch(
       return;
     }
 
+    const changes: Record<string, { before: unknown; after: unknown }> = {};
+
     if (name !== undefined) {
       const existing = await findByNameCaseInsensitive(name, category.id);
       if (existing) {
         res.status(409).json({ error: "A category with that name already exists." });
         return;
       }
-      category.name = name;
+      if (name !== category.name) {
+        changes.name = { before: category.name, after: name };
+        category.name = name;
+      }
     }
 
-    if (active !== undefined) {
+    if (active !== undefined && active !== category.active) {
+      changes.active = { before: category.active, after: active };
       category.active = active;
     }
 
     await category.save();
+
+    if (Object.keys(changes).length > 0) {
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_category_updated",
+        targetType: "TicketCategory",
+        targetId: category.id,
+        metadata: { changes },
+        ipAddress: req.ip,
+      });
+    }
+
     res.status(200).json(toCategoryResponse(category));
   }
 );

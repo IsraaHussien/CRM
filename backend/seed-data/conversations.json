@@ -1,0 +1,112 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe6"
+    },
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb7d"
+    },
+    "assignedAgent": null,
+    "status": "resolved",
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-27T06:15:19.440Z"
+      },
+      "breached": false,
+      "atRiskAlerted": false
+    },
+    "aiTicketSuggestionDeclined": false,
+    "agentJoinedAnnounced": false,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.844Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.846Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbf8"
+    },
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb8a"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb58"
+    },
+    "status": "with_agent",
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-14T06:15:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": false
+    },
+    "aiTicketSuggestionDeclined": true,
+    "agentJoinedAnnounced": true,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.857Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.858Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc16"
+    },
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bb90"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb64"
+    },
+    "status": "with_agent",
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-08-30T06:15:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "aiTicketSuggestionDeclined": false,
+    "agentJoinedAnnounced": true,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.874Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.874Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bc7c"
+    },
+    "customer": {
+      "$oid": "6a990f4d46d45770d748bba3"
+    },
+    "assignedAgent": {
+      "$oid": "6a990f4c46d45770d748bb6a"
+    },
+    "status": "with_agent",
+    "sla": {
+      "responseTargetAt": {
+        "$date": "2026-09-01T06:15:19.440Z"
+      },
+      "breached": true,
+      "atRiskAlerted": true
+    },
+    "aiTicketSuggestionDeclined": false,
+    "agentJoinedAnnounced": true,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.932Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.932Z"
+    },
+    "__v": 0
+  }
+]

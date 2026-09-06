@@ -401,7 +401,9 @@ then paste that story's **User Story** + **Acceptance Criteria** into the genera
 
 ### Story 40: Ticket reports
 **As a** manager/admin, **I want to** see reports on ticket volume, type, and trends over time, **so that** I understand the team's overall workload.
-- Filterable by date range, category, and channel (chat/ticket).
+- Scoped to tickets only — live chat is a route into ticket creation (an escalated chat can become a ticket), not a second channel this report tracks; live-chat-specific volume belongs to Story 42's agent metrics instead.
+- Filterable by date range (with day/week/month grouping for the trend view) and category.
+- Also breaks volume down by source (how the ticket was created — customer self-service, AI suggestion, or staff via phone/email/in person/other), reusing the same source labels/colors already shown on each ticket.
 - Exportable (CSV/PDF).
 - Trends shown visually as well as in tables.
 
@@ -413,6 +415,7 @@ then paste that story's **User Story** + **Acceptance Criteria** into the genera
 
 ### Story 42: Agent performance report
 **As a** manager/admin, **I want to** see per-agent metrics (volume handled, average response/resolution time, CSAT), **so that** I can manage the team fairly with real data.
+- Volume handled breaks out tickets resolved vs. live chats handled (conversations the agent actually responded to after escalation), not just one combined count.
 - Metrics comparable across agents or over a selected period.
 - Individual agents can view their own performance metrics.
 - This view links directly to reassignment (Story 25) so an admin can act immediately if one agent is overloaded.

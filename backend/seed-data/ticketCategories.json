@@ -1,0 +1,100 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba6"
+    },
+    "name": "Billing",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba7"
+    },
+    "name": "Technical Issue",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba8"
+    },
+    "name": "Account Access",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bba9"
+    },
+    "name": "Feature Request",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbaa"
+    },
+    "name": "General Inquiry",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbab"
+    },
+    "name": "Shipping & Delivery",
+    "active": false,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbac"
+    },
+    "name": "Refunds",
+    "active": true,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.812Z"
+    }
+  }
+]

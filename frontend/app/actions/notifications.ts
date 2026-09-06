@@ -20,7 +20,9 @@ export type NotificationType =
   | "ticket_reopened_oversight"
   | "chat_needs_agent"
   | "sla_at_risk"
-  | "sla_breached";
+  | "sla_breached"
+  // agent-workspace Story 24: a colleague tagged you in an internal note.
+  | "ticket_internal_note_mention";
 
 // live-chat: a notification carries exactly one of ticket/conversation,
 // never both (see backend/src/routes/me.routes.ts's toNotificationItem) —
@@ -43,6 +45,21 @@ async function getBearerToken(): Promise<string | null> {
   return refreshSession();
 }
 
+// No refreshSession() fallback here, unlike getBearerToken() above (used by
+// fetchNotificationHistory/markNotificationRead, both the direct result of a
+// user visibly doing something — opening /notifications, clicking a bell
+// item). fetchNotifications() backs the bell's own 60s background poll: a
+// refresh token rotates on every use, so a poll racing another invisible
+// poll (agent-workspace Story 35's dashboard board) to refresh right around
+// the same expiry moment risks tripping the reuse-detection lockout meant
+// for a stolen-token attacker — over a dropdown nobody's even looking at. A
+// stale bell count until the next real, visible, user-driven request
+// refreshes the session properly is a far cheaper failure than that.
+async function getBearerTokenNoRefresh(): Promise<string | null> {
+  const cookieStore = await cookies();
+  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
+}
+
 // Returns [] on any failure (signed out, network hiccup, backend down) —
 // the bell has no error state of its own; an empty/unchanged list is the
 // correct degraded behavior for a polling background fetch like this one.
@@ -51,22 +68,14 @@ async function getBearerToken(): Promise<string | null> {
 // unreachable, which previously escaped as an unhandled "fetch failed"
 // TypeError that crashed the page render instead of degrading.
 export async function fetchNotifications(): Promise<NotificationItem[]> {
-  const token = await getBearerToken();
+  const token = await getBearerTokenNoRefresh();
   if (!token) return [];
 
-  const doFetch = (bearer: string) =>
-    fetch(`${API_URL}/api/v1/me/notifications`, {
-      headers: { Authorization: `Bearer ${bearer}` },
+  try {
+    const res = await fetch(`${API_URL}/api/v1/me/notifications`, {
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
-
-  try {
-    let res = await doFetch(token);
-    if (res.status === 401) {
-      const refreshedToken = await refreshSession();
-      if (!refreshedToken) return [];
-      res = await doFetch(refreshedToken);
-    }
     if (!res.ok) return [];
     return (await res.json()) as NotificationItem[];
   } catch {

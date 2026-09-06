@@ -8,6 +8,7 @@ import { Conversation } from "../models/Conversation";
 import { Notification } from "../models/Notification";
 import { sendEmail, renderEmailHtml } from "../services/email.service";
 import { isActiveAccount } from "../services/permissions";
+import { recordAuditLog } from "../services/auditLog.service";
 import { computeSlaStatus, type SlaStatus } from "../services/sla.service";
 import { contactBodySchema, availabilityBodySchema, notificationHistoryQuerySchema } from "../validation/me.schema";
 
@@ -34,6 +35,32 @@ router.get("/status", requireAuth, async (req: Request, res: Response) => {
   res
     .status(200)
     .json({ role: user.role, isActive: user.isActive, permissions: user.permissions ?? [], isOnline: user.isOnline });
+});
+
+// GET /api/v1/me/support-summary — customer-portal Story 37: the "My
+// Support" stat strip's data source (frontend/app/tickets/page.tsx's
+// customer branch, via CustomerSupportSummary). Self-scoped, so
+// requireRole("customer") + no permission key, same convention as
+// /workspace below (its agent-facing equivalent) — just three counts, no
+// item lists.
+const RESOLVED_RECENTLY_WINDOW_DAYS = 30;
+
+router.get("/support-summary", requireAuth, requireRole("customer"), async (req: Request, res: Response) => {
+  const customerId = new Types.ObjectId(req.user!.id);
+  const since = new Date(Date.now() - RESOLVED_RECENTLY_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+
+  const [openTickets, activeChats, resolvedTicketsRecently, resolvedChatsRecently] = await Promise.all([
+    Ticket.countDocuments({ customer: customerId, status: { $ne: "closed" } }),
+    Conversation.countDocuments({ customer: customerId, status: { $ne: "resolved" } }),
+    Ticket.countDocuments({ customer: customerId, status: "closed", updatedAt: { $gte: since } }),
+    Conversation.countDocuments({ customer: customerId, status: "resolved", updatedAt: { $gte: since } }),
+  ]);
+
+  res.status(200).json({
+    openTickets,
+    activeChats,
+    resolvedRecently: resolvedTicketsRecently + resolvedChatsRecently,
+  });
 });
 
 // PATCH /api/v1/me/availability — agent self-flip of isOnline (Story 21,
@@ -67,6 +94,16 @@ router.patch("/availability", requireAuth, async (req: Request, res: Response) =
   }
   user.isOnline = parsed.data.isOnline;
   await user.save();
+  // security-admin Story 47: an agent's own online/offline toggle is
+  // account-state, same category as staff activation/deactivation.
+  await recordAuditLog({
+    actor: user.id,
+    action: "agent_availability_changed",
+    targetType: "User",
+    targetId: user.id,
+    metadata: { isOnline: user.isOnline },
+    ipAddress: req.ip,
+  });
   res.status(200).json({ isOnline: user.isOnline });
 });
 
@@ -401,10 +438,13 @@ router.patch("/contact", requireAuth, async (req: Request, res: Response) => {
   // Phone is optional on the User model (models/User.ts) — an empty string
   // clears it, matching customer.routes.ts's PATCH /customers/:id handling
   // of the same field.
-  if ("phone" in rawBody) {
+  let phoneChanged = false;
+  if ("phone" in rawBody && phone !== user.phone) {
+    phoneChanged = true;
     user.phone = phone;
   }
 
+  let emailChangeRequested = false;
   if ("email" in rawBody) {
     const normalizedEmail = email as string;
     if (normalizedEmail === user.email) {
@@ -444,11 +484,34 @@ router.patch("/contact", requireAuth, async (req: Request, res: Response) => {
       res.status(502).json({ error: "Could not send confirmation email" });
       return;
     }
+    emailChangeRequested = true;
   }
 
   // Single save for both fields — avoids two round-trips when both
   // phone and email are present in the same request.
   await user.save();
+
+  if (phoneChanged) {
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_contact_updated",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { field: "phone" },
+      ipAddress: req.ip,
+    });
+  }
+  if (emailChangeRequested) {
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_email_change_requested",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { pendingEmail: user.pendingEmail },
+      ipAddress: req.ip,
+    });
+  }
+
   res.status(200).json({ phone: user.phone ?? null, email: user.email, pendingEmail: user.pendingEmail });
 });
 
@@ -494,6 +557,15 @@ router.get("/email/confirm", async (req: Request, res: Response) => {
     }
     throw err;
   }
+
+  await recordAuditLog({
+    actor: user.id,
+    action: "customer_email_change_confirmed",
+    targetType: "User",
+    targetId: user.id,
+    metadata: { email: user.email },
+    ipAddress: req.ip,
+  });
 
   res.redirect(`${CLIENT_ORIGIN}/email-confirmed?status=success&email=${encodeURIComponent(user.email)}`);
 });

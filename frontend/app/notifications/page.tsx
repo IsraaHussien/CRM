@@ -12,6 +12,7 @@ import {
   Sparkles,
   AlertTriangle,
   RotateCcw,
+  AtSign,
   type LucideIcon,
 } from "lucide-react";
 import { peekJwtPayload } from "@/lib/jwt";
@@ -41,6 +42,7 @@ const TYPE_KEY: Record<NotificationType, string> = {
   chat_needs_agent: "notificationChatNeedsAgent",
   sla_at_risk: "notificationSlaAtRisk",
   sla_breached: "notificationSlaBreached",
+  ticket_internal_note_mention: "notificationTicketInternalNoteMention",
 };
 
 // Icon + semantic color per notification type — reused meanings, not new
@@ -66,6 +68,11 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
   // escalation icon since a breach always triggers an auto-escalation.
   sla_at_risk: AlertTriangle,
   sla_breached: ArrowUpCircle,
+  // agent-workspace Story 24: AtSign echoes the "you were mentioned"
+  // meaning; the amber color below is the same one the internal-note bubble
+  // and badge use in the ticket thread, so the two surfaces read as one
+  // feature.
+  ticket_internal_note_mention: AtSign,
 };
 
 const TYPE_COLOR_CLASS: Record<NotificationType, string> = {
@@ -81,6 +88,7 @@ const TYPE_COLOR_CLASS: Record<NotificationType, string> = {
   chat_needs_agent: "bg-warning/10 text-warning",
   sla_at_risk: "bg-warning/10 text-warning",
   sla_breached: "bg-destructive/10 text-destructive",
+  ticket_internal_note_mention: "bg-warning/10 text-warning",
 };
 
 // The dedicated "view all" surface the notification bell's dropdown links

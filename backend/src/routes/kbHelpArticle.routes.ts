@@ -13,6 +13,7 @@ import {
   HelpArticleValidationError,
 } from "../services/helpArticle.service";
 import { suggestTranslation, findSimilarArticles } from "../services/kbAi.service";
+import { recordAuditLog } from "../services/auditLog.service";
 import {
   articleIdParamsSchema,
   createHelpArticleBodySchema,
@@ -124,6 +125,16 @@ router.post(
   async (req: Request<unknown, unknown, z.infer<typeof createHelpArticleBodySchema>>, res: Response) => {
     try {
       const article = await createHelpArticle({ ...req.body, actorId: req.user!.id });
+
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "kb_article_created",
+        targetType: "HelpArticle",
+        targetId: article.id,
+        metadata: { title: article.title.en || article.title.ar, slug: article.slug },
+        ipAddress: req.ip,
+      });
+
       res.status(201).json(toArticleResponse(article));
     } catch (err) {
       if (err instanceof HelpArticleValidationError) {
@@ -151,6 +162,15 @@ router.patch(
         res.status(404).json({ error: "Article not found" });
         return;
       }
+
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "kb_article_updated",
+        targetType: "HelpArticle",
+        targetId: article.id,
+        ipAddress: req.ip,
+      });
+
       res.status(200).json(toArticleResponse(article));
     } catch (err) {
       if (err instanceof HelpArticleValidationError) {
@@ -173,6 +193,15 @@ router.delete(
       res.status(404).json({ error: "Article not found" });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "kb_article_deleted",
+      targetType: "HelpArticle",
+      targetId: article.id,
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ id: article.id, deleted: true });
   }
 );

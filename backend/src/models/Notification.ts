@@ -46,6 +46,17 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 // escalation via escalateTicket / escalateConversation. Both go to the
 // assignee (or oversight, for a ticket with none); sla_breached also fans
 // out to oversight via notifyTicketOversight regardless of assignee.
+// "ticket_internal_note_mention" (agent-workspace Story 24): sent to a
+// colleague explicitly tagged in an internal note (Message.internal: true)
+// on a ticket. Never sent to the note's author (their own id is silently
+// dropped from taggedUserIds), never sent to the customer (who holds no
+// tickets:post_internal_note permission and never sees an internal note at
+// all), and deduped per (ticket, recipient) at the call site — POST
+// /:id/internal-notes de-duplicates taggedUserIds before notifying. It
+// can't reuse any existing type: the recipient-facing copy is "you were
+// mentioned in an internal note", which is neither an assignment
+// ("ticket_assigned"), an escalation ("ticket_escalated"), nor an oversight
+// fact ("ticket_created"/"ticket_needs_assignment").
 export type NotificationType =
   | "ticket_assigned"
   | "ticket_escalated"
@@ -58,7 +69,8 @@ export type NotificationType =
   | "ticket_reopened_oversight"
   | "chat_needs_agent"
   | "sla_at_risk"
-  | "sla_breached";
+  | "sla_breached"
+  | "ticket_internal_note_mention";
 
 export interface INotification extends Document {
   recipient: Types.ObjectId;
@@ -88,6 +100,7 @@ const notificationSchema = new Schema<INotification>(
         "chat_needs_agent",
         "sla_at_risk",
         "sla_breached",
+        "ticket_internal_note_mention",
       ],
       required: true,
     },

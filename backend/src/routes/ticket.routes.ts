@@ -9,6 +9,8 @@ import { Conversation } from "../models/Conversation";
 import { sendEmail, renderEmailHtml } from "../services/email.service";
 import { pickNextAvailableAgent } from "../services/assignment.service";
 import { createTicketNotification, notifyTicketOversight } from "../services/notification.service";
+import { recordAuditLog } from "../services/auditLog.service";
+import { emitTicketUpdated } from "../services/ticketRealtime.service";
 import type { PermissionKey } from "../constants/permissions";
 import { hasPermission, isActiveAccount } from "../services/permissions";
 import { validateBody } from "../middleware/validate";
@@ -19,6 +21,7 @@ import {
   updateTicketStatusSchema,
   escalateTicketBodySchema,
   replyToTicketBodySchema,
+  postInternalNoteBodySchema,
   listTicketsQuerySchema,
   ALLOWED_PRIORITIES,
 } from "../validation/ticket.schema";
@@ -206,6 +209,19 @@ router.post(
     const referenceNumber = `TCK-${ticket.ticketNumber}`;
     const shouldSendEmail = !isStaffCreated || notifyCustomer;
 
+    // security-admin Story 47: every ticket creation is auditable, staff
+    // created on behalf of a customer (Story 57) or the customer's own
+    // self-submission alike — `isStaffCreated` is carried in metadata so the
+    // two are still distinguishable in the log.
+    await recordAuditLog({
+      actor: creatorId.toString(),
+      action: "ticket_created",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { reference: referenceNumber, subject, customerId: String(customer._id), isStaffCreated, createdVia },
+      ipAddress: req.ip,
+    });
+
     // Oversight nudge: every new ticket, regardless of how it was created or
     // whether auto-assignment below succeeds, is visible to admins/permitted
     // subadmins immediately — best effort, same reasoning as every other
@@ -294,6 +310,13 @@ router.post(
         console.error("[tickets] assignment notification email failed", err);
       }
     }
+
+    // Wakes any staff queue that's currently open — a new ticket (and its
+    // auto-assignment above, already reflected on `ticket` by this point)
+    // should appear without a manual refresh. customerId is included too:
+    // on a staff-created ticket (Story 57), the customer it's opened on
+    // behalf of may have their own list open in another tab.
+    emitTicketUpdated(ticket.id, customer._id.toString());
 
     res.status(201).json({
       id: ticket._id.toString(),
@@ -488,6 +511,32 @@ router.get(
   "/escalation-targets",
   requireAuth,
   requirePermission("tickets:escalate"),
+  async (req: Request, res: Response) => {
+    const targets = await User.find({
+      _id: { $ne: req.user!.id },
+      role: { $in: ["agent", "admin", "subadmin"] },
+      isActive: true,
+      isDeleted: false,
+    })
+      .select("_id name role")
+      .sort({ name: 1 })
+      .lean();
+    res.status(200).json(targets.map((u) => ({ id: u._id.toString(), name: u.name, role: u.role })));
+  }
+);
+
+// agent-workspace Story 24: backs the internal-note composer's "Tag
+// colleagues" picker. Same recipient set as /escalation-targets above
+// (agent/admin/subadmin, active, excluding the caller) but its own endpoint
+// gated on tickets:post_internal_note rather than tickets:escalate — the two
+// permissions are independently grantable, so reusing the escalation
+// endpoint would silently return an empty picker to an agent who can post
+// notes but not escalate. Registered before GET /:id for the same
+// "don't get swallowed as an :id" reason /assignable-agents documents.
+router.get(
+  "/internal-note-taggables",
+  requireAuth,
+  requirePermission("tickets:post_internal_note"),
   async (req: Request, res: Response) => {
     const targets = await User.find({
       _id: { $ne: req.user!.id },
@@ -744,9 +793,18 @@ router.patch(
       console.info(
         `[ticket-reassigned] ticket=${req.params.id} from=${previousAgentId ?? "null"} to=${ticket.assignedAgent ?? "null"} by=${req.user!.id} at=${new Date().toISOString()}`
       );
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_reassigned",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousAgentId ? String(previousAgentId) : null, to: ticket.assignedAgent ? String(ticket.assignedAgent) : null },
+        ipAddress: req.ip,
+      });
     }
 
     if ("category" in rawBody) {
+      const previousCategory = ticket.category;
       if (category === null) {
         ticket.category = null;
       } else {
@@ -763,9 +821,18 @@ router.patch(
         changedAt: new Date(),
       });
       console.info(`[tickets] ${req.params.id} category changed by ${req.user!.id} to ${ticket.category}`);
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_category_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousCategory, to: ticket.category },
+        ipAddress: req.ip,
+      });
     }
 
     if ("priority" in rawBody) {
+      const previousPriority = ticket.priority;
       ticket.priority = priority!;
       ticket.priorityHistory.push({
         priority: ticket.priority,
@@ -773,6 +840,14 @@ router.patch(
         changedAt: new Date(),
       });
       console.info(`[tickets] ${req.params.id} priority changed by ${req.user!.id} to ${priority}`);
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_priority_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousPriority, to: ticket.priority },
+        ipAddress: req.ip,
+      });
     }
 
     // sla-automation gap fix: category/priority are SLA-matching dimensions
@@ -783,6 +858,8 @@ router.patch(
     }
 
     await ticket.save();
+
+    emitTicketUpdated(ticket.id, ticket.customer.toString());
 
     // Story 25/54: notify both sides of an actual reassignment — best
     // effort, same reasoning as the auto-assignment notification in POST /
@@ -834,16 +911,20 @@ router.patch(
 // change_status). Uses callerHasPermission, never a bare hasPermission call,
 // so admin's implicit pass still works — admin holds no stored permission
 // grants at all (see the customerOrPermitted comment above for the same
-// warning already written down for this file). A customer caller is
-// rejected here too: customerOrPermitted isn't used because a customer has
-// no legitimate reason to reach this route at all (unlike POST / above),
-// and callerHasPermission already returns false for a role with neither key
-// stored — no separate customer branch needed.
+// warning already written down for this file). customerOrPermitted itself
+// isn't used here (unlike POST / above) — a customer's allowed case is far
+// narrower than "any request," so it's handled by an explicit branch inside
+// the handler below instead of at the middleware level.
 //
 // TODO: replies (POST /:id/messages below) and reassignment (PATCH /:id
 // above) still succeed on a closed ticket — this story doesn't add that
 // guard (closed-ticket lockdown is enforced in the frontend for now; see
 // ticket-management/update-ticket-status's plan for the scope decision).
+//
+// customer-portal Story 37: a customer caller IS now allowed here, but only
+// for the one self-service transition "reopen my own closed ticket"
+// (closed -> in_progress) — every other transition stays staff-only, gated
+// by the same permission checks below.
 router.patch(
   "/:id/status",
   requireAuth,
@@ -865,14 +946,29 @@ router.patch(
       return;
     }
 
-    const isCloseOrReopen = nextStatus === "closed" || ticket.status === "closed";
-    const requiredKey: PermissionKey = isCloseOrReopen ? "tickets:close_reopen" : "tickets:change_status";
-    if (!(await callerHasPermission(req, requiredKey))) {
-      res.status(403).json({ error: "You do not have permission to perform this action" });
-      return;
+    if (req.user!.role === "customer") {
+      if (String(ticket.customer) !== req.user!.id) {
+        res.status(403).json({ error: "You do not have permission to perform this action" });
+        return;
+      }
+      if (ticket.status !== "closed" || nextStatus !== "in_progress") {
+        res.status(403).json({ error: "Customers can only reopen a closed ticket" });
+        return;
+      }
+      // Falls through to applyStatusTransition below — closed -> in_progress
+      // is already a legal transition (ticketStatus.service.ts's
+      // ALLOWED_TRANSITIONS) — no staff permission check applies here.
+    } else {
+      const isCloseOrReopen = nextStatus === "closed" || ticket.status === "closed";
+      const requiredKey: PermissionKey = isCloseOrReopen ? "tickets:close_reopen" : "tickets:change_status";
+      if (!(await callerHasPermission(req, requiredKey))) {
+        res.status(403).json({ error: "You do not have permission to perform this action" });
+        return;
+      }
     }
 
     const wasClosed = ticket.status === "closed";
+    const previousStatus = ticket.status;
 
     try {
       await applyStatusTransition({
@@ -887,6 +983,18 @@ router.patch(
         return;
       }
       throw err;
+    }
+
+    if (ticket.status !== previousStatus) {
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_status_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousStatus, to: ticket.status },
+        ipAddress: req.ip,
+      });
+      emitTicketUpdated(ticket.id, ticket.customer.toString());
     }
 
     // Reopening is oversight-worthy on its own (unlike a routine reassignment
@@ -904,6 +1012,34 @@ router.patch(
           type: "ticket_reopened",
           ticketId: ticket._id,
         });
+      }
+    }
+
+    // customer-portal Story 39: fire the "rate your experience" email on the
+    // transition INTO closed — never re-sent on a same-state closed ->
+    // closed PATCH (wasClosed already true in that case) or any other
+    // transition. Best-effort, same reasoning as the reply email elsewhere
+    // in this file — an SMTP hiccup must never fail or roll back the status
+    // change itself.
+    if (!wasClosed && ticket.status === "closed") {
+      try {
+        const feedbackCustomer = await User.findById(ticket.customer).select("name email");
+        if (feedbackCustomer) {
+          const feedbackUrl = `${CLIENT_ORIGIN}/feedback/ticket/${ticket.id}`;
+          await sendEmail({
+            to: feedbackCustomer.email,
+            subject: `Your ticket is resolved — #${ticket.id}`,
+            text: `Hi ${feedbackCustomer.name},\n\nYour ticket "${ticket.subject}" has been closed. We'd love to know how we did: ${feedbackUrl}`,
+            html: renderEmailHtml({
+              heading: "Your ticket is resolved",
+              bodyHtml: `Hi ${feedbackCustomer.name},<br><br>Your ticket "${ticket.subject}" has been closed. We'd love to know how we did.`,
+              ctaText: "Rate your experience",
+              ctaUrl: feedbackUrl,
+            }),
+          });
+        }
+      } catch (err) {
+        console.error("[tickets] resolution email failed", err);
       }
     }
 
@@ -1002,6 +1138,16 @@ router.post(
       throw err;
     }
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_escalated",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { escalatedTo },
+      ipAddress: req.ip,
+    });
+    emitTicketUpdated(ticket.id, ticket.customer.toString());
+
     const populated = await ticket.populate<{
       customer: { _id: Types.ObjectId; name: string; email: string };
       assignedAgent: { _id: Types.ObjectId; name: string } | null;
@@ -1037,13 +1183,33 @@ type MessageFields = Pick<IMessage, "text" | "senderType" | "internal" | "attach
   _id: Types.ObjectId;
 };
 
-function toMessageResponse(message: MessageFields, sender: MessageSenderFields | null) {
+// agent-workspace Story 24: resolved on the way out so the thread can render
+// mention chips without a second round-trip.
+interface TaggedUserFields {
+  id: string;
+  name: string;
+  role: string;
+}
+
+// agent-workspace Story 24 — internal notes must NEVER be returned to the
+// customer. The query filter below is the real boundary; `omitInternalField`
+// is the DTO half of it: a customer-facing response doesn't even acknowledge
+// the concept of an internal message, so the flag itself is dropped rather
+// than serialized as a constant `false`.
+function toMessageResponse(
+  message: MessageFields,
+  sender: MessageSenderFields | null,
+  opts: { omitInternalField?: boolean; taggedUsers?: TaggedUserFields[] } = {}
+) {
   return {
     id: message._id.toString(),
     text: message.text,
     senderType: message.senderType,
     sender,
-    internal: message.internal,
+    ...(opts.omitInternalField ? {} : { internal: message.internal }),
+    // Only ever present on an internal note, and never on a customer-facing
+    // response (a customer never receives an internal message at all).
+    ...(opts.taggedUsers ? { taggedUsers: opts.taggedUsers } : {}),
     attachments: message.attachments.map((a) => ({
       id: a._id.toString(),
       fileName: a.fileName,
@@ -1083,17 +1249,37 @@ router.get(
 
     const filter: Record<string, unknown> = { parentType: "ticket", parentId: ticket._id };
     if (isCustomerCaller) {
+      // agent-workspace Story 24 — internal notes must NEVER be returned to
+      // the customer. Excluded in the DB query (not a post-fetch .filter)
+      // so the rows never leave Mongo in the first place.
       filter.internal = { $ne: true };
     }
 
-    const messages = await Message.find(filter)
+    const query = Message.find(filter)
       .sort({ createdAt: 1 })
       .populate<{ senderId: { _id: Types.ObjectId; name: string } | null }>("senderId", "name");
+    // agent-workspace Story 24: only a staff caller can ever receive an
+    // internal note, so the tagged-colleague join is skipped entirely for a
+    // customer rather than populated and then discarded.
+    if (!isCustomerCaller) {
+      query.populate<{ taggedUserIds: { _id: Types.ObjectId; name: string; role: string }[] }>(
+        "taggedUserIds",
+        "name role"
+      );
+    }
+    const messages = await query;
 
     res.status(200).json(
-      messages.map((m) =>
-        toMessageResponse(m, m.senderId ? { id: m.senderId._id.toString(), name: m.senderId.name } : null)
-      )
+      messages.map((m) => {
+        const tagged = m.taggedUserIds as unknown as { _id: Types.ObjectId; name: string; role: string }[];
+        return toMessageResponse(m, m.senderId ? { id: m.senderId._id.toString(), name: m.senderId.name } : null, {
+          omitInternalField: isCustomerCaller,
+          taggedUsers:
+            !isCustomerCaller && m.internal
+              ? (tagged ?? []).map((u) => ({ id: u._id.toString(), name: u.name, role: u.role }))
+              : undefined,
+        });
+      })
     );
   }
 );
@@ -1159,6 +1345,15 @@ router.post(
       attachments,
     });
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_replied",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { messageId: String(messageId) },
+      ipAddress: req.ip,
+    });
+
     // ticket-management Story 11: route the automatic "answered" flip
     // through the same audited helper the manual PATCH /:id/status uses, so
     // this — the single most common status change — also lands in
@@ -1198,8 +1393,134 @@ router.post(
       console.error("[tickets] reply email failed", err);
     }
 
+    emitTicketUpdated(ticket.id, ticket.customer._id.toString());
+
     const sender = await User.findById(req.user!.id, { name: 1 });
     res.status(201).json(toMessageResponse(message, sender ? { id: sender.id, name: sender.name } : null));
+  }
+);
+
+// agent-workspace Story 24: post an agent-only internal note on a ticket,
+// optionally tagging colleagues who each get a
+// "ticket_internal_note_mention" notification. Mounted next to POST
+// /:id/messages above because it writes the same Message document — the only
+// differences are `internal: true`, no customer email, and no status flip
+// (an internal note is a team-side annotation, not an answer to the
+// customer, so it must not move the ticket to "answered").
+//
+// Ticket-level authorization is exactly POST /:id/messages' —
+// requirePermission plus "the ticket exists". That endpoint deliberately has
+// no assignedAgent/ownership narrowing (any staff account that can see a
+// ticket can reply to it, see GET /:id), so there is no per-ticket primitive
+// to reuse or extract here; adding one only for internal notes would make
+// them *stricter* than customer-visible replies, which is backwards.
+//
+// emitTicketUpdated below carries no customerId — an internal note is never
+// customer-visible (see toMessageResponse's omitInternalField), so there's
+// no reason to wake that customer's own ticket list, only the ticket room
+// itself (another staff member with this same ticket open) and the shared
+// staff queue.
+router.post(
+  "/:id/internal-notes",
+  requireAuth,
+  requirePermission("tickets:post_internal_note"),
+  validateBody(postInternalNoteBodySchema),
+  async (req: Request<{ id: string }>, res: Response) => {
+    if (!Types.ObjectId.isValid(req.params.id)) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+    const ticket = await Ticket.findById(req.params.id).select("_id");
+    if (!ticket) {
+      res.status(404).json({ error: "Ticket not found" });
+      return;
+    }
+
+    const { text, taggedUserIds } = req.body as { text: string; taggedUserIds: string[] };
+
+    // Dedupe first (the same colleague picked twice must never produce two
+    // notifications), then drop the author's own id — mentioning yourself is
+    // a no-op, not an error, so it's silently removed rather than rejected.
+    const requestedIds = [...new Set(taggedUserIds)].filter((id) => id !== req.user!.id);
+
+    let taggedUsers: { _id: Types.ObjectId; name: string; role: string }[] = [];
+    if (requestedIds.length > 0) {
+      // Fetched WITHOUT the role/isActive filter so each rejected id can be
+      // reported with the reason it failed, rather than a single opaque
+      // "one of these is invalid".
+      const found = await User.find({ _id: { $in: requestedIds } })
+        .select("_id name role isActive isDeleted")
+        .lean();
+      const foundById = new Map(found.map((u) => [u._id.toString(), u]));
+
+      const errors: Record<string, string> = {};
+      for (const id of requestedIds) {
+        const user = foundById.get(id);
+        if (!user || user.isDeleted) {
+          errors[id] = "No such user";
+        } else if (!["agent", "admin", "subadmin"].includes(user.role)) {
+          // Customers can never be tagged — an internal note is invisible to
+          // them by definition, so notifying one would be a privacy leak in
+          // the other direction (telling a customer the note exists).
+          errors[id] = "Only agents, sub-admins and admins can be tagged";
+        } else if (!user.isActive) {
+          errors[id] = "This account is deactivated";
+        }
+      }
+      if (Object.keys(errors).length > 0) {
+        res.status(400).json({ error: "One or more tagged colleagues can't be tagged", taggedUserIdErrors: errors });
+        return;
+      }
+
+      taggedUsers = requestedIds.map((id) => {
+        const user = foundById.get(id)!;
+        return { _id: user._id, name: user.name, role: user.role };
+      });
+    }
+
+    const message = await Message.create({
+      parentType: "ticket",
+      parentId: ticket._id,
+      senderType: "agent",
+      senderId: req.user!.id,
+      text,
+      internal: true,
+      taggedUserIds: taggedUsers.map((u) => u._id),
+      attachments: [],
+    });
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_internal_note_added",
+      targetType: "Ticket",
+      targetId: String(ticket._id),
+      metadata: { messageId: String(message._id), taggedUserIds: taggedUsers.map((u) => String(u._id)) },
+      ipAddress: req.ip,
+    });
+    emitTicketUpdated(String(ticket._id));
+
+    // Best-effort, in parallel, never rolling back the note: allSettled (not
+    // Promise.all) so one failed insert can't reject the batch — same
+    // "a notification is a side effect of the real action" contract
+    // notification.service.ts already documents.
+    await Promise.allSettled(
+      taggedUsers.map((user) =>
+        createTicketNotification({
+          recipient: user._id,
+          type: "ticket_internal_note_mention",
+          ticketId: ticket._id,
+        })
+      )
+    );
+
+    const sender = await User.findById(req.user!.id, { name: 1 });
+    res.status(201).json(
+      toMessageResponse(message, sender ? { id: sender.id, name: sender.name } : null, {
+        // Already resolved above, so returned inline rather than re-fetched
+        // — the composer renders mention chips with no second round-trip.
+        taggedUsers: taggedUsers.map((u) => ({ id: u._id.toString(), name: u.name, role: u.role })),
+      })
+    );
   }
 );
 
@@ -1341,6 +1662,15 @@ router.post(
       res.status(summaryOutcomeStatus(outcome)).json({ error: outcome.reason });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_summarized",
+      targetType: "Ticket",
+      targetId: String(ticket._id),
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ summary: outcome.summary });
   }
 );

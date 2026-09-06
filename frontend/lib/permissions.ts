@@ -26,6 +26,8 @@ export const PERMISSION_CATEGORIES: Record<string, string[]> = {
     "tickets:categorize",
     "tickets:change_priority",
     "tickets:reply",
+    // agent-workspace Story 24 — mirrors backend/src/constants/permissions.ts.
+    "tickets:post_internal_note",
     "tickets:change_status",
     "tickets:close_reopen",
     "tickets:escalate",

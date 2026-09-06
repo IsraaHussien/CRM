@@ -16,6 +16,7 @@ const PAGE_SEARCH_TARGETS: Record<string, string> = {
   "/customers": "searchCustomersFor",
   "/admin/users": "searchAccountsFor",
   "/tickets": "searchTicketsFor",
+  "/admin/audit-logs": "searchAuditLogsFor",
 };
 
 // Real quick-nav-and-action search (not decorative) — jumps to pages
@@ -56,7 +57,12 @@ export function HeaderSearch({
     ? labeledItems.filter((item) => item.label.toLowerCase().includes(trimmedQuery.toLowerCase()))
     : labeledItems;
 
-  const pageSearchLabelKey = variant === "staff" ? PAGE_SEARCH_TARGETS[pathname] : undefined;
+  // customer-portal Story 37: a customer can only ever be on "/tickets"
+  // among PAGE_SEARCH_TARGETS's keys ("/customers" and "/admin/users" both
+  // redirect a customer away before rendering), so this is safe without a
+  // customer-specific allowlist.
+  const pageSearchLabelKey =
+    variant === "staff" || pathname === "/tickets" ? PAGE_SEARCH_TARGETS[pathname] : undefined;
   const pageSearchAction = trimmedQuery && pageSearchLabelKey
     ? { key: "__pageSearch__", label: t(pageSearchLabelKey, { query: trimmedQuery }) }
     : null;

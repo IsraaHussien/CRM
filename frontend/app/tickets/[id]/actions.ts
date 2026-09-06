@@ -213,6 +213,91 @@ export async function escalateTicket(ticketId: string, escalatedTo: string): Pro
   return { error: null };
 }
 
+export interface InternalNoteTagTarget {
+  id: string;
+  name: string;
+  role: "agent" | "admin" | "subadmin";
+}
+
+// agent-workspace Story 24: backs the internal-note composer's "Tag
+// colleagues" picker. Its own endpoint (not /escalation-targets) because the
+// two permissions are independently grantable — see the backend route's
+// comment. Returns [] on any failure, same "degrade to empty" reasoning as
+// listAssignableAgents/listEscalationTargets above.
+export async function listInternalNoteTagTargets(): Promise<InternalNoteTagTarget[]> {
+  const token = await getBearerToken();
+  if (!token) return [];
+
+  const doFetch = (bearer: string) =>
+    fetch(`${API_URL}/api/v1/tickets/internal-note-taggables`, {
+      headers: { Authorization: `Bearer ${bearer}` },
+      cache: "no-store",
+    });
+
+  let res = await doFetch(token);
+  if (res.status === 401) {
+    const refreshedToken = await refreshSession();
+    if (!refreshedToken) return [];
+    res = await doFetch(refreshedToken);
+  }
+  if (!res.ok) return [];
+  return (await res.json()) as InternalNoteTagTarget[];
+}
+
+export interface PostInternalNoteState {
+  error: string | null;
+  // agent-workspace Story 24: the backend's per-id rejection map
+  // ({ "<userId>": "reason" }) surfaced verbatim so the composer can mark the
+  // exact chip that's invalid instead of showing one opaque error.
+  taggedUserIdErrors?: Record<string, string>;
+}
+
+// agent-workspace Story 24: POST /:id/internal-notes, not /:id/messages —
+// an internal note is never emailed to the customer and never flips the
+// ticket to "answered", so it's a separate endpoint with its own permission.
+export async function postInternalNote(
+  ticketId: string,
+  input: { text: string; taggedUserIds: string[] }
+): Promise<PostInternalNoteState> {
+  const t = await getTranslations("TicketDetail");
+  const token = await getBearerToken();
+  if (!token) {
+    return { error: t("changeFailed") };
+  }
+
+  const doFetch = (bearer: string) =>
+    fetch(`${API_URL}/api/v1/tickets/${ticketId}/internal-notes`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${bearer}` },
+      body: JSON.stringify(input),
+    });
+
+  let res = await doFetch(token);
+  if (res.status === 401) {
+    const refreshedToken = await refreshSession();
+    if (!refreshedToken) {
+      return { error: t("changeFailed") };
+    }
+    res = await doFetch(refreshedToken);
+  }
+
+  if (!res.ok) {
+    if (res.status === 403) return { error: t("noAccess") };
+    const data = (await res.json().catch(() => null)) as {
+      error?: string;
+      taggedUserIdErrors?: Record<string, string>;
+    } | null;
+    if (data?.taggedUserIdErrors) {
+      return { error: data.error ?? t("changeFailed"), taggedUserIdErrors: data.taggedUserIdErrors };
+    }
+    if (typeof data?.error === "string") return { error: data.error };
+    return { error: t("changeFailed") };
+  }
+
+  revalidatePath(`/tickets/${ticketId}`);
+  return { error: null };
+}
+
 export interface TicketHistoryEvent {
   kind:
     | "created"
@@ -224,6 +309,7 @@ export interface TicketHistoryEvent {
     | "internal_note_added"
     | "chat_participant_joined"
     | "chat_participant_left"
+    | "chat_inquiry"
     | "sla_at_risk"
     | "sla_breached";
   at: string;

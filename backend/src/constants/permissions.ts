@@ -31,6 +31,13 @@ export const PERMISSION_KEYS = [
   "tickets:categorize",
   "tickets:change_priority",
   "tickets:reply",
+  // agent-workspace Story 24: post an agent-only internal note on a ticket
+  // (Message.internal: true), optionally tagging colleagues. Its own key,
+  // not folded into tickets:reply — a reply is emailed to the customer and
+  // flips the ticket to "answered", an internal note is invisible to the
+  // customer and changes nothing; an account can legitimately hold one
+  // without the other (see [[feedback_granular_action_permissions]]).
+  "tickets:post_internal_note",
   // Split in two (ticket-management Story 11) so an account can be granted
   // routine New/In Progress/Answered flips without also getting authority to
   // close/reopen a ticket, or vice versa.
@@ -131,6 +138,7 @@ export const DEFAULT_PERMISSIONS_BY_ROLE: Record<CreatableStaffRole, PermissionK
     "tickets:categorize",
     "tickets:change_priority",
     "tickets:reply",
+    "tickets:post_internal_note",
     "tickets:change_status",
     "tickets:close_reopen",
     "tickets:escalate",

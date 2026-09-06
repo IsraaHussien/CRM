@@ -6,6 +6,7 @@ import type { JwtPayload } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import { validateBody } from "../middleware/validate";
 import { registerBodySchema, RegisterBody } from "../validation/auth.schema";
+import { recordAuditLog } from "../services/auditLog.service";
 import {
   generateFamilyId,
   generateRootToken,
@@ -91,6 +92,13 @@ router.post(
       membershipNumber: user.membershipNumber,
     });
     const refreshToken = await issueRefreshFamily(user.id);
+    await recordAuditLog({
+      actor: user.id,
+      action: "customer_registered",
+      targetType: "User",
+      targetId: user.id,
+      ipAddress: req.ip,
+    });
     res.status(201).json({
       token,
       refreshToken,
@@ -105,6 +113,11 @@ router.post(
 // enumerate registered emails or account status.
 router.post("/login", async (req: Request, res: Response) => {
   const { email, password } = req.body ?? {};
+  // Captured once, reused in every branch below — security-admin Story 47's
+  // audit trail (login success/failure is one of its 3 proof-of-pattern
+  // wiring points). Express's own proxy-aware accessor; optional per the
+  // AuditLog model, not configured with any extra trust-proxy setup here.
+  const ipAddress = req.ip;
 
   if (typeof email !== "string" || typeof password !== "string" || !email || !password) {
     res.status(401).json({ error: "Invalid email or password" });
@@ -115,12 +128,27 @@ router.post("/login", async (req: Request, res: Response) => {
   const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
+    await recordAuditLog({
+      actor: null,
+      action: "login_failed",
+      targetType: "User",
+      metadata: { reason: "unknown_email", attemptedEmail: normalizedEmail },
+      ipAddress,
+    });
     res.status(401).json({ error: "Invalid email or password" });
     return;
   }
 
   const passwordOk = await bcrypt.compare(password, user.passwordHash);
   if (!passwordOk) {
+    await recordAuditLog({
+      actor: user.id,
+      action: "login_failed",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { reason: "wrong_password" },
+      ipAddress,
+    });
     res.status(401).json({ error: "Invalid email or password" });
     return;
   }
@@ -132,6 +160,14 @@ router.post("/login", async (req: Request, res: Response) => {
   // the correct password for a real, deactivated account sees this distinct
   // one. A 403, not 401: the credentials themselves were correct.
   if (!user.isActive) {
+    await recordAuditLog({
+      actor: user.id,
+      action: "login_failed",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { reason: "account_deactivated" },
+      ipAddress,
+    });
     res.status(403).json({ error: "ACCOUNT_DEACTIVATED" });
     return;
   }
@@ -145,6 +181,13 @@ router.post("/login", async (req: Request, res: Response) => {
     membershipNumber: user.membershipNumber,
   });
   const refreshToken = await issueRefreshFamily(user.id);
+  await recordAuditLog({
+    actor: user.id,
+    action: "login_success",
+    targetType: "User",
+    targetId: user.id,
+    ipAddress,
+  });
   res.status(200).json({
     token,
     refreshToken,
@@ -245,7 +288,13 @@ router.post("/logout", async (req: Request<unknown, unknown, LogoutBody>, res: R
   const presented = req.body?.refreshToken;
   const familyId = typeof presented === "string" ? parseFamilyId(presented) : null;
   if (familyId) {
-    await RefreshFamily.updateOne({ familyId }, { $set: { revoked: true } });
+    // findOneAndUpdate, not updateOne — same revocation write as before,
+    // but this also hands back userId so the logout can be attributed in
+    // the audit trail (security-admin Story 47) without a second query.
+    const family = await RefreshFamily.findOneAndUpdate({ familyId }, { $set: { revoked: true } });
+    if (family) {
+      await recordAuditLog({ actor: String(family.userId), action: "logout", targetType: "User", targetId: String(family.userId), ipAddress: req.ip });
+    }
   }
   res.status(200).json({ message: "Logged out" });
 });

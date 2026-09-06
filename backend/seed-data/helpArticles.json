@@ -1,0 +1,464 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb9"
+    },
+    "slug": "getting-started-with-your-account",
+    "title": {
+      "en": "Getting started with your account",
+      "ar": "البدء باستخدام حسابك"
+    },
+    "summary": {
+      "en": "A quick tour of what you can do right after signing up.",
+      "ar": "جولة سريعة على ما يمكنك فعله فور إنشاء حسابك."
+    },
+    "body": {
+      "en": "## Welcome\n\nOnce you've signed up, here's what's available to you right away:\n\n- Start a **live chat** for an instant, AI-first answer\n- Submit a **ticket** for anything that can wait for a human reply by email\n- Browse the **Help Center** for FAQs and step-by-step guides\n- Update your profile and language preference from the user menu\n\n## Next steps\n\nMost customers start with a live chat for their first question — it's the fastest way to get an answer, and if the AI agent can't fully resolve it, a human teammate is brought into the same conversation automatically.",
+      "ar": "## أهلاً بك\n\nبمجرد إنشاء حسابك، إليك ما يمكنك القيام به فورًا:\n\n- بدء **دردشة مباشرة** للحصول على إجابة فورية من الذكاء الاصطناعي\n- إرسال **تذكرة** لأي أمر يمكن الانتظار فيه للرد عليه من قِبل موظف عبر البريد الإلكتروني\n- تصفح **مركز المساعدة** للأسئلة الشائعة والأدلة التفصيلية\n- تحديث ملفك الشخصي وتفضيلات اللغة من قائمة المستخدم\n\n## الخطوات التالية\n\nيبدأ معظم العملاء بدردشة مباشرة لسؤالهم الأول — فهي أسرع طريقة للحصول على إجابة، وإذا لم يستطع الذكاء الاصطناعي حل المشكلة بالكامل، ينضم أحد الموظفين إلى نفس المحادثة تلقائيًا."
+    },
+    "category": "getting-started",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.824Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.824Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbba"
+    },
+    "slug": "navigating-the-dashboard",
+    "title": {
+      "en": "Navigating the dashboard",
+      "ar": "التنقل في لوحة التحكم"
+    },
+    "summary": {
+      "en": "Where to find your tickets, chats, and account settings.",
+      "ar": "أين تجد تذاكرك ومحادثاتك وإعدادات حسابك."
+    },
+    "body": {
+      "en": "## The main navigation\n\nEverything is reachable from the top bar:\n\n1. **Get support** — start a new ticket or live chat\n2. **Help** — browse FAQs and articles\n3. **User menu** — profile, theme, language, and logging out\n\nSigned-in customers land on the support page by default, so starting a new conversation is always one click away.",
+      "ar": "## القائمة الرئيسية\n\nكل شيء متاح من الشريط العلوي:\n\n1. **الحصول على الدعم** — بدء تذكرة أو دردشة مباشرة جديدة\n2. **المساعدة** — تصفح الأسئلة الشائعة والمقالات\n3. **قائمة المستخدم** — الملف الشخصي، المظهر، اللغة، وتسجيل الخروج\n\nيتم توجيه العملاء المسجلين إلى صفحة الدعم افتراضيًا، بحيث يكون بدء محادثة جديدة دائمًا على بُعد نقرة واحدة."
+    },
+    "category": "getting-started",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.824Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.824Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc0"
+    },
+    "slug": "updating-your-profile",
+    "title": {
+      "en": "Updating your profile",
+      "ar": "تحديث ملفك الشخصي"
+    },
+    "summary": {
+      "en": "How to change your name, phone number, and language preference.",
+      "ar": "كيفية تغيير اسمك ورقم هاتفك وتفضيل اللغة."
+    },
+    "body": {
+      "en": "## Editable fields\n\nFrom Settings you can update:\n\n- Display name\n- Phone number\n- Preferred language\n\n## What requires confirmation\n\nChanging your **email address** is the one exception — a confirmation link is sent to the new address first, and the change only takes effect once you click it.",
+      "ar": "## الحقول القابلة للتعديل\n\nمن الإعدادات يمكنك تحديث:\n\n- الاسم المعروض\n- رقم الهاتف\n- اللغة المفضلة\n\n## ما يتطلب تأكيدًا\n\nتغيير **البريد الإلكتروني** هو الاستثناء الوحيد — يتم إرسال رابط تأكيد إلى العنوان الجديد أولاً، ولا يسري التغيير إلا بعد الضغط عليه."
+    },
+    "category": "account-and-profile",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.827Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.827Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc1"
+    },
+    "slug": "staying-signed-in",
+    "title": {
+      "en": "Staying signed in",
+      "ar": "البقاء مسجلاً للدخول"
+    },
+    "summary": {
+      "en": "How sessions work and what to do if you're logged out unexpectedly.",
+      "ar": "كيف تعمل الجلسات وماذا تفعل إذا تم تسجيل خروجك بشكل غير متوقع."
+    },
+    "body": {
+      "en": "## How sessions work\n\nYour session is kept alive automatically in the background while you're active. There's nothing you need to do to stay signed in during normal use.\n\n## If you get logged out\n\n1. Simply log back in with your email and password\n2. If it keeps happening on the same device, check that cookies aren't being blocked for this site\n\nYour data is never affected by being logged out — it's purely a session issue.",
+      "ar": "## كيف تعمل الجلسات\n\nيتم الحفاظ على جلستك تلقائيًا في الخلفية أثناء نشاطك. لا حاجة لفعل أي شيء للبقاء مسجلاً أثناء الاستخدام العادي.\n\n## إذا تم تسجيل خروجك\n\n1. ببساطة سجّل الدخول مرة أخرى ببريدك الإلكتروني وكلمة المرور\n2. إذا استمر حدوث ذلك على نفس الجهاز، تحقق من أن ملفات تعريف الارتباط غير محظورة لهذا الموقع\n\nبياناتك لا تتأثر أبدًا بتسجيل الخروج — فالأمر مجرد مشكلة في الجلسة."
+    },
+    "category": "account-and-profile",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.827Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.827Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc7"
+    },
+    "slug": "how-tickets-are-handled",
+    "title": {
+      "en": "How tickets are handled",
+      "ar": "كيف يتم التعامل مع التذاكر"
+    },
+    "summary": {
+      "en": "From submission to a reply in your inbox.",
+      "ar": "من الإرسال إلى الرد في بريدك الوارد."
+    },
+    "body": {
+      "en": "## The lifecycle of a ticket\n\n1. You submit a ticket with a subject and description\n2. It's automatically routed to an available agent\n3. The agent replies — you're notified by email\n4. Once resolved, the ticket is closed; replying to it reopens it automatically\n\n## Priorities\n\nTickets are tagged Low, Medium, High, or Urgent. Higher-priority tickets are held to tighter response targets internally, so flag anything genuinely urgent as such.",
+      "ar": "## دورة حياة التذكرة\n\n1. تقوم بإرسال تذكرة تحتوي على عنوان ووصف\n2. يتم توجيهها تلقائيًا إلى موظف متاح\n3. يقوم الموظف بالرد — ويصلك إشعار عبر البريد الإلكتروني\n4. بمجرد حل المشكلة، تُغلق التذكرة؛ والرد عليها يعيد فتحها تلقائيًا\n\n## الأولويات\n\nتُصنَّف التذاكر إلى منخفضة، متوسطة، عالية، أو عاجلة. التذاكر ذات الأولوية الأعلى تخضع داخليًا لأهداف استجابة أضيق، لذا يُرجى تصنيف أي أمر عاجل فعليًا على هذا الأساس."
+    },
+    "category": "tickets-and-support",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.830Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.830Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc8"
+    },
+    "slug": "attaching-files-to-a-ticket",
+    "title": {
+      "en": "Attaching files to a ticket",
+      "ar": "إرفاق ملفات بالتذكرة"
+    },
+    "summary": {
+      "en": "Screenshots and documents you can include when submitting or replying.",
+      "ar": "لقطات الشاشة والمستندات التي يمكنك إرفاقها عند الإرسال أو الرد."
+    },
+    "body": {
+      "en": "## When to attach a file\n\nAttachments are most useful for:\n\n- Screenshots of an error message\n- A browser console log\n- A document or invoice you're referencing\n\n## How\n\nUse the attachment button next to the message box, either when creating the ticket or replying to it. There's no limit on how many messages can carry an attachment.",
+      "ar": "## متى ترفق ملفًا\n\nتكون المرفقات مفيدة بشكل خاص في:\n\n- لقطات شاشة لرسالة خطأ\n- سجل وحدة التحكم في المتصفح\n- مستند أو فاتورة تشير إليها\n\n## الطريقة\n\nاستخدم زر الإرفاق بجانب مربع الرسالة، سواء عند إنشاء التذكرة أو الرد عليها. لا يوجد حد لعدد الرسائل التي يمكن أن تحمل مرفقًا."
+    },
+    "category": "tickets-and-support",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.830Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.830Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbce"
+    },
+    "slug": "how-live-chat-works",
+    "title": {
+      "en": "How live chat works",
+      "ar": "كيف تعمل الدردشة المباشرة"
+    },
+    "summary": {
+      "en": "AI-first, human-backed — what to expect from a live chat.",
+      "ar": "الذكاء الاصطناعي أولاً، مدعومًا بموظف بشري — ما يمكن توقعه من الدردشة المباشرة."
+    },
+    "body": {
+      "en": "## AI first\n\nEvery live chat starts with our AI agent, which can:\n\n- Answer common questions instantly\n- Look up information on your account\n- Suggest relevant help articles or FAQs\n\n## Escalating to a human\n\nWhen a conversation needs judgment, account access, or an apology a script can't give, the AI escalates to the team automatically — in the same thread, with full context.\n\n## After the chat\n\nA transcript of the whole conversation, AI and human parts included, stays available to you afterward.",
+      "ar": "## الذكاء الاصطناعي أولاً\n\nتبدأ كل دردشة مباشرة بمساعد الذكاء الاصطناعي، والذي يمكنه:\n\n- الإجابة على الأسئلة الشائعة فورًا\n- الاطلاع على معلومات حسابك\n- اقتراح مقالات مساعدة أو أسئلة شائعة ذات صلة\n\n## التحويل إلى موظف بشري\n\nعندما تحتاج المحادثة إلى تقدير أو صلاحية وصول إلى الحساب أو اعتذار لا يستطيع نص جاهز تقديمه، يقوم الذكاء الاصطناعي بتحويلها تلقائيًا إلى الفريق — في نفس الخيط، مع كامل السياق.\n\n## بعد الدردشة\n\nيبقى نص المحادثة كاملاً، بجزأيها الآلي والبشري، متاحًا لك بعد ذلك."
+    },
+    "category": "live-chat",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.833Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.833Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbcf"
+    },
+    "slug": "when-to-use-live-chat-vs-a-ticket",
+    "title": {
+      "en": "When to use live chat vs. a ticket",
+      "ar": "متى تستخدم الدردشة المباشرة بدلاً من التذكرة"
+    },
+    "summary": {
+      "en": "Picking the right channel for your question.",
+      "ar": "اختيار القناة المناسبة لسؤالك."
+    },
+    "body": {
+      "en": "## Use live chat when\n\n- You need an answer right now\n- Your question is quick or common\n- You want to go back and forth in real time\n\n## Use a ticket when\n\n- Your issue can wait for a reply by email\n- You need to attach several documents\n- You'd rather not stay online waiting for a response\n\nEither way, you can always switch — the AI agent can open a ticket for you mid-chat if that turns out to be the better fit.",
+      "ar": "## استخدم الدردشة المباشرة عندما\n\n- تحتاج إلى إجابة الآن\n- سؤالك سريع أو شائع\n- تريد تبادل الحديث في الوقت الفعلي\n\n## استخدم التذكرة عندما\n\n- يمكن لمشكلتك الانتظار للرد عبر البريد الإلكتروني\n- تحتاج إلى إرفاق عدة مستندات\n- تفضل عدم البقاء متصلاً في انتظار الرد\n\nفي كل الأحوال، يمكنك دائمًا التبديل — يمكن للذكاء الاصطناعي فتح تذكرة نيابة عنك أثناء الدردشة إذا تبين أنها الخيار الأنسب."
+    },
+    "category": "live-chat",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.833Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.833Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd5"
+    },
+    "slug": "understanding-your-invoice",
+    "title": {
+      "en": "Understanding your invoice",
+      "ar": "فهم فاتورتك"
+    },
+    "summary": {
+      "en": "What each line on your invoice means.",
+      "ar": "ماذا يعني كل بند في فاتورتك."
+    },
+    "body": {
+      "en": "## Reading your invoice\n\nEach invoice lists:\n\n- The billing period it covers\n- Your plan and any add-ons\n- Taxes, where applicable\n\n## If something looks wrong\n\nOpen a ticket under **Billing** with the invoice date — our team can walk through it line by line with you.",
+      "ar": "## قراءة فاتورتك\n\nتحتوي كل فاتورة على:\n\n- فترة الفوترة التي تغطيها\n- خطتك وأي إضافات\n- الضرائب، عند انطباقها\n\n## إذا بدا شيء غير صحيح\n\nافتح تذكرة تحت تصنيف **الفوترة** مع تاريخ الفاتورة — يمكن لفريقنا مراجعتها معك بندًا بندًا."
+    },
+    "category": "billing-and-payments",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.837Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.837Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd6"
+    },
+    "slug": "requesting-a-refund",
+    "title": {
+      "en": "Requesting a refund",
+      "ar": "طلب استرداد الأموال"
+    },
+    "summary": {
+      "en": "How refunds work and how long they take.",
+      "ar": "كيف تعمل عملية الاسترداد وكم تستغرق من الوقت."
+    },
+    "body": {
+      "en": "## How to request one\n\nOpen a ticket under **Refunds** describing the charge in question. Our team reviews each request individually.\n\n## Timing\n\nOnce approved, refunds typically appear on your statement within 5-7 business days, depending on your bank.",
+      "ar": "## كيفية الطلب\n\nافتح تذكرة تحت تصنيف **الاسترداد** تصف الرسم المعني. يقوم فريقنا بمراجعة كل طلب على حدة.\n\n## المدة الزمنية\n\nبمجرد الموافقة، يظهر الاسترداد عادةً في كشف حسابك خلال 5-7 أيام عمل، حسب البنك الذي تتعامل معه."
+    },
+    "category": "billing-and-payments",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.837Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.837Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbdc"
+    },
+    "slug": "common-sync-issues",
+    "title": {
+      "en": "Common sync issues",
+      "ar": "مشكلات المزامنة الشائعة"
+    },
+    "summary": {
+      "en": "Why changes might not show up right away, and how to fix it.",
+      "ar": "لماذا قد لا تظهر التغييرات فورًا، وكيفية إصلاح ذلك."
+    },
+    "body": {
+      "en": "## Normal sync behavior\n\nChanges made on one device typically sync to others within a minute or two.\n\n## If it's slower than that\n\n1. Check your internet connection\n2. Log out and back in on the affected device\n3. If it's still delayed after that, open a ticket — this can sometimes point to an account-specific sync issue our team needs to reset.",
+      "ar": "## سلوك المزامنة الطبيعي\n\nتتم مزامنة التغييرات التي تُجرى على جهاز واحد مع الأجهزة الأخرى عادةً خلال دقيقة أو دقيقتين.\n\n## إذا كانت أبطأ من ذلك\n\n1. تحقق من اتصالك بالإنترنت\n2. سجّل الخروج ثم الدخول مرة أخرى على الجهاز المتأثر\n3. إذا استمر التأخير بعد ذلك، افتح تذكرة — فقد يشير هذا أحيانًا إلى مشكلة مزامنة خاصة بحسابك يحتاج فريقنا إلى إعادة ضبطها."
+    },
+    "category": "troubleshooting",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.840Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.840Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbdd"
+    },
+    "slug": "browser-compatibility",
+    "title": {
+      "en": "Browser compatibility",
+      "ar": "توافق المتصفح"
+    },
+    "summary": {
+      "en": "Supported browsers and what to do if something looks broken.",
+      "ar": "المتصفحات المدعومة وما يجب فعله إذا بدا شيء معطلاً."
+    },
+    "body": {
+      "en": "## Supported browsers\n\nThe latest versions of Chrome, Firefox, Safari, and Edge are all fully supported.\n\n## If something looks broken\n\n- Try a hard refresh first\n- Check whether an ad-blocker or privacy extension might be interfering\n- If it's still broken, a browser console screenshot on your ticket helps us diagnose it fast.",
+      "ar": "## المتصفحات المدعومة\n\nأحدث إصدارات كروم وفايرفوكس وسفاري وإيدج مدعومة بالكامل.\n\n## إذا بدا شيء معطلاً\n\n- جرّب إعادة تحميل قوية أولاً\n- تحقق مما إذا كان أحد مانعات الإعلانات أو إضافات الخصوصية يتسبب في تعارض\n- إذا استمرت المشكلة، فإن إرفاق لقطة شاشة لوحدة تحكم المتصفح في تذكرتك يساعدنا على التشخيص بسرعة."
+    },
+    "category": "troubleshooting",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.840Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.840Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe3"
+    },
+    "slug": "how-we-protect-your-data",
+    "title": {
+      "en": "How we protect your data",
+      "ar": "كيف نحمي بياناتك"
+    },
+    "summary": {
+      "en": "An overview of our security practices.",
+      "ar": "نظرة عامة على ممارساتنا الأمنية."
+    },
+    "body": {
+      "en": "## Encryption\n\nAll traffic to and from the platform is encrypted. Passwords are hashed, never stored as plain text.\n\n## Access control\n\n- Your data is visible only to you, your assigned agent, and admins with oversight access\n- Staff accounts are individually permissioned — not every staff member can see everything\n\n## Reporting a concern\n\nIf you spot something that looks like a security issue, open an Urgent ticket under Technical Issue and it will be prioritized immediately.",
+      "ar": "## التشفير\n\nجميع البيانات المتبادلة مع المنصة مشفرة. تُحفظ كلمات المرور بشكل مُجزَّأ (hashed) ولا تُخزَّن أبدًا كنص عادي.\n\n## التحكم في الوصول\n\n- بياناتك مرئية فقط لك، وللموظف المسؤول عنك، وللمسؤولين المخوّلين بالإشراف\n- حسابات الموظفين لها صلاحيات فردية — ليس بإمكان كل موظف رؤية كل شيء\n\n## الإبلاغ عن مخاوف\n\nإذا لاحظت شيئًا يبدو وكأنه مشكلة أمنية، افتح تذكرة عاجلة تحت تصنيف مشكلة تقنية وستتم معالجتها فورًا كأولوية."
+    },
+    "category": "privacy-and-security",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe4"
+    },
+    "slug": "keeping-your-account-secure",
+    "title": {
+      "en": "Keeping your account secure",
+      "ar": "الحفاظ على أمان حسابك"
+    },
+    "summary": {
+      "en": "Simple steps to reduce the risk of unauthorized access.",
+      "ar": "خطوات بسيطة لتقليل خطر الوصول غير المصرح به."
+    },
+    "body": {
+      "en": "## Good habits\n\n- Use a unique password you don't reuse elsewhere\n- Don't share your login details, even with a teammate\n- If you notice activity on your account you don't recognize, open a ticket immediately\n\n## If you're locked out\n\nUse the password reset flow from the login page — if that doesn't work, our support team can help you regain access after verifying your identity.",
+      "ar": "## عادات جيدة\n\n- استخدم كلمة مرور فريدة لا تستخدمها في أماكن أخرى\n- لا تشارك بيانات تسجيل الدخول الخاصة بك، حتى مع أحد الزملاء\n- إذا لاحظت نشاطًا في حسابك لا تتعرف عليه، افتح تذكرة فورًا\n\n## إذا كنت مُقفلاً خارج حسابك\n\nاستخدم آلية إعادة تعيين كلمة المرور من صفحة تسجيل الدخول — إذا لم تنجح، يمكن لفريق الدعم لدينا مساعدتك على استعادة الوصول بعد التحقق من هويتك."
+    },
+    "category": "privacy-and-security",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.843Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.843Z"
+    }
+  }
+]

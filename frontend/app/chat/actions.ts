@@ -5,10 +5,26 @@ import { getTranslations } from "next-intl/server";
 import { API_URL, SESSION_COOKIE } from "@/lib/auth";
 import { refreshSession } from "@/lib/session";
 
-export type CreateConversationResult = { id: string; error: null } | { id: null; error: string };
+export interface CreateConversationMessage {
+  _id: string;
+  text: string;
+  senderType: "customer" | "agent" | "ai" | "system";
+  createdAt: string;
+  aiTicketSuggestion?: { subject: string; description: string } | null;
+  aiKbSuggestion?: { type: "faq" | "article"; id: string; title: { en: string; ar: string }; slug?: string } | null;
+}
 
-// Story 14: creates the Conversation the chat panel joins over Socket.io.
-// Same 401-retry shape as every other action in this app (e.g.
+export type ConversationStatus = "ai_handling" | "escalated" | "with_agent" | "resolved";
+
+export type CreateConversationResult =
+  | { ok: true; id: string; status: ConversationStatus; messages: CreateConversationMessage[] }
+  | { ok: false; error: string };
+
+// Story 14: creates (or, per live-chat's session-resume behavior, resumes)
+// the Conversation the chat panel joins over Socket.io — the backend returns
+// an existing non-resolved conversation's own message history instead of a
+// fresh empty one when the customer already has one open. Same 401-retry
+// shape as every other action in this app (e.g.
 // frontend/app/tickets/new/actions.ts's submitTicket).
 export async function createConversation(): Promise<CreateConversationResult> {
   const t = await getTranslations("Chat");
@@ -18,7 +34,7 @@ export async function createConversation(): Promise<CreateConversationResult> {
     token = (await refreshSession()) ?? undefined;
   }
   if (!token) {
-    return { id: null, error: t("notSignedIn") };
+    return { ok: false, error: t("notSignedIn") };
   }
 
   const doFetch = (bearer: string) =>
@@ -32,17 +48,71 @@ export async function createConversation(): Promise<CreateConversationResult> {
   if (res.status === 401) {
     const refreshedToken = await refreshSession();
     if (!refreshedToken) {
-      return { id: null, error: t("notSignedIn") };
+      return { ok: false, error: t("notSignedIn") };
     }
     res = await doFetch(refreshedToken);
   }
 
   if (!res.ok) {
-    return { id: null, error: t("error") };
+    return { ok: false, error: t("error") };
   }
 
-  const data = await res.json();
-  return { id: data.conversation._id, error: null };
+  const data: {
+    conversation: { _id: string; status: ConversationStatus };
+    messages: CreateConversationMessage[];
+  } = await res.json();
+  return { ok: true, id: data.conversation._id, status: data.conversation.status, messages: data.messages };
+}
+
+export type GetActiveConversationResult =
+  | { ok: true; id: string | null; status: ConversationStatus | null; messages: CreateConversationMessage[] }
+  | { ok: false; error: string };
+
+// live-chat: read-only check for an existing, genuinely-in-progress
+// conversation (the backend only ever returns one with at least one message
+// — see conversation.routes.ts's GET /active) — called on mount so reopening
+// the widget resumes a real session without ever writing anything. Opening
+// the widget and leaving it untouched must create nothing: that only happens
+// lazily, in createConversation() above, the moment the customer actually
+// sends a message/escalates.
+export async function getActiveConversation(): Promise<GetActiveConversationResult> {
+  const t = await getTranslations("Chat");
+  const cookieStore = await cookies();
+  let token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) {
+    token = (await refreshSession()) ?? undefined;
+  }
+  if (!token) {
+    return { ok: false, error: t("notSignedIn") };
+  }
+
+  const doFetch = (bearer: string) =>
+    fetch(`${API_URL}/api/v1/conversations/active`, {
+      headers: { Authorization: `Bearer ${bearer}` },
+      cache: "no-store",
+    });
+
+  let res = await doFetch(token);
+  if (res.status === 401) {
+    const refreshedToken = await refreshSession();
+    if (!refreshedToken) {
+      return { ok: false, error: t("notSignedIn") };
+    }
+    res = await doFetch(refreshedToken);
+  }
+
+  if (!res.ok) {
+    return { ok: false, error: t("error") };
+  }
+
+  const data: {
+    conversation: { _id: string; status: ConversationStatus } | null;
+    messages: CreateConversationMessage[];
+  } = await res.json();
+  if (!data.conversation) {
+    return { ok: true, id: null, status: null, messages: [] };
+  }
+  return { ok: true, id: data.conversation._id, status: data.conversation.status, messages: data.messages };
 }
 
 export interface ChatTicketSummary {

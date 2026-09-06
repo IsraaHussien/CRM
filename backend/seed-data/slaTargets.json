@@ -1,0 +1,82 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbae"
+    },
+    "priority": null,
+    "category": null,
+    "responseMinutes": 60,
+    "resolutionMinutes": 480,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbaf"
+    },
+    "priority": "urgent",
+    "category": null,
+    "responseMinutes": 15,
+    "resolutionMinutes": 120,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb0"
+    },
+    "priority": "high",
+    "category": null,
+    "responseMinutes": 30,
+    "resolutionMinutes": 240,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb1"
+    },
+    "priority": "low",
+    "category": null,
+    "responseMinutes": 120,
+    "resolutionMinutes": 1440,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb2"
+    },
+    "priority": null,
+    "category": "Billing",
+    "responseMinutes": 45,
+    "resolutionMinutes": 360,
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.817Z"
+    }
+  }
+]

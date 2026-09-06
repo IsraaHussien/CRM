@@ -1,0 +1,590 @@
+[
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb5"
+    },
+    "question": {
+      "en": "How do I create an account?",
+      "ar": "كيف أنشئ حسابًا؟"
+    },
+    "answer": {
+      "en": "Click \"Sign up\" from the top navigation, enter your name, email, and a password, and you're in — no email confirmation required to start using the app.",
+      "ar": "اضغط على \"إنشاء حساب\" من القائمة العلوية، أدخل اسمك وبريدك الإلكتروني وكلمة مرور، وستكون جاهزًا للبدء دون الحاجة لتأكيد البريد الإلكتروني."
+    },
+    "category": "getting-started",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.820Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.820Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb6"
+    },
+    "question": {
+      "en": "What's the difference between a ticket and a live chat?",
+      "ar": "ما الفرق بين التذكرة والدردشة المباشرة؟"
+    },
+    "answer": {
+      "en": "Live chat is answered instantly by our AI agent, with a human stepping in when needed — best for quick questions. A ticket is answered by a human and the reply is emailed to you — best for anything that can wait or needs documentation.",
+      "ar": "الدردشة المباشرة يتم الرد عليها فورًا بواسطة الذكاء الاصطناعي، مع تدخل موظف عند الحاجة — وهي الأنسب للأسئلة السريعة. أما التذكرة فيتم الرد عليها من قِبل موظف ويصلك الرد عبر البريد الإلكتروني — وهي الأنسب لأي أمر يمكن الانتظار فيه أو يحتاج إلى توثيق."
+    },
+    "category": "getting-started",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.821Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.821Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbb7"
+    },
+    "question": {
+      "en": "Is the platform available in Arabic?",
+      "ar": "هل المنصة متاحة باللغة العربية؟"
+    },
+    "answer": {
+      "en": "Yes — switch languages any time from the user menu in the top right. The whole interface, including right-to-left layout, updates immediately.",
+      "ar": "نعم — يمكنك تبديل اللغة في أي وقت من قائمة المستخدم أعلى يمين الصفحة. تتحدث الواجهة بالكامل فورًا، بما في ذلك اتجاه الكتابة من اليمين لليسار."
+    },
+    "category": "getting-started",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.821Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.821Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbbc"
+    },
+    "question": {
+      "en": "How do I change my email address?",
+      "ar": "كيف أغيّر بريدي الإلكتروني؟"
+    },
+    "answer": {
+      "en": "Go to Settings, enter your new email, and we'll send a confirmation link to it. Your email only changes once you click that link — until then, your old email keeps working.",
+      "ar": "اذهب إلى الإعدادات، أدخل بريدك الإلكتروني الجديد، وسنرسل رابط تأكيد إليه. لن يتغير بريدك الإلكتروني إلا بعد الضغط على هذا الرابط — وحتى ذلك الحين، سيستمر بريدك القديم في العمل."
+    },
+    "category": "account-and-profile",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbbd"
+    },
+    "question": {
+      "en": "Why do I keep getting logged out?",
+      "ar": "لماذا يتم تسجيل خروجي باستمرار؟"
+    },
+    "answer": {
+      "en": "Your session refreshes automatically in the background as long as you're active. If you're logged out unexpectedly, it's usually because of an extended period of inactivity — simply log back in.",
+      "ar": "يتم تحديث جلستك تلقائيًا في الخلفية طالما أنك نشط. إذا تم تسجيل خروجك بشكل غير متوقع، فذلك عادةً بسبب فترة طويلة من عدم النشاط — ما عليك سوى تسجيل الدخول مرة أخرى."
+    },
+    "category": "account-and-profile",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbbe"
+    },
+    "question": {
+      "en": "Can I delete my account?",
+      "ar": "هل يمكنني حذف حسابي؟"
+    },
+    "answer": {
+      "en": "Contact support through a ticket and we'll take care of it — account deletion isn't yet self-service, but our team can process the request quickly.",
+      "ar": "تواصل مع الدعم عبر تذكرة وسنتولى الأمر — حذف الحساب ليس متاحًا حاليًا كخدمة ذاتية، ولكن فريقنا يمكنه معالجة الطلب بسرعة."
+    },
+    "category": "account-and-profile",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.826Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc3"
+    },
+    "question": {
+      "en": "How long does it take to get a reply to my ticket?",
+      "ar": "كم من الوقت يستغرق الرد على تذكرتي؟"
+    },
+    "answer": {
+      "en": "Response times depend on the priority of your issue, but most tickets get a first reply within a few hours. You'll be notified by email the moment an agent responds.",
+      "ar": "تعتمد أوقات الرد على أولوية مشكلتك، لكن معظم التذاكر تحصل على أول رد خلال ساعات قليلة. سيتم إشعارك عبر البريد الإلكتروني فور رد أحد الموظفين."
+    },
+    "category": "tickets-and-support",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc4"
+    },
+    "question": {
+      "en": "Can I reopen a closed ticket?",
+      "ar": "هل يمكنني إعادة فتح تذكرة مغلقة؟"
+    },
+    "answer": {
+      "en": "Yes — just reply on the ticket and it automatically reopens for the assigned agent to follow up.",
+      "ar": "نعم — فقط قم بالرد على التذكرة وستُعاد فتحها تلقائيًا ليتابعها الموظف المسؤول."
+    },
+    "category": "tickets-and-support",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbc5"
+    },
+    "question": {
+      "en": "Can I attach a screenshot to my ticket?",
+      "ar": "هل يمكنني إرفاق لقطة شاشة بتذكرتي؟"
+    },
+    "answer": {
+      "en": "Yes, both when creating a ticket and when replying to one — attachments help our agents diagnose issues much faster.",
+      "ar": "نعم، سواء عند إنشاء التذكرة أو عند الرد عليها — المرفقات تساعد موظفينا على تشخيص المشكلات بشكل أسرع بكثير."
+    },
+    "category": "tickets-and-support",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.829Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbca"
+    },
+    "question": {
+      "en": "Is live chat available 24/7?",
+      "ar": "هل الدردشة المباشرة متاحة على مدار الساعة؟"
+    },
+    "answer": {
+      "en": "Yes — the AI agent is always available. It brings in a human teammate whenever the conversation needs one, during their working hours.",
+      "ar": "نعم — الذكاء الاصطناعي متاح دائمًا. ويُشرك أحد الموظفين كلما احتاجت المحادثة إلى ذلك، خلال ساعات عمله."
+    },
+    "category": "live-chat",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbcb"
+    },
+    "question": {
+      "en": "Will I lose context if the AI hands off to a human?",
+      "ar": "هل سأفقد سياق المحادثة عند تحويلها إلى موظف بشري؟"
+    },
+    "answer": {
+      "en": "No — the human agent joins the exact same conversation thread and can see everything you and the AI already discussed. You never have to repeat yourself.",
+      "ar": "لا — ينضم الموظف البشري إلى نفس خيط المحادثة تمامًا ويمكنه رؤية كل ما ناقشته أنت والذكاء الاصطناعي بالفعل. لن تضطر أبدًا لتكرار كلامك."
+    },
+    "category": "live-chat",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbcc"
+    },
+    "question": {
+      "en": "Can the AI agent open a ticket for me?",
+      "ar": "هل يمكن للذكاء الاصطناعي فتح تذكرة نيابة عني؟"
+    },
+    "answer": {
+      "en": "Yes — if your issue is better suited to a ticket, the AI will offer to open one for you directly from the chat, pre-filled with the details you already shared.",
+      "ar": "نعم — إذا كانت مشكلتك أنسب لتذكرة، سيعرض عليك الذكاء الاصطناعي فتح واحدة مباشرة من الدردشة، مع تعبئة التفاصيل التي شاركتها بالفعل."
+    },
+    "category": "live-chat",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.832Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd1"
+    },
+    "question": {
+      "en": "What payment methods are accepted?",
+      "ar": "ما هي طرق الدفع المقبولة؟"
+    },
+    "answer": {
+      "en": "We accept major credit and debit cards. Payment details are managed securely and are never visible to support staff.",
+      "ar": "نقبل بطاقات الائتمان والخصم الرئيسية. تُدار تفاصيل الدفع بشكل آمن ولا تكون مرئية أبدًا لموظفي الدعم."
+    },
+    "category": "billing-and-payments",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd2"
+    },
+    "question": {
+      "en": "Why was I charged twice?",
+      "ar": "لماذا تم تحصيل المبلغ مرتين؟"
+    },
+    "answer": {
+      "en": "This is usually a duplicate charge from a retried payment. Open a ticket with the dates of both charges and our billing team will refund the duplicate quickly.",
+      "ar": "عادةً ما يكون هذا رسمًا مكررًا ناتجًا عن إعادة محاولة الدفع. افتح تذكرة مع تواريخ كلا الرسمين وسيقوم فريق الفوترة لدينا برد المبلغ المكرر بسرعة."
+    },
+    "category": "billing-and-payments",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd3"
+    },
+    "question": {
+      "en": "How do I update my billing address?",
+      "ar": "كيف أحدّث عنوان الفوترة الخاص بي؟"
+    },
+    "answer": {
+      "en": "Open a ticket with your new address and an agent will update it on your account — it'll show correctly on your next invoice.",
+      "ar": "افتح تذكرة تحتوي على عنوانك الجديد وسيقوم أحد الموظفين بتحديثه في حسابك — وسيظهر بشكل صحيح في فاتورتك القادمة."
+    },
+    "category": "billing-and-payments",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.834Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd8"
+    },
+    "question": {
+      "en": "The page won't load, what should I try first?",
+      "ar": "الصفحة لا تُحمّل، ماذا أجرب أولاً؟"
+    },
+    "answer": {
+      "en": "Try a hard refresh (Ctrl/Cmd + Shift + R) and, if that doesn't help, clearing your browser cache. If it still fails, open a ticket with a screenshot.",
+      "ar": "جرّب إعادة تحميل قوية (Ctrl/Cmd + Shift + R)، وإذا لم يساعد ذلك، امسح ذاكرة التخزين المؤقت للمتصفح. إذا استمرت المشكلة، افتح تذكرة مع لقطة شاشة."
+    },
+    "category": "troubleshooting",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbd9"
+    },
+    "question": {
+      "en": "Why do my changes take a while to appear on another device?",
+      "ar": "لماذا تستغرق تغييراتي وقتًا لتظهر على جهاز آخر؟"
+    },
+    "answer": {
+      "en": "Changes sync automatically within a minute or two under normal conditions. If it's taking noticeably longer, try logging out and back in on the affected device.",
+      "ar": "تتم مزامنة التغييرات تلقائيًا خلال دقيقة أو دقيقتين في الظروف العادية. إذا استغرق الأمر وقتًا أطول بشكل ملحوظ، حاول تسجيل الخروج ثم الدخول مرة أخرى على الجهاز المتأثر."
+    },
+    "category": "troubleshooting",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbda"
+    },
+    "question": {
+      "en": "I found a bug, how do I report it?",
+      "ar": "وجدت خطأً برمجيًا، كيف أبلغ عنه؟"
+    },
+    "answer": {
+      "en": "Open a ticket under Technical Issue with steps to reproduce it and, if possible, a screenshot — that's the fastest way for us to fix it.",
+      "ar": "افتح تذكرة تحت تصنيف مشكلة تقنية مع خطوات إعادة إنتاج المشكلة، وإن أمكن لقطة شاشة — فهذه أسرع طريقة لنا لإصلاحها."
+    },
+    "category": "troubleshooting",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.839Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbdf"
+    },
+    "question": {
+      "en": "Is my data encrypted?",
+      "ar": "هل بياناتي مشفرة؟"
+    },
+    "answer": {
+      "en": "Yes — all data is encrypted in transit, and passwords are never stored in plain text.",
+      "ar": "نعم — جميع البيانات مشفرة أثناء النقل، ولا تُخزَّن كلمات المرور أبدًا كنص عادي."
+    },
+    "category": "privacy-and-security",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.841Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.841Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe0"
+    },
+    "question": {
+      "en": "Who can see my tickets and chats?",
+      "ar": "من يمكنه رؤية تذاكري ومحادثاتي؟"
+    },
+    "answer": {
+      "en": "Only you, the agent assigned to your case, and admins with oversight access. Support staff never see your payment details.",
+      "ar": "أنت فقط، والموظف المسؤول عن حالتك، والمسؤولون المخوّلون بالإشراف. لا يرى موظفو الدعم أبدًا تفاصيل الدفع الخاصة بك."
+    },
+    "category": "privacy-and-security",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "6a990f4d46d45770d748bbe1"
+    },
+    "question": {
+      "en": "How do I report a security concern?",
+      "ar": "كيف أبلغ عن مخاوف أمنية؟"
+    },
+    "answer": {
+      "en": "Open a ticket marked Urgent under Technical Issue — security-related reports are treated with the highest priority.",
+      "ar": "افتح تذكرة بأولوية عاجلة تحت تصنيف مشكلة تقنية — يتم التعامل مع البلاغات الأمنية بأعلى أولوية."
+    },
+    "category": "privacy-and-security",
+    "isDeleted": false,
+    "createdBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "updatedBy": {
+      "$oid": "6a990f4b46d45770d748bb41"
+    },
+    "__v": 0,
+    "createdAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    },
+    "updatedAt": {
+      "$date": "2026-09-03T06:10:21.842Z"
+    }
+  }
+]

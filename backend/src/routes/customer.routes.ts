@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { requireAuth, requireRole, requirePermission } from "../middleware/auth";
 import { User, IUser, IAttachment } from "../models/User";
 import { hasPermission, isActiveAccount } from "../services/permissions";
+import { recordAuditLog } from "../services/auditLog.service";
 import { uploadIdDocument, uploadGeneralAttachments, customerFilePath } from "../middleware/upload";
 import fs from "fs";
 import { validateBody, validateParams } from "../middleware/validate";
@@ -246,6 +247,18 @@ router.post(
       throw err;
     }
 
+    // security-admin Story 47: a staff-created customer account is auditable
+    // — self-registration (auth Story 1) is not, same distinction Story 57
+    // draws for staff-created vs. self-submitted tickets below.
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_created",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { email: user.email },
+      ipAddress: req.ip,
+    });
+
     res.status(201).json(await toProfileResponse(user, { includeNotes: false, includeAttachments: false }));
   }
 );
@@ -330,10 +343,23 @@ router.patch("/:id", requireAuth, validateParams(userIdParamsSchema), async (req
   }
 
   const updates: Partial<Pick<IUser, EditableField>> = {};
-  if ("name" in body) updates.name = parsed.data.name;
-  if ("email" in body) updates.email = parsed.data.email;
-  if ("phone" in body) updates.phone = parsed.data.phone;
-  if ("preferredLanguage" in body) updates.preferredLanguage = parsed.data.preferredLanguage;
+  const changes: Record<string, { before: unknown; after: unknown }> = {};
+  if ("name" in body && parsed.data.name !== user.name) {
+    changes.name = { before: user.name, after: parsed.data.name };
+    updates.name = parsed.data.name;
+  }
+  if ("email" in body && parsed.data.email !== user.email) {
+    changes.email = { before: user.email, after: parsed.data.email };
+    updates.email = parsed.data.email;
+  }
+  if ("phone" in body && parsed.data.phone !== user.phone) {
+    changes.phone = { before: user.phone, after: parsed.data.phone };
+    updates.phone = parsed.data.phone;
+  }
+  if ("preferredLanguage" in body && parsed.data.preferredLanguage !== user.preferredLanguage) {
+    changes.preferredLanguage = { before: user.preferredLanguage, after: parsed.data.preferredLanguage };
+    updates.preferredLanguage = parsed.data.preferredLanguage;
+  }
 
   Object.assign(user, updates);
 
@@ -345,6 +371,17 @@ router.patch("/:id", requireAuth, validateParams(userIdParamsSchema), async (req
       return;
     }
     throw err;
+  }
+
+  if (Object.keys(changes).length > 0) {
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_updated",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { changes, editedBySelf: isSelf },
+      ipAddress: req.ip,
+    });
   }
 
   res.status(200).json(await toProfileResponse(user, { includeNotes: isFullStaff, includeAttachments: true }));
@@ -431,6 +468,15 @@ router.post(
     await user.save();
     const newNote = user.internalNotes[user.internalNotes.length - 1];
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_note_added",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { noteId: String(newNote._id) },
+      ipAddress: req.ip,
+    });
+
     const author = await User.findById(req.user!.id, { name: 1 });
     res.status(201).json({
       id: String(newNote._id),
@@ -466,6 +512,15 @@ router.patch(
 
     note.text = req.body.text;
     await user.save();
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_note_updated",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { noteId: String(note._id) },
+      ipAddress: req.ip,
+    });
 
     const author = note.authorId ? await User.findById(note.authorId, { name: 1 }) : null;
     res.status(200).json({
@@ -513,6 +568,15 @@ router.post(
     user.attachments.push(...newEntries);
     await user.save();
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_attachment_added",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { attachmentIds: newEntries.map((e) => String(e._id)), fileNames: newEntries.map((e) => e.fileName) },
+      ipAddress: req.ip,
+    });
+
     const uploader = await User.findById(req.user!.id, { name: 1 });
     const people = uploader ? new Map([[String(uploader._id), { id: String(uploader._id), name: uploader.name }]]) : new Map();
     res.status(201).json(newEntries.map((entry) => hydrateAttachment(entry, people)));
@@ -550,6 +614,15 @@ router.delete(
     // save would leave a reference pointing at nothing.
     const [removed] = user.attachments.splice(index, 1);
     await user.save();
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_attachment_deleted",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { attachmentId: String(removed._id), fileName: removed.fileName },
+      ipAddress: req.ip,
+    });
 
     fs.promises.unlink(customerFilePath(user.id, removed.storageFileName)).catch((err) => {
       console.error("[attachments] failed to remove deleted file (best-effort cleanup)", err);
@@ -595,6 +668,15 @@ router.put(
       url: `/api/v1/customers/${user.id}/id-document/file`,
     };
     await user.save();
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "customer_id_document_updated",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { fileName: user.idDocument.fileName },
+      ipAddress: req.ip,
+    });
 
     if (previous) {
       fs.promises.unlink(customerFilePath(user.id, previous.storageFileName)).catch((err) => {

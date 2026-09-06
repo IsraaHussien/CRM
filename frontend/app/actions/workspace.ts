@@ -2,7 +2,6 @@
 
 import { cookies } from "next/headers";
 import { API_URL, SESSION_COOKIE } from "@/lib/auth";
-import { refreshSession } from "@/lib/session";
 
 // agent-workspace Story 35: colocated at the top level, same reasoning as
 // actions/notifications.ts — this action backs both the dashboard page's
@@ -47,38 +46,41 @@ export interface WorkspaceResponse {
   generatedAt: string;
 }
 
+// Deliberately no refreshSession() fallback/retry here, unlike a
+// user-triggered action (postInternalNote, sendTicketReply, ...): this
+// action backs two call sites, and both are invisible to the user in the
+// moment they run. The page's initial server-rendered fetch
+// (dashboard/page.tsx) already runs after that page's own GET /me/status
+// call has validated (and, if needed, refreshed) the session — by the time
+// this runs, the token is already fresh. TriageBoard's 60s client-side poll
+// (Frontend Task 2b) is the other caller, and refreshing FROM a background
+// poll is actively worse than just failing quietly: the refresh token
+// rotates on every use (see CLAUDE.md's "Frontend auth" section), so two
+// invisible pollers racing to refresh around the same expiry moment (this
+// one, NotificationBell's) risks tripping the reuse-detection lockout meant
+// for a stolen-token attacker, over something no one is even looking at. A
+// stale board for up to one poll interval — or until the next real,
+// visible, user-driven navigation triggers the real refresh flow — is a far
+// cheaper failure than that.
 async function getBearerToken(): Promise<string | null> {
   const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (token) return token;
-  return refreshSession();
+  return cookieStore.get(SESSION_COOKIE)?.value ?? null;
 }
 
-// Used both for the page's initial server-rendered snapshot
-// (dashboard/page.tsx) and for TriageBoard's client-side polling refresh —
-// one action, one place that knows how to authenticate this call. Returns
-// null (not an empty board) on any failure so callers can tell "no data yet"
-// apart from "genuinely nothing assigned" ({ breached: { items: [], total: 0
-// }, ... }). Same never-throw contract as fetchNotifications(): fetch()
-// itself rejects when the backend is unreachable, and a background poll must
-// degrade rather than crash the page it lives on.
+// Returns null (not an empty board) on any failure so callers can tell "no
+// data yet" apart from "genuinely nothing assigned" ({ breached: { items:
+// [], total: 0 }, ... }). Same never-throw contract as fetchNotifications():
+// fetch() itself rejects when the backend is unreachable, and a background
+// poll must degrade rather than crash the page it lives on.
 export async function fetchWorkspace(): Promise<WorkspaceResponse | null> {
   const token = await getBearerToken();
   if (!token) return null;
 
-  const doFetch = (bearer: string) =>
-    fetch(`${API_URL}/api/v1/me/workspace`, {
-      headers: { Authorization: `Bearer ${bearer}` },
+  try {
+    const res = await fetch(`${API_URL}/api/v1/me/workspace`, {
+      headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
-
-  try {
-    let res = await doFetch(token);
-    if (res.status === 401) {
-      const refreshedToken = await refreshSession();
-      if (!refreshedToken) return null;
-      res = await doFetch(refreshedToken);
-    }
     if (!res.ok) return null;
     return (await res.json()) as WorkspaceResponse;
   } catch {

@@ -37,6 +37,7 @@ const TYPE_KEY: Record<NotificationItem["type"], string> = {
   chat_needs_agent: "notificationChatNeedsAgent",
   sla_at_risk: "notificationSlaAtRisk",
   sla_breached: "notificationSlaBreached",
+  ticket_internal_note_mention: "notificationTicketInternalNoteMention",
 };
 
 // Story 54: was a static "coming soon" placeholder — now fetches on mount,

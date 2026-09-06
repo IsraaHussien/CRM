@@ -7,6 +7,7 @@ import { User } from "../../src/models/User";
 import { Conversation } from "../../src/models/Conversation";
 import { Message } from "../../src/models/Message";
 import { SlaTarget } from "../../src/models/SlaTarget";
+import { AuditLog } from "../../src/models/AuditLog";
 import * as summaryService from "../../src/services/summary.service";
 
 const app = createApp();
@@ -31,6 +32,7 @@ beforeEach(async () => {
   await User.deleteMany({});
   await Conversation.deleteMany({});
   await Message.deleteMany({});
+  await AuditLog.deleteMany({});
 });
 
 function tokenFor(user: { id: string; role: string }) {
@@ -88,6 +90,43 @@ describe("POST /api/v1/conversations (Story 14)", () => {
     expect(stored!.sla.responseTargetAt!.getTime()).toBeGreaterThan(Date.now());
   });
 
+  it("resumes the customer's existing non-resolved conversation instead of creating a new one", async () => {
+    const { user, token } = await seedUser();
+    const first = await request(app).post("/api/v1/conversations").set("Authorization", `Bearer ${token}`).send({});
+    expect(first.status).toBe(201);
+
+    await Message.create({
+      parentType: "conversation",
+      parentId: first.body.conversation._id,
+      senderType: "customer",
+      senderId: user.id,
+      text: "hello",
+    });
+
+    const second = await request(app).post("/api/v1/conversations").set("Authorization", `Bearer ${token}`).send({});
+
+    expect(second.status).toBe(200);
+    expect(second.body.conversation._id).toBe(first.body.conversation._id);
+    expect(second.body.messages).toHaveLength(1);
+    expect(second.body.messages[0].text).toBe("hello");
+    // Only one Conversation and one chat_started audit entry across both calls.
+    expect(await Conversation.countDocuments()).toBe(1);
+    expect(await AuditLog.countDocuments({ action: "chat_started" })).toBe(1);
+  });
+
+  it("creates a fresh conversation once the previous one is resolved", async () => {
+    const { token } = await seedUser();
+    const first = await request(app).post("/api/v1/conversations").set("Authorization", `Bearer ${token}`).send({});
+    await Conversation.findByIdAndUpdate(first.body.conversation._id, { status: "resolved" });
+
+    const second = await request(app).post("/api/v1/conversations").set("Authorization", `Bearer ${token}`).send({});
+
+    expect(second.status).toBe(201);
+    expect(second.body.conversation._id).not.toBe(first.body.conversation._id);
+    expect(await Conversation.countDocuments()).toBe(2);
+    expect(await AuditLog.countDocuments({ action: "chat_started" })).toBe(2);
+  });
+
   it("returns 404 for POST /:id/escalate — escalation is socket-only (Story 16)", async () => {
     const { token } = await seedUser();
     const res = await request(app)
@@ -97,16 +136,83 @@ describe("POST /api/v1/conversations (Story 14)", () => {
   });
 });
 
+describe("GET /api/v1/conversations/active (live-chat)", () => {
+  it("returns 401 without a token", async () => {
+    const res = await request(app).get("/api/v1/conversations/active");
+    expect(res.status).toBe(401);
+  });
+
+  it("returns null when the customer has no conversation at all", async () => {
+    const { token } = await seedUser();
+    const res = await request(app).get("/api/v1/conversations/active").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.conversation).toBeNull();
+    expect(res.body.messages).toEqual([]);
+  });
+
+  it("returns null for an existing conversation that has zero messages — an untouched chat must not resume", async () => {
+    const { user, token } = await seedUser();
+    await Conversation.create({ customer: user._id, status: "ai_handling" });
+
+    const res = await request(app).get("/api/v1/conversations/active").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.conversation).toBeNull();
+  });
+
+  it("returns the conversation and its messages once it has at least one", async () => {
+    const { user, token } = await seedUser();
+    const conversation = await Conversation.create({ customer: user._id, status: "ai_handling" });
+    await Message.create({
+      parentType: "conversation",
+      parentId: conversation._id,
+      senderType: "customer",
+      senderId: user.id,
+      text: "hello",
+    });
+
+    const res = await request(app).get("/api/v1/conversations/active").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.conversation._id).toBe(conversation.id);
+    expect(res.body.messages).toHaveLength(1);
+  });
+
+  it("returns null once the conversation is resolved", async () => {
+    const { user, token } = await seedUser();
+    const conversation = await Conversation.create({ customer: user._id, status: "resolved" });
+    await Message.create({
+      parentType: "conversation",
+      parentId: conversation._id,
+      senderType: "customer",
+      senderId: user.id,
+      text: "hello",
+    });
+
+    const res = await request(app).get("/api/v1/conversations/active").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.conversation).toBeNull();
+  });
+
+  it("returns 403 for a non-customer", async () => {
+    const { token } = await seedUser({ role: "agent" });
+    const res = await request(app).get("/api/v1/conversations/active").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(403);
+  });
+});
+
 describe("GET /api/v1/conversations (Story 18)", () => {
   it("returns 401 without a token", async () => {
     const res = await request(app).get("/api/v1/conversations");
     expect(res.status).toBe(401);
   });
 
-  it("returns 403 for a customer", async () => {
+  // customer-portal Story 37: a customer now gets their own scoped list here
+  // instead of a 403 — see the customer-branch tests at the end of this
+  // describe block for the actual scoping behaviour.
+  it("returns 200 with an empty list for a customer with no conversations", async () => {
     const { token } = await seedUser();
     const res = await request(app).get("/api/v1/conversations").set("Authorization", `Bearer ${token}`);
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(res.body.conversations).toEqual([]);
   });
 
   it("returns 403 for an agent without chats:manage", async () => {
@@ -158,6 +264,25 @@ describe("GET /api/v1/conversations (Story 18)", () => {
     expect(res.body.conversations).toHaveLength(1);
     expect(res.body.conversations[0].slaStatus).toBe("on_track");
     expect(res.body.conversations[0].responseTargetAt).toBeNull();
+  });
+
+  // customer-portal Story 37: unlike the staff branches above, a customer's
+  // own list has no status restriction — ai_handling/resolved conversations
+  // must show up too, not just escalated/with_agent.
+  it("scopes a customer's list to their own conversations, any status, and excludes other customers'", async () => {
+    const { user: customer, token } = await seedUser();
+    const { user: otherCustomer } = await seedUser();
+    const mineActive = await Conversation.create({ customer: customer._id, status: "ai_handling" });
+    const mineResolved = await Conversation.create({ customer: customer._id, status: "resolved" });
+    await Conversation.create({ customer: otherCustomer._id, status: "with_agent" });
+
+    const res = await request(app).get("/api/v1/conversations").set("Authorization", `Bearer ${token}`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.conversations).toHaveLength(2);
+    const ids = res.body.conversations.map((c: { _id: string }) => c._id);
+    expect(ids).toContain(mineActive.id);
+    expect(ids).toContain(mineResolved.id);
   });
 });
 

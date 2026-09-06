@@ -197,6 +197,33 @@ describe("ai:summarize (Story 32)", () => {
   });
 });
 
+// agent-workspace Story 24: posting an agent-only internal note is a
+// day-to-day agent action, same tier as tickets:reply — its own key rather
+// than folded into tickets:reply (a note is never emailed to the customer
+// and never flips the ticket to "answered"), and never sub-admin-only.
+describe("tickets:post_internal_note (Story 24)", () => {
+  it("is a recognized permission key", () => {
+    expect(PERMISSION_KEYS).toContain("tickets:post_internal_note");
+  });
+
+  it("is not sub-admin-only", () => {
+    expect(SUBADMIN_ONLY_PERMISSIONS.has("tickets:post_internal_note")).toBe(false);
+  });
+
+  it("is granted by default to a freshly-created agent", () => {
+    expect(DEFAULT_PERMISSIONS_BY_ROLE.agent).toContain("tickets:post_internal_note");
+  });
+
+  it("is assignable to an agent as well as a sub-admin", () => {
+    expect(permissionKeysAllowedForRole("agent")).toContain("tickets:post_internal_note");
+    expect(permissionKeysAllowedForRole("subadmin")).toContain("tickets:post_internal_note");
+  });
+
+  it("has no customer default set to be granted through (customer is not a creatable staff role)", () => {
+    expect(Object.keys(DEFAULT_PERMISSIONS_BY_ROLE)).not.toContain("customer");
+  });
+});
+
 describe("permissionKeysAllowedForRole", () => {
   it("returns every permission key for subadmin", () => {
     expect(permissionKeysAllowedForRole("subadmin")).toEqual(PERMISSION_KEYS);
