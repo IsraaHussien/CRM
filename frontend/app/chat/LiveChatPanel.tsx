@@ -21,6 +21,7 @@ import { UNSPECIFIED_CATEGORY } from "@/app/tickets/new/constants";
 import { listActiveTicketCategories } from "@/app/tickets/new/actions";
 import {
   createConversation,
+  getActiveConversation,
   getMyRecentTickets,
   createTicketFromConversation,
   type ChatTicketSummary,
@@ -289,67 +290,84 @@ export function LiveChatPanel({ token, locale }: { token: string; locale: Locale
   useEffect(() => {
     let cancelled = false;
 
-    async function connect() {
-      const result = await createConversation();
+    const socket = io(API_URL, { auth: { token }, transports: ["websocket"] });
+    socketRef.current = socket;
+
+    // Opening the widget must never, by itself, create anything server-side
+    // — only resuming a conversation that already has real content in it
+    // (getActiveConversation deliberately ignores an empty one; see its own
+    // comment) counts as something to rejoin. A customer who opens /chat and
+    // leaves it untouched should leave zero trace: no Conversation row, no
+    // entry in their own chat history, nothing for the SLA monitor to scan.
+    // The actual (lazy) creation happens in ensureConversationJoined below,
+    // triggered only by a genuine first action (send / intent chip /
+    // escalate).
+    socket.on("connect", async () => {
       if (cancelled) return;
-      if (result.error) {
+      const existing = await getActiveConversation();
+      if (cancelled) return;
+      if (!existing.ok) {
         setStatus("error");
-        setErrorMessage(result.error);
+        setErrorMessage(existing.error);
         return;
       }
-
-      conversationIdRef.current = result.id;
-      const socket = io(API_URL, { auth: { token }, transports: ["websocket"] });
-      socketRef.current = socket;
-
-      socket.on("connect", () => {
-        socket.emit("conversation:join", result.id);
-      });
-      socket.on("conversation:joined", () => {
-        if (!cancelled) setStatus("connected");
-      });
-      socket.on("conversation:message", (message: ChatMessage) => {
-        if (cancelled) return;
-        if (message.senderType === "ai") {
-          setAiTyping(false);
-          clearAiTypingTimeout();
-        }
-        setMessages((prev) => [...prev, message]);
-      });
-      socket.on("conversation:ai-typing", () => {
-        if (cancelled) return;
-        setAiTyping(true);
-        startAiTypingSafetyTimeout();
-      });
-      socket.on("conversation:escalated", () => {
-        if (cancelled) return;
-        setEscalationState("escalated");
+      if (!existing.id) {
+        setStatus("connected");
+        return;
+      }
+      conversationIdRef.current = existing.id;
+      // Resuming an existing (non-resolved) conversation restores its prior
+      // messages and lifecycle state — otherwise a customer reopening the
+      // widget mid-conversation would see an empty chat and the "Talk to a
+      // human" chip again even though they'd already escalated.
+      setMessages(existing.messages);
+      if (existing.status === "with_agent") setEscalationState("assigned");
+      else if (existing.status === "escalated") setEscalationState("escalated");
+      socket.emit("conversation:join", existing.id);
+      // status flips to "connected" once conversation:joined fires below.
+    });
+    socket.on("conversation:joined", () => {
+      if (!cancelled) setStatus("connected");
+    });
+    socket.on("conversation:message", (message: ChatMessage) => {
+      if (cancelled) return;
+      if (message.senderType === "ai") {
         setAiTyping(false);
         clearAiTypingTimeout();
-      });
-      socket.on("conversation:assigned", () => {
-        if (cancelled) return;
-        setEscalationState("assigned");
-      });
-      socket.on("conversation:closed", () => {
-        if (cancelled) return;
-        setConversationClosed(true);
-      });
-      socket.on("conversation:error", (payload: { error: string }) => {
-        if (!cancelled) {
-          setStatus("error");
-          setErrorMessage(payload.error);
-        }
-      });
-      socket.on("connect_error", () => {
-        if (!cancelled) {
-          setStatus("error");
-          setErrorMessage(t("error"));
-        }
-      });
-    }
-
-    connect();
+      }
+      setMessages((prev) => [...prev, message]);
+    });
+    socket.on("conversation:ai-typing", () => {
+      if (cancelled) return;
+      setAiTyping(true);
+      startAiTypingSafetyTimeout();
+    });
+    socket.on("conversation:escalated", () => {
+      if (cancelled) return;
+      setEscalationState("escalated");
+      setAiTyping(false);
+      clearAiTypingTimeout();
+    });
+    socket.on("conversation:assigned", () => {
+      if (cancelled) return;
+      setEscalationState("assigned");
+    });
+    socket.on("conversation:closed", () => {
+      if (cancelled) return;
+      setConversationClosed(true);
+    });
+    socket.on("conversation:error", (payload: { error: string }) => {
+      if (!cancelled) {
+        setStatus("error");
+        setErrorMessage(payload.error);
+      }
+    });
+    socket.on("connect_error", () => {
+      if (!cancelled) {
+        setStatus("error");
+        setErrorMessage(t("error"));
+      }
+    });
 
     return () => {
       cancelled = true;
@@ -359,16 +377,47 @@ export function LiveChatPanel({ token, locale }: { token: string; locale: Locale
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  function sendMessage(text: string) {
-    if (!text || !conversationIdRef.current || !socketRef.current) return;
-    socketRef.current.emit("conversation:message", { conversationId: conversationIdRef.current, text });
+  // Creates (or resumes) the Conversation the very first time it's actually
+  // needed — sending a message, an intent chip, or escalating — instead of
+  // eagerly on mount. Every call after the first is a no-op (conversationIdRef
+  // is already set) and just returns the same id.
+  async function ensureConversationJoined(): Promise<string | null> {
+    if (conversationIdRef.current) return conversationIdRef.current;
+    const socket = socketRef.current;
+    if (!socket) return null;
+
+    const result = await createConversation();
+    if (!result.ok) {
+      setStatus("error");
+      setErrorMessage(result.error);
+      return null;
+    }
+
+    conversationIdRef.current = result.id;
+    setMessages(result.messages);
+    if (result.status === "with_agent") setEscalationState("assigned");
+    else if (result.status === "escalated") setEscalationState("escalated");
+
+    await new Promise<void>((resolve) => {
+      socket.once("conversation:joined", () => resolve());
+      socket.emit("conversation:join", result.id);
+    });
+
+    return result.id;
+  }
+
+  async function sendMessage(text: string) {
+    if (!text) return;
+    const conversationId = await ensureConversationJoined();
+    if (!conversationId || !socketRef.current) return;
+    socketRef.current.emit("conversation:message", { conversationId, text });
   }
 
   function handleSend() {
     const text = draft.trim();
     if (!text) return;
-    sendMessage(text);
     setDraft("");
+    void sendMessage(text);
   }
 
   // Quick-action chip: Complaint/Inquiry send a fixed intent message
@@ -376,25 +425,31 @@ export function LiveChatPanel({ token, locale }: { token: string; locale: Locale
   // customer doesn't have to type it themselves — Story 15's AI branch
   // responds to it exactly like any other customer message.
   function handleIntentChip(text: string) {
-    sendMessage(text);
+    void sendMessage(text);
   }
 
   // Story 16: socket emit only — conversation:message is already the
   // customer's only real-time channel into the conversation, so escalation
   // reuses that same authenticated transport rather than a REST call.
-  function handleEscalate() {
-    if (!socketRef.current || !conversationIdRef.current) return;
+  async function handleEscalate() {
     if (escalationState !== "idle") return;
     setEscalationState("requesting");
-    socketRef.current.emit("conversation:escalate", { conversationId: conversationIdRef.current });
+    const conversationId = await ensureConversationJoined();
+    if (!conversationId || !socketRef.current) {
+      setEscalationState("idle");
+      return;
+    }
+    socketRef.current.emit("conversation:escalate", { conversationId });
   }
 
   // The customer ending the chat on their own (header X button) lands them
   // on their tickets list — there's nothing more to do in this widget once
-  // they've decided to leave.
+  // they've decided to leave. Nothing to emit if no conversation was ever
+  // created (they opened the widget and left without sending anything).
   function handleCloseConversation() {
-    if (!socketRef.current || !conversationIdRef.current) return;
-    socketRef.current.emit("conversation:close", { conversationId: conversationIdRef.current });
+    if (socketRef.current && conversationIdRef.current) {
+      socketRef.current.emit("conversation:close", { conversationId: conversationIdRef.current });
+    }
     router.push("/tickets");
   }
 

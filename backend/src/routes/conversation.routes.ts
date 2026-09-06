@@ -8,6 +8,7 @@ import { createConversationSchema } from "../validation/conversation.schema";
 import { hasPermission } from "../services/permissions";
 import { resolveConversationSlaTargets, computeSlaStatus } from "../services/sla.service";
 import { summarizeConversation, summaryOutcomeStatus } from "../services/summary.service";
+import { recordAuditLog } from "../services/auditLog.service";
 import type { PermissionKey } from "../constants/permissions";
 
 const router = express.Router();
@@ -58,6 +59,14 @@ async function callerAuthorizedOnConversation(
 // live-chat Story 14: customer starts a new conversation. Real-time messaging
 // itself is handled over Socket.io (see sockets/chat.socket.ts) — this route
 // only creates the parent Conversation document the socket handlers attach to.
+//
+// Reopening the chat widget (page refresh, closing and reopening the tab,
+// navigating away and back) resumes the customer's own still-open session
+// instead of creating a fresh one every time — same behavior as Zendesk/
+// Intercom's chat widgets, where the conversation persists until it's
+// actually closed. Without this, every remount orphaned the previous
+// Conversation document (never resolved, message history lost from the
+// widget's perspective) and logged a duplicate chat_started audit entry.
 router.post(
   "/",
   requireAuth,
@@ -65,6 +74,20 @@ router.post(
   validateBody(createConversationSchema),
   async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const existing = await Conversation.findOne({
+        customer: req.user!.id,
+        status: { $ne: "resolved" },
+      }).sort({ createdAt: -1 });
+
+      if (existing) {
+        const messages = await Message.find({ parentType: "conversation", parentId: existing._id })
+          .sort({ createdAt: 1 })
+          .limit(500)
+          .lean();
+        res.status(200).json({ conversation: existing, messages });
+        return;
+      }
+
       // sla-automation Story 26: stamp the first-response deadline at
       // creation time. No resolutionTargetAt — chats have no "resolution"
       // SLA concept (see IConversationSla).
@@ -76,12 +99,53 @@ router.post(
         assignedAgent: null,
         sla: { responseTargetAt: slaTargets.responseTargetAt, breached: false },
       });
-      res.status(201).json({ conversation });
+
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "chat_started",
+        targetType: "Conversation",
+        targetId: conversation.id,
+        ipAddress: req.ip,
+      });
+
+      res.status(201).json({ conversation, messages: [] });
     } catch (err) {
       next(err);
     }
   }
 );
+
+// live-chat: read-only check for the customer's own currently-active
+// (non-resolved) conversation — used by the chat widget on mount to decide
+// whether to resume a real in-progress session or start with a blank slate.
+// Deliberately does NOT count a conversation with zero messages as "active"
+// here (unlike POST / above, which resumes it regardless) — simply opening
+// the widget and never typing anything must not surface as a resumable
+// session, or as an entry in the customer's own chat history (GET /) later.
+// Registered before GET /:id so "active" is never swallowed as an :id value.
+router.get("/active", requireAuth, requireRole("customer"), async (req: Request, res: Response) => {
+  const conversation = await Conversation.findOne({
+    customer: req.user!.id,
+    status: { $ne: "resolved" },
+  }).sort({ createdAt: -1 });
+
+  if (!conversation) {
+    res.status(200).json({ conversation: null, messages: [] });
+    return;
+  }
+
+  const messages = await Message.find({ parentType: "conversation", parentId: conversation._id })
+    .sort({ createdAt: 1 })
+    .limit(500)
+    .lean();
+
+  if (messages.length === 0) {
+    res.status(200).json({ conversation: null, messages: [] });
+    return;
+  }
+
+  res.status(200).json({ conversation, messages });
+});
 
 // Story 16 ("Escalate to a human agent") is socket-only, not a REST route —
 // see backend/src/sockets/chat.socket.ts's conversation:escalate handler.
@@ -222,6 +286,15 @@ router.post(
       res.status(summaryOutcomeStatus(outcome)).json({ error: outcome.reason });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "chat_summarized",
+      targetType: "Conversation",
+      targetId: String(conversation._id),
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ summary: outcome.summary });
   }
 );

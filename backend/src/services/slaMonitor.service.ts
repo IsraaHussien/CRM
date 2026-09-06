@@ -12,6 +12,8 @@ import {
 import { sendEmail, renderEmailHtml } from "./email.service";
 import { escalateTicket } from "./ticketEscalation.service";
 import { escalateConversation } from "./conversationEscalation.service";
+import { recordAuditLog } from "./auditLog.service";
+import { getIoInstance } from "../sockets/ioRegistry";
 
 // sla-automation Story 28: proactively scans open tickets/conversations for
 // approaching-breach and breached SLA timers (Story 26's responseTargetAt /
@@ -220,6 +222,57 @@ export async function scanSlaOnce(now: Date = new Date()): Promise<{
   return { ticketsAtRisk, ticketsBreached, conversationsAtRisk, conversationsBreached };
 }
 
+// live-chat: a conversation nobody ever explicitly closes — the customer
+// walks away mid-chat without clicking "End chat", no agent resolves it
+// either — would otherwise stay "active" forever. That both clutters the
+// staff queue and blocks the customer's own history view (chats/[id]/page.tsx
+// only renders a "resolved" conversation; anything else redirects back into
+// the live widget), so a still-open conversation with no activity for a
+// while is treated as abandoned and auto-resolved. 30 minutes matches the
+// low end of what live-chat products use for widget-style (synchronous) chat
+// idle timeouts — Zendesk's own chat idle threshold is 10 minutes; Intercom's
+// async "Workflows" auto-close default is measured in days, but that's the
+// email-continuable messaging case this app doesn't have. Piggybacks on the
+// same self-rescheduling tick as the SLA scan below rather than its own timer.
+const CONVERSATION_ABANDON_MINUTES = 30;
+
+export async function closeAbandonedConversationsOnce(now: Date = new Date()): Promise<number> {
+  const cutoff = new Date(now.getTime() - CONVERSATION_ABANDON_MINUTES * 60_000);
+  const stale = await Conversation.find({
+    status: { $in: ["ai_handling", "escalated", "with_agent"] },
+    updatedAt: { $lt: cutoff },
+  });
+
+  const io = getIoInstance();
+  let closed = 0;
+  for (const conversation of stale) {
+    try {
+      // assignedAgent intentionally left untouched — history keeps it, same
+      // convention as the manual close handler (chat.socket.ts's conversation:close).
+      conversation.status = "resolved";
+      await conversation.save();
+
+      await recordAuditLog({
+        actor: String(conversation.customer),
+        action: "chat_closed",
+        targetType: "Conversation",
+        targetId: String(conversation._id),
+        metadata: { reason: "abandoned" },
+      });
+
+      io?.to(`conversation:${conversation._id}`).emit("conversation:closed", {
+        conversationId: String(conversation._id),
+        status: "resolved",
+      });
+
+      closed++;
+    } catch (err) {
+      console.error(`[sla-monitor] failed to auto-close abandoned conversation ${conversation._id}:`, err);
+    }
+  }
+  return closed;
+}
+
 // Self-rescheduling setTimeout loop, not a fixed setInterval — this is what
 // lets an admin's scanIntervalMinutes change take effect starting the next
 // cycle without a server restart (each tick reads getSlaSystemSettings()
@@ -237,7 +290,8 @@ export function startSlaMonitor(): { stop: () => void } {
   async function tick() {
     if (stopped) return;
     const counts = await scanSlaOnce();
-    console.log(`[sla-monitor] tick counts=${JSON.stringify(counts)}`);
+    const abandonedClosed = await closeAbandonedConversationsOnce();
+    console.log(`[sla-monitor] tick counts=${JSON.stringify(counts)} abandonedClosed=${abandonedClosed}`);
     if (stopped) return;
     const { scanIntervalMinutes } = await getSlaSystemSettings();
     handle = setTimeout(tick, scanIntervalMinutes * 60_000);
