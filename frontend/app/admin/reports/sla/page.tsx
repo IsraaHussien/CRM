@@ -175,11 +175,11 @@ export default async function SlaReportPage({ searchParams }: { searchParams: Pr
               <p className="text-xs font-semibold text-muted-foreground">{t("statCompliance")}</p>
             </div>
           </div>
-          <div className="rounded-xl border border-border p-3">
+          <div className="min-w-0 rounded-xl border border-border p-3">
             <p className="text-xs font-semibold text-muted-foreground">{t("statTotal")}</p>
             <p className="mt-1 text-2xl font-extrabold">{data.total}</p>
           </div>
-          <div className="rounded-xl border border-border p-3">
+          <div className="min-w-0 rounded-xl border border-border p-3">
             <p className="text-xs font-semibold text-muted-foreground">{t("statBreached")}</p>
             <p className="mt-1 text-2xl font-extrabold text-destructive">{data.breached}</p>
           </div>
@@ -192,18 +192,18 @@ export default async function SlaReportPage({ searchParams }: { searchParams: Pr
         </div>
 
         <div className="grid gap-4 lg:grid-cols-2">
-          <div>
+          <div className="min-w-0">
             <h3 className="mb-2 text-sm font-bold">{breakdownTitles.agent}</h3>
             {renderBreakdownTable(data.byAgent, t("columnAgent"))}
           </div>
           {data.byCategory && (
-            <div>
+            <div className="min-w-0">
               <h3 className="mb-2 text-sm font-bold">{breakdownTitles.category}</h3>
               {renderBreakdownTable(data.byCategory, t("columnCategory"))}
             </div>
           )}
           {data.byPriority && (
-            <div>
+            <div className="min-w-0">
               <h3 className="mb-2 text-sm font-bold">{breakdownTitles.priority}</h3>
               {renderBreakdownTable(data.byPriority, t("columnPriority"))}
             </div>

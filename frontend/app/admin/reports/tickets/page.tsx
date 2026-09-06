@@ -120,15 +120,15 @@ export default async function TicketReportsPage({ searchParams }: { searchParams
       <TicketReportFilterBar defaultFrom={defaults.from} defaultTo={defaults.to} categories={categories.map((c) => c.name)} />
 
       <div className="grid gap-3 sm:grid-cols-3">
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs font-semibold text-muted-foreground">{t("statTotal")}</p>
           <p className="mt-1 text-2xl font-extrabold text-chart-1">{report.totals.count}</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs font-semibold text-muted-foreground">{t("statAverage")}</p>
           <p className="mt-1 text-2xl font-extrabold">{dailyAverage}</p>
         </div>
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-4">
           <p className="text-xs font-semibold text-muted-foreground">{t("statTopCategory")}</p>
           <p className="mt-1 truncate text-lg font-bold">{topCategory ? (topCategory.category ?? t("uncategorized")) : "–"}</p>
         </div>
@@ -141,7 +141,7 @@ export default async function TicketReportsPage({ searchParams }: { searchParams
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-bold">{t("byCategoryTitle")}</h2>
           {report.byCategory.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">{t("emptyState")}</p>
@@ -165,7 +165,7 @@ export default async function TicketReportsPage({ searchParams }: { searchParams
           )}
         </div>
 
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="min-w-0 rounded-2xl border border-border bg-card p-4">
           <h2 className="mb-3 text-sm font-bold">{t("bySourceTitle")}</h2>
           {report.bySource.length === 0 ? (
             <p className="py-4 text-center text-sm text-muted-foreground">{t("emptyState")}</p>
