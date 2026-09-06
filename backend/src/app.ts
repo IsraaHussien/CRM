@@ -16,6 +16,7 @@ import kbHelpArticleRoutes from "./routes/kbHelpArticle.routes";
 import kbPublicRoutes from "./routes/kbPublic.routes";
 import feedbackRoutes from "./routes/feedback.routes";
 import auditRoutes from "./routes/audit.routes";
+import reportRoutes from "./routes/report.routes";
 import { errorHandler } from "./middleware/errorHandler";
 
 export function createApp(): Application {
@@ -39,9 +40,10 @@ export function createApp(): Application {
   app.use("/api/v1/kb/public", kbPublicRoutes);
   app.use("/api/v1/feedback", feedbackRoutes);
   app.use("/api/v1/admin/audit-logs", auditRoutes);
+  app.use("/api/v1/reports", reportRoutes);
   // TODO: mount remaining feature routers as they're implemented —
-  // agent-workspace, ai-features, reports-management (see USER_STORIES.md
-  // for the full feature list).
+  // agent-workspace, ai-features (see USER_STORIES.md for the full feature
+  // list).
 
   app.use((req: Request, res: Response) => {
     res.status(404).json({ error: "Not found" });

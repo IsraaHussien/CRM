@@ -6,11 +6,17 @@ import { Button } from "@/components/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { ListPagination } from "@/components/ListPagination";
 import { formatDateTime } from "@/lib/utils";
+import {
+  SOURCE_LABEL_KEY,
+  SOURCE_EMOJI,
+  SOURCE_BADGE_CLASS,
+  type TicketCreationChannel,
+} from "@/lib/ticketSource";
 import { TicketFilterBar } from "./TicketFilterBar";
 import { StatusQuickFilterChips } from "./StatusQuickFilterChips";
 import { ReassignAgentMenu } from "./ReassignAgentMenu";
 
-export type TicketCreationChannel = "customer_portal" | "ai" | "phone" | "email" | "in_person" | "other";
+export type { TicketCreationChannel };
 
 export interface StaffTicketRow {
   id: string;
@@ -84,40 +90,6 @@ const PRIORITY_BADGE_CLASS: Record<StaffTicketRow["priority"], string> = {
   medium: "border-transparent bg-warning/10 text-warning",
   high: "border-transparent bg-destructive/10 text-destructive",
   urgent: "border-transparent bg-destructive/20 text-destructive",
-};
-
-// Story 63: the source badge is provenance, not an SLA/ticket status, so it
-// deliberately does not reach for --success/--warning/--destructive — each
-// channel instead gets its own emoji + vivid color (globals.css's
-// --channel-* tokens) so the column reads at a glance instead of every row
-// showing the same flat gray pill. --channel-portal-equivalent is just
-// --primary directly — the portal is this app's own default channel, not
-// one more category to color-code.
-const SOURCE_LABEL_KEY: Record<TicketCreationChannel, string> = {
-  customer_portal: "sourceCustomer",
-  ai: "sourceAi",
-  phone: "sourceStaffPhone",
-  email: "sourceStaffEmail",
-  in_person: "sourceStaffInPerson",
-  other: "sourceStaffOther",
-};
-
-const SOURCE_EMOJI: Record<TicketCreationChannel, string> = {
-  customer_portal: "🌐",
-  ai: "🤖",
-  phone: "📞",
-  email: "✉️",
-  in_person: "🧑‍💼",
-  other: "🧩",
-};
-
-const SOURCE_BADGE_CLASS: Record<TicketCreationChannel, string> = {
-  customer_portal: "border-transparent bg-primary/10 text-primary",
-  ai: "border-transparent bg-channel-ai/10 text-channel-ai",
-  phone: "border-transparent bg-channel-phone/10 text-channel-phone",
-  email: "border-transparent bg-channel-email/10 text-channel-email",
-  in_person: "border-transparent bg-channel-in-person/10 text-channel-in-person",
-  other: "border-transparent bg-channel-other/10 text-channel-other",
 };
 
 // Story 60: the staff branch of /tickets — filterable/sortable/paginated

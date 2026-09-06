@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, ShieldUser, Ticket, MessageSquare, TicketPlus, UserPlus, ShieldPlus, Settings2, MessagesSquare, BookOpen, ScrollText } from "lucide-react";
+import { LayoutDashboard, Users, ShieldUser, Ticket, MessageSquare, TicketPlus, UserPlus, ShieldPlus, Settings2, MessagesSquare, BookOpen, ScrollText, BarChart3 } from "lucide-react";
 
 // Shared between the desktop hover-expand rail and the mobile drawer
 // (components/StaffSidebar.tsx, components/MobileStaffNav.tsx) so both stay
@@ -33,6 +33,11 @@ export const STAFF_NAV_ITEMS = [
   // subadmin can hold this without staff:view_list (or vice versa), so it's
   // its own permission key, not folded into "accounts".
   { key: "auditLog", href: "/admin/audit-logs", icon: ScrollText, staffOnly: true, agentOrAdminOnly: false, permission: "audit:view", pinned: false },
+  // reports-management Stories 40/41: reports:view is agent-grantable by
+  // default (see backend/src/constants/permissions.ts's
+  // DEFAULT_PERMISSIONS_BY_ROLE), unlike auditLog above — so this isn't
+  // staffOnly in the "admin/subadmin-tier" sense, it's purely permission-gated.
+  { key: "reports", href: "/admin/reports", icon: BarChart3, staffOnly: true, agentOrAdminOnly: false, permission: "reports:view", pinned: false },
   // sla-automation Story 25: the /admin/system-configuration shell
   // (categories/SLA targets/quick replies/branding tabs). `pinned: true`
   // means StaffSidebar/MobileStaffNav render this separately, anchored to
