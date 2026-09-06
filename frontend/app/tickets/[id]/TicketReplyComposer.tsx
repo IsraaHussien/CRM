@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
-import { Check, ChevronsUpDown, CircleAlert, Lock, Paperclip, X } from "lucide-react";
+import { CircleAlert, Lock, Paperclip, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import {
   sendTicketReply,
@@ -23,6 +22,87 @@ const MAX_NOTE_LENGTH = 4000;
 // the server rejects a 21st tag with a 400; this just stops the picker from
 // letting a user build a request that can only fail.
 const MAX_TAGS = 20;
+// Shown suggestions are capped independently of MAX_TAGS — this is a "don't
+// scroll forever" UI limit, not a request limit; the search query narrows
+// the list long before this matters in practice.
+const MAX_MENTION_SUGGESTIONS = 8;
+
+// Computed CSS properties that affect text layout/wrapping and therefore
+// must be copied onto the mirror element for its wrapped line breaks (and so
+// its caret span's offset) to land at the same pixel position they would in
+// the real textarea. Anything cosmetic (color, background, border-radius…)
+// is irrelevant since the mirror is never actually shown.
+const CARET_MIRROR_PROPS = [
+  "boxSizing",
+  "width",
+  "paddingTop",
+  "paddingRight",
+  "paddingBottom",
+  "paddingLeft",
+  "borderTopWidth",
+  "borderRightWidth",
+  "borderBottomWidth",
+  "borderLeftWidth",
+  "fontFamily",
+  "fontSize",
+  "fontWeight",
+  "fontStyle",
+  "letterSpacing",
+  "lineHeight",
+  "textTransform",
+  "wordSpacing",
+  "textIndent",
+] as const;
+
+// Classic "mirror div" technique for locating a textarea's caret in pixels:
+// no browser API exposes this directly, so a hidden, identically-styled div
+// is given the same text up to the caret, and the pixel offset of a marker
+// span appended at that point is read back. Coordinates returned are
+// relative to the textarea's own content box (top-left), NOT the viewport —
+// callers position an absolutely-positioned element inside a `relative`
+// wrapper around the textarea using these directly.
+function getCaretCoordinates(textarea: HTMLTextAreaElement, position: number): { top: number; left: number; height: number } {
+  const div = document.createElement("div");
+  const style = window.getComputedStyle(textarea);
+  for (const prop of CARET_MIRROR_PROPS) {
+    div.style[prop] = style[prop];
+  }
+  div.style.position = "absolute";
+  div.style.visibility = "hidden";
+  div.style.whiteSpace = "pre-wrap";
+  div.style.wordWrap = "break-word";
+  div.style.top = "0";
+  div.style.left = "-9999px";
+  div.style.height = "auto";
+  document.body.appendChild(div);
+
+  div.textContent = textarea.value.slice(0, position);
+  const marker = document.createElement("span");
+  marker.textContent = textarea.value.slice(position) || ".";
+  div.appendChild(marker);
+
+  const top = marker.offsetTop - textarea.scrollTop;
+  const left = marker.offsetLeft;
+  const lineHeight = parseInt(style.lineHeight, 10);
+  document.body.removeChild(div);
+  return { top, left, height: Number.isNaN(lineHeight) ? 20 : lineHeight };
+}
+
+// Looks backward from the cursor for an "@" that's still being actively
+// typed as a mention: it must start a token (preceded by start-of-text or
+// whitespace, so an email address's "@" never triggers this) and have no
+// whitespace between it and the cursor (typing a space ends mention mode,
+// same as every other @mention implementation).
+function findMentionTrigger(text: string, cursor: number): { start: number; query: string } | null {
+  const upToCursor = text.slice(0, cursor);
+  const at = upToCursor.lastIndexOf("@");
+  if (at === -1) return null;
+  const charBefore = at === 0 ? "" : upToCursor[at - 1];
+  if (charBefore && !/\s/.test(charBefore)) return null;
+  const query = upToCursor.slice(at + 1);
+  if (/\s/.test(query)) return null;
+  return { start: at, query };
+}
 
 // Story 56: sends immediately on click (no page navigation) — same
 // direct-server-action-call shape as TicketDetailSidebar.tsx's
@@ -165,44 +245,145 @@ function ReplyTab({ ticketId }: { ticketId: string }) {
 // attachments (the backend endpoint takes JSON, not multipart — notes are
 // short team annotations, not deliverables) and no "sent by email" anything:
 // posting one changes nothing the customer can observe.
+//
+// Tagging colleagues is a real inline "@" mention, not a separate always-
+// visible button: typing "@" opens a floating list, anchored at the caret
+// (via the mirror-div technique above), of every staff account the backend
+// considers taggable — which is every active agent/admin/subadmin, i.e.
+// "every staff member who can view a ticket" (GET /:id has no per-ticket
+// ownership gate — see ticket.routes.ts — so that's the whole staff roster,
+// not a narrower "assigned to this ticket" set). Picking one inserts
+// "@Name " as plain text at the caret and adds them to `tagged`, which is
+// the actual source of truth sent as `taggedUserIds` — the "@Name" text is
+// a readability aid, not re-parsed on submit. Removing a chip strips its
+// first matching "@Name" occurrence back out of the text to keep the two
+// in sync from that direction; a manual edit of the raw text is the one
+// path this can't reconcile, an accepted limitation of a plain <textarea>
+// rather than a full rich-text editor.
 function InternalNoteTab({ ticketId }: { ticketId: string }) {
   const t = useTranslations("TicketDetail");
   const [text, setText] = useState("");
   const [tagged, setTagged] = useState<InternalNoteTagTarget[]>([]);
   const [candidates, setCandidates] = useState<InternalNoteTagTarget[]>([]);
   const [candidatesLoaded, setCandidatesLoaded] = useState(false);
-  const [pickerOpen, setPickerOpen] = useState(false);
+  const [candidatesLoading, setCandidatesLoading] = useState(false);
+  const [mention, setMention] = useState<{ start: number; query: string } | null>(null);
+  const [mentionPos, setMentionPos] = useState<{ top: number; left: number; height: number } | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [tagErrors, setTagErrors] = useState<Record<string, string>>({});
   const [justPosted, setJustPosted] = useState(false);
   const [pending, startTransition] = useTransition();
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Fetched once, lazily, the first time the picker is opened — a staff
-  // roster is small and rarely changes mid-session, and an agent who only
-  // ever writes untagged notes never pays for the request at all.
+  // Fetched once, lazily, the first time "@" is typed — a staff roster is
+  // small and rarely changes mid-session, and an agent who only ever writes
+  // untagged notes never pays for the request at all.
   useEffect(() => {
-    if (!pickerOpen || candidatesLoaded) return;
+    if (mention === null || candidatesLoaded || candidatesLoading) return;
     let cancelled = false;
+    setCandidatesLoading(true);
     void (async () => {
       const targets = await listInternalNoteTagTargets();
       if (cancelled) return;
       setCandidates(targets);
       setCandidatesLoaded(true);
+      setCandidatesLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [pickerOpen, candidatesLoaded]);
+  }, [mention, candidatesLoaded, candidatesLoading]);
 
-  function toggleTag(target: InternalNoteTagTarget) {
+  // Re-measure the caret's pixel position whenever the mention trigger or
+  // the surrounding text changes — the text affects line-wrapping, so the
+  // caret can move even while `mention.start` itself stays put.
+  useLayoutEffect(() => {
+    if (!mention) {
+      setMentionPos(null);
+      return;
+    }
+    const el = textareaRef.current;
+    if (!el) return;
+    setMentionPos(getCaretCoordinates(el, mention.start));
+  }, [mention, text]);
+
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [mention?.start, mention?.query]);
+
+  const filtered = useMemo(() => {
+    if (!mention) return [];
+    const query = mention.query.trim().toLowerCase();
+    return candidates
+      .filter((c) => !tagged.some((u) => u.id === c.id))
+      .filter((c) => query.length === 0 || c.name.toLowerCase().includes(query))
+      .slice(0, MAX_MENTION_SUGGESTIONS);
+  }, [candidates, tagged, mention]);
+
+  function handleTextChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
+    const value = e.target.value;
+    setText(value);
+    setJustPosted(false);
+    setMention(findMentionTrigger(value, e.target.selectionStart ?? value.length));
+  }
+
+  // Fires on every caret move, not just typing (click, arrow keys, Home/End)
+  // — closes or updates mention mode the moment the cursor leaves an active
+  // "@query" span, same as it opens one when the cursor lands back inside.
+  function handleSelectionChange(e: React.SyntheticEvent<HTMLTextAreaElement>) {
+    const cursor = e.currentTarget.selectionStart ?? 0;
+    setMention(findMentionTrigger(text, cursor));
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (!mention || filtered.length === 0) return;
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setActiveIndex((i) => (i + 1) % filtered.length);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setActiveIndex((i) => (i - 1 + filtered.length) % filtered.length);
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.preventDefault();
+      selectMention(filtered[Math.min(activeIndex, filtered.length - 1)]);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setMention(null);
+    }
+  }
+
+  function selectMention(candidate: InternalNoteTagTarget) {
+    if (!mention || tagged.length >= MAX_TAGS) {
+      setMention(null);
+      return;
+    }
+    const before = text.slice(0, mention.start);
+    const afterQueryEnd = mention.start + 1 + mention.query.length;
+    const after = text.slice(afterQueryEnd);
+    const insertion = `@${candidate.name} `;
+    const nextCursor = before.length + insertion.length;
+    setText(before + insertion + after);
+    setTagged((current) => (current.some((u) => u.id === candidate.id) ? current : [...current, candidate]));
+    setMention(null);
+    requestAnimationFrame(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.focus();
+      el.setSelectionRange(nextCursor, nextCursor);
+    });
+  }
+
+  function removeTag(target: InternalNoteTagTarget) {
     setTagErrors({});
-    setTagged((current) =>
-      current.some((u) => u.id === target.id)
-        ? current.filter((u) => u.id !== target.id)
-        : current.length >= MAX_TAGS
-          ? current
-          : [...current, target]
-    );
+    setTagged((current) => current.filter((u) => u.id !== target.id));
+    setText((current) => {
+      const token = `@${target.name}`;
+      const idx = current.indexOf(token);
+      if (idx === -1) return current;
+      const end = idx + token.length + (current[idx + token.length] === " " ? 1 : 0);
+      return current.slice(0, idx) + current.slice(end);
+    });
   }
 
   function handlePost() {
@@ -246,66 +427,74 @@ function InternalNoteTab({ ticketId }: { ticketId: string }) {
           <Lock className="size-3.5" aria-hidden="true" />
           {t("internalNotes.helper")}
         </p>
-        <Textarea
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            setJustPosted(false);
-          }}
-          placeholder={t("internalNotes.placeholder")}
-          rows={3}
-          maxLength={MAX_NOTE_LENGTH}
-          disabled={pending}
-          aria-label={t("internalNotes.tab")}
-        />
+        <p className="text-xs text-muted-foreground">{t("internalNotes.mentionHint")}</p>
+        <div className="relative">
+          <Textarea
+            ref={textareaRef}
+            value={text}
+            onChange={handleTextChange}
+            onSelect={handleSelectionChange}
+            onKeyDown={handleKeyDown}
+            placeholder={t("internalNotes.placeholder")}
+            rows={3}
+            maxLength={MAX_NOTE_LENGTH}
+            disabled={pending}
+            aria-label={t("internalNotes.tab")}
+          />
+          {mention && mentionPos && (
+            <Popover open onOpenChange={(open) => !open && setMention(null)}>
+              <PopoverTrigger asChild>
+                <span
+                  aria-hidden
+                  className="pointer-events-none absolute"
+                  style={{ top: mentionPos.top, left: mentionPos.left, width: 1, height: mentionPos.height }}
+                />
+              </PopoverTrigger>
+              <PopoverContent
+                align="start"
+                sideOffset={4}
+                className="w-56 p-1"
+                onOpenAutoFocus={(e) => e.preventDefault()}
+                onCloseAutoFocus={(e) => e.preventDefault()}
+              >
+                {filtered.length === 0 ? (
+                  <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                    {candidatesLoaded ? t("internalNotes.noColleagues") : t("loading")}
+                  </p>
+                ) : (
+                  <ul>
+                    {filtered.map((c, index) => (
+                      <li key={c.id}>
+                        <button
+                          type="button"
+                          // mousedown (not click/onSelect) fires before the
+                          // textarea's blur — preventing default keeps focus
+                          // (and the caret position) in the textarea instead
+                          // of losing it to this button.
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            selectMention(c);
+                          }}
+                          className={cn(
+                            "flex w-full flex-col items-start rounded-md px-2 py-1.5 text-start text-sm",
+                            index === Math.min(activeIndex, filtered.length - 1) ? "bg-muted" : "hover:bg-muted/60"
+                          )}
+                        >
+                          <span className="truncate">{c.name}</span>
+                          <span className="truncate text-xs text-muted-foreground">{roleLabel(c.role)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
       </div>
 
       <div className="flex flex-col gap-2">
         <div className="flex flex-wrap items-center gap-2">
-          <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                role="combobox"
-                aria-expanded={pickerOpen}
-                disabled={pending}
-                className="font-normal"
-              >
-                {t("internalNotes.tagLabel")}
-                <ChevronsUpDown className="ms-2 size-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-0">
-              <Command>
-                <CommandInput placeholder={t("internalNotes.tagSearchPlaceholder")} />
-                <CommandList>
-                  <CommandEmpty>{candidatesLoaded ? t("internalNotes.noColleagues") : t("loading")}</CommandEmpty>
-                  <CommandGroup>
-                    {candidates.map((c) => {
-                      const selected = tagged.some((u) => u.id === c.id);
-                      return (
-                        <CommandItem
-                          key={c.id}
-                          value={`${c.name} ${c.role}`}
-                          onSelect={() => toggleTag(c)}
-                          disabled={!selected && tagged.length >= MAX_TAGS}
-                        >
-                          <Check className={cn("me-2 size-4", selected ? "opacity-100" : "opacity-0")} />
-                          <span className="flex flex-col overflow-hidden">
-                            <span className="truncate">{c.name}</span>
-                            <span className="truncate text-xs text-muted-foreground">{roleLabel(c.role)}</span>
-                          </span>
-                        </CommandItem>
-                      );
-                    })}
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-
           {tagged.length === 0 ? (
             <span className="text-xs text-muted-foreground">{t("internalNotes.noTagsYet")}</span>
           ) : (
@@ -321,7 +510,7 @@ function InternalNoteTab({ ticketId }: { ticketId: string }) {
                 {u.name}
                 <button
                   type="button"
-                  onClick={() => toggleTag(u)}
+                  onClick={() => removeTag(u)}
                   disabled={pending}
                   aria-label={t("internalNotes.removeTag", { name: u.name })}
                   className="opacity-70 hover:opacity-100"

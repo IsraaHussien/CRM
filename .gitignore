@@ -6,6 +6,9 @@ dist/
 build/
 *.log
 .DS_Store
+# Local Arabic Q&A log for this user — never committed, never uploaded (see CLAUDE.md's
+# "Local Arabic Q&A log" section).
+HOW-TO-USE.md
 # Uploaded customer files (customer-management Story 7) — runtime data, not source.
 backend/uploads/
 .claude/scheduled_tasks.lock

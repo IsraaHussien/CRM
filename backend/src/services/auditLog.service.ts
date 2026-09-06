@@ -1,9 +1,9 @@
-import { AuditLog, AuditAction, AUDIT_ACTION_CATEGORY } from "../models/AuditLog";
+import { AuditLog, AuditAction, AuditTargetType, AUDIT_ACTION_CATEGORY } from "../models/AuditLog";
 
 interface RecordAuditLogParams {
   actor: string | null;
   action: AuditAction;
-  targetType: "User";
+  targetType: AuditTargetType;
   targetId?: string | null;
   metadata?: Record<string, unknown>;
   ipAddress?: string;

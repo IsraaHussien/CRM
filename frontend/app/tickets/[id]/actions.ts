@@ -309,6 +309,7 @@ export interface TicketHistoryEvent {
     | "internal_note_added"
     | "chat_participant_joined"
     | "chat_participant_left"
+    | "chat_inquiry"
     | "sla_at_risk"
     | "sla_breached";
   at: string;

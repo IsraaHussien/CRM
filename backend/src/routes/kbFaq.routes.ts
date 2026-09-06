@@ -8,6 +8,7 @@ import { escapeRegex } from "../utils/regex";
 import { Faq, IFaq } from "../models/Faq";
 import { createFaq, updateFaq, softDeleteFaq } from "../services/faq.service";
 import { suggestTranslation, findSimilarFaqs } from "../services/kbAi.service";
+import { recordAuditLog } from "../services/auditLog.service";
 import {
   faqIdParamsSchema,
   createFaqBodySchema,
@@ -100,6 +101,16 @@ router.post(
   validateBody(createFaqBodySchema),
   async (req: Request<unknown, unknown, z.infer<typeof createFaqBodySchema>>, res: Response) => {
     const faq = await createFaq({ ...req.body, actorId: req.user!.id });
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "kb_faq_created",
+      targetType: "Faq",
+      targetId: faq.id,
+      metadata: { question: faq.question.en || faq.question.ar },
+      ipAddress: req.ip,
+    });
+
     res.status(201).json(toFaqResponse(faq));
   }
 );
@@ -119,6 +130,15 @@ router.patch(
       res.status(404).json({ error: "FAQ not found" });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "kb_faq_updated",
+      targetType: "Faq",
+      targetId: faq.id,
+      ipAddress: req.ip,
+    });
+
     res.status(200).json(toFaqResponse(faq));
   }
 );
@@ -134,6 +154,15 @@ router.delete(
       res.status(404).json({ error: "FAQ not found" });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "kb_faq_deleted",
+      targetType: "Faq",
+      targetId: faq.id,
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ id: faq.id, deleted: true });
   }
 );

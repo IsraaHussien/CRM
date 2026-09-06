@@ -188,6 +188,15 @@ router.post(
       throw err;
     }
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "staff_created",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { role: user.role, email: user.email },
+      ipAddress: req.ip,
+    });
+
     res.status(201).json(toStaffAccountResponse(user));
   }
 );
@@ -233,13 +242,17 @@ router.patch(
       return;
     }
 
-    if (name !== undefined) {
+    const detailChanges: Record<string, { before: unknown; after: unknown }> = {};
+    if (name !== undefined && name !== user.name) {
+      detailChanges.name = { before: user.name, after: name };
       user.name = name;
     }
-    if (email !== undefined) {
+    if (email !== undefined && email !== user.email) {
+      detailChanges.email = { before: user.email, after: email };
       user.email = email;
     }
-    if (role !== undefined) {
+    if (role !== undefined && role !== user.role) {
+      detailChanges.role = { before: user.role, after: role };
       user.role = role;
     }
     // Captured before the assignment below so the audit entry (if any) can
@@ -258,6 +271,17 @@ router.patch(
         return;
       }
       throw err;
+    }
+
+    if (Object.keys(detailChanges).length > 0) {
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "staff_updated",
+        targetType: "User",
+        targetId: user.id,
+        metadata: { changes: detailChanges },
+        ipAddress: req.ip,
+      });
     }
 
     if (editingPermissions) {
@@ -357,6 +381,15 @@ router.delete(
       user.isOnline = false;
     }
     await user.save();
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "staff_deleted",
+      targetType: "User",
+      targetId: user.id,
+      metadata: { role: user.role, email: user.email },
+      ipAddress: req.ip,
+    });
 
     res.status(204).send();
   }

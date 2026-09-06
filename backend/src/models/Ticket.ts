@@ -80,6 +80,21 @@ export interface ITicketChatPresenceHistoryEntry {
   at: Date;
 }
 
+// ai-features/live-chat: the AI agent now has real grounding into the
+// customer's own tickets (see liveChatAi.service.ts's fetchTicketContext) —
+// when the customer's message names a specific ticket that resolves to one
+// of their own, this records that inquiry here so an agent working the
+// ticket later has visibility into "the customer already asked about this in
+// live chat" instead of it only existing in a conversation transcript they'd
+// have no reason to go looking for. Always the ticket's own customer asking
+// about their own ticket (fetchTicketContext only ever looks up tickets
+// scoped to that customer) — no `changedBy` needed, same reasoning as
+// slaHistory's lack of one.
+export interface ITicketChatInquiryHistoryEntry {
+  conversation: Types.ObjectId;
+  at: Date;
+}
+
 /**
  * Supports the ticket-management feature (Stories 8-13) and the sla-automation
  * feature (Stories 25-27) via the sla sub-document.
@@ -102,6 +117,7 @@ export interface ITicket extends Document {
   priorityHistory: ITicketPriorityHistoryEntry[];
   assignedAgentHistory: ITicketAssignedAgentHistoryEntry[];
   chatPresenceHistory: ITicketChatPresenceHistoryEntry[];
+  chatInquiryHistory: ITicketChatInquiryHistoryEntry[];
   slaHistory: ITicketSlaHistoryEntry[];
   sla: ITicketSla;
   escalatedTo: Types.ObjectId | null;
@@ -187,6 +203,16 @@ const ticketSchema = new Schema<ITicket>(
         {
           event: { type: String, enum: ["joined", "left"], required: true },
           user: { type: Schema.Types.ObjectId, ref: "User", required: true },
+          at: { type: Date, required: true },
+        },
+      ],
+      default: [],
+      _id: false,
+    },
+    chatInquiryHistory: {
+      type: [
+        {
+          conversation: { type: Schema.Types.ObjectId, ref: "Conversation", required: true },
           at: { type: Date, required: true },
         },
       ],

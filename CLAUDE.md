@@ -125,3 +125,9 @@ The full requirements are in `USER_STORIES.md`, grouped into 13 squad-kit featur
 ## Recommended build order
 
 Follow the feature order in `USER_STORIES.md`'s intro: `auth` → `customer-management` → `ticket-management` + `live-chat` (parallel) → `sla-automation` → `agent-workspace` → `knowledge-base` → `ai-features` → `customer-portal` → `security-admin` → `reports-management` → `integrations` → `platform`. Later features assume earlier ones' models/endpoints exist — in particular, `knowledge-base` is built before `ai-features` because Story 34 (AI-suggested KB solutions) needs real KB content to suggest from.
+
+## Local Arabic Q&A log (not tracked by git)
+
+`HOW-TO-USE.md` at the repo root is a running log of Arabic-language explanations/testing-scenarios given to this user in chat — how a feature works, how to test it end-to-end, how a subsystem (SLA, live chat, etc.) behaves. It's gitignored on purpose and must never be committed, referenced in a PR, or uploaded anywhere — it's local notes for this user only.
+
+**Whenever a chat response includes an Arabic explanation of how something works or an Arabic end-to-end testing walkthrough, append it to `HOW-TO-USE.md`** — regardless of whether the user explicitly asked to save it. Use a dated `## YYYY-MM-DD — <topic>` heading per entry, keep the content in Arabic (matching how it was actually explained), and don't rewrite/summarize past entries when adding a new one.

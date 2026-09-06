@@ -17,6 +17,7 @@ import {
 import { getAiReply, evaluateTicketSuggestion, evaluateKbSuggestion } from "../services/liveChatAi.service";
 import { hasPermission } from "../services/permissions";
 import { escalateConversation } from "../services/conversationEscalation.service";
+import { recordAuditLog } from "../services/auditLog.service";
 
 // customer-portal Story 39: same env-var fallback pattern as
 // ticket.routes.ts's CLIENT_ORIGIN.
@@ -47,6 +48,7 @@ interface ConversationMessagePayload {
 }
 
 const conversationIdSchema = objectIdSchema("Invalid conversation id");
+const ticketIdSchema = objectIdSchema("Invalid ticket id");
 
 // Whether `user` may VIEW `conversation` (join its room to read the
 // transcript and receive live updates) or close it — the conversation's own
@@ -165,6 +167,39 @@ export function registerChatHandlers(io: Server): void {
     // to know which conversation, if any, that user currently has open.
     socket.join(`user:${socket.data.user.id}`);
 
+    // ticket-management: every staff connection also joins a shared room so
+    // ticketRealtime.service.ts can wake anyone with a ticket list/queue open
+    // without needing to know who's currently viewing which page — a
+    // customer never joins this room, their own list is covered by the
+    // personal `user:<id>` room above instead (ticketRealtime.service.ts
+    // emits to both).
+    if (socket.data.user.role !== "customer") {
+      socket.join("staff:tickets");
+    }
+
+    // Client joins the room for a specific ticket so a live "someone changed
+    // this ticket" push (ticketRealtime.service.ts) only reaches whoever has
+    // that exact ticket's detail page open. Authorization mirrors GET
+    // /:id in ticket.routes.ts: any staff role may join any ticket; a
+    // customer only their own — silently ignored otherwise (no error event),
+    // same "don't reveal whether it exists" reasoning as that route's 404.
+    socket.on("ticket:join", async (ticketId: string) => {
+      const parsedId = ticketIdSchema.safeParse(ticketId);
+      if (!parsedId.success) return;
+      const ticket = await Ticket.findById(ticketId).select("customer");
+      if (!ticket) return;
+      if (socket.data.user.role === "customer" && String(ticket.customer) !== socket.data.user.id) {
+        return;
+      }
+      socket.join(`ticket:${ticketId}`);
+    });
+
+    socket.on("ticket:leave", (ticketId: string) => {
+      const parsedId = ticketIdSchema.safeParse(ticketId);
+      if (!parsedId.success) return;
+      socket.leave(`ticket:${ticketId}`);
+    });
+
     // Client joins the room for a specific conversation so messages only broadcast
     // to participants of that conversation.
     socket.on("conversation:join", async (conversationId: string) => {
@@ -265,7 +300,7 @@ export function registerChatHandlers(io: Server): void {
           // non-throwing (see liveChatAi.service.ts), so a Promise.all here
           // never lets one call's failure affect the others.
           const [reply, ticketSuggestion, kbSuggestion] = await Promise.all([
-            getAiReply(conversationId),
+            getAiReply(conversationId, text),
             evaluateTicketSuggestion(conversationId, conversation.aiTicketSuggestionDeclined),
             evaluateKbSuggestion(text),
           ]);
@@ -371,6 +406,14 @@ export function registerChatHandlers(io: Server): void {
         return;
       }
 
+      await recordAuditLog({
+        actor: socket.data.user.id,
+        action: "chat_escalated",
+        targetType: "Conversation",
+        targetId: conversationId,
+        ipAddress: socket.handshake.address,
+      });
+
       io.to(`conversation:${conversationId}`).emit("conversation:escalated", {
         conversationId,
         status: "escalated",
@@ -444,6 +487,14 @@ export function registerChatHandlers(io: Server): void {
       // undo the claim that already succeeded above.
       await recordChatPresenceEventOnTicket(conversationId, "joined", socket.data.user.id);
 
+      await recordAuditLog({
+        actor: socket.data.user.id,
+        action: "chat_claimed",
+        targetType: "Conversation",
+        targetId: conversationId,
+        ipAddress: socket.handshake.address,
+      });
+
       const agentInfo = { id: socket.data.user.id, name: socket.data.user.name };
       io.to(`conversation:${conversationId}`).emit("conversation:claimed", { conversationId, agent: agentInfo });
 
@@ -485,6 +536,15 @@ export function registerChatHandlers(io: Server): void {
       }
 
       await recordChatPresenceEventOnTicket(conversationId, "left", socket.data.user.id);
+
+      await recordAuditLog({
+        actor: socket.data.user.id,
+        action: "chat_unclaimed",
+        targetType: "Conversation",
+        targetId: conversationId,
+        ipAddress: socket.handshake.address,
+      });
+
       io.to(`conversation:${conversationId}`).emit("conversation:unclaimed", { conversationId });
     });
 
@@ -518,6 +578,14 @@ export function registerChatHandlers(io: Server): void {
       // assignedAgent is intentionally left untouched — history keeps it.
       conversation.status = "resolved";
       await conversation.save();
+
+      await recordAuditLog({
+        actor: socket.data.user.id,
+        action: "chat_closed",
+        targetType: "Conversation",
+        targetId: conversationId,
+        ipAddress: socket.handshake.address,
+      });
 
       io.to(`conversation:${conversationId}`).emit("conversation:closed", {
         conversationId,
@@ -575,6 +643,14 @@ export function registerChatHandlers(io: Server): void {
           );
           if (released) {
             await recordChatPresenceEventOnTicket(conversationId, "left", socket.data.user.id);
+            await recordAuditLog({
+              actor: socket.data.user.id,
+              action: "chat_unclaimed",
+              targetType: "Conversation",
+              targetId: conversationId,
+              metadata: { reason: "disconnect" },
+              ipAddress: socket.handshake.address,
+            });
             io.to(room).emit("conversation:unclaimed", { conversationId });
           }
         } catch (err) {

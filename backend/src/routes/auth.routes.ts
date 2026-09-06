@@ -92,6 +92,13 @@ router.post(
       membershipNumber: user.membershipNumber,
     });
     const refreshToken = await issueRefreshFamily(user.id);
+    await recordAuditLog({
+      actor: user.id,
+      action: "customer_registered",
+      targetType: "User",
+      targetId: user.id,
+      ipAddress: req.ip,
+    });
     res.status(201).json({
       token,
       refreshToken,
@@ -281,7 +288,13 @@ router.post("/logout", async (req: Request<unknown, unknown, LogoutBody>, res: R
   const presented = req.body?.refreshToken;
   const familyId = typeof presented === "string" ? parseFamilyId(presented) : null;
   if (familyId) {
-    await RefreshFamily.updateOne({ familyId }, { $set: { revoked: true } });
+    // findOneAndUpdate, not updateOne — same revocation write as before,
+    // but this also hands back userId so the logout can be attributed in
+    // the audit trail (security-admin Story 47) without a second query.
+    const family = await RefreshFamily.findOneAndUpdate({ familyId }, { $set: { revoked: true } });
+    if (family) {
+      await recordAuditLog({ actor: String(family.userId), action: "logout", targetType: "User", targetId: String(family.userId), ipAddress: req.ip });
+    }
   }
   res.status(200).json({ message: "Logged out" });
 });

@@ -6,6 +6,7 @@ import { Feedback } from "../models/Feedback";
 import { Ticket } from "../models/Ticket";
 import { Conversation } from "../models/Conversation";
 import { feedbackParentTypeParamSchema, feedbackBodySchema } from "../validation/feedback.schema";
+import { recordAuditLog } from "../services/auditLog.service";
 
 const router = express.Router();
 
@@ -89,6 +90,16 @@ router.post(
         rating: req.body.rating,
         comment: req.body.comment,
       });
+
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "feedback_submitted",
+        targetType: "Feedback",
+        targetId: feedback.id,
+        metadata: { parentType, parentId, rating: feedback.rating },
+        ipAddress: req.ip,
+      });
+
       res
         .status(201)
         .json({ rating: feedback.rating, comment: feedback.comment ?? null, createdAt: feedback.createdAt });

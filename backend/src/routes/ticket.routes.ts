@@ -9,6 +9,8 @@ import { Conversation } from "../models/Conversation";
 import { sendEmail, renderEmailHtml } from "../services/email.service";
 import { pickNextAvailableAgent } from "../services/assignment.service";
 import { createTicketNotification, notifyTicketOversight } from "../services/notification.service";
+import { recordAuditLog } from "../services/auditLog.service";
+import { emitTicketUpdated } from "../services/ticketRealtime.service";
 import type { PermissionKey } from "../constants/permissions";
 import { hasPermission, isActiveAccount } from "../services/permissions";
 import { validateBody } from "../middleware/validate";
@@ -207,6 +209,19 @@ router.post(
     const referenceNumber = `TCK-${ticket.ticketNumber}`;
     const shouldSendEmail = !isStaffCreated || notifyCustomer;
 
+    // security-admin Story 47: every ticket creation is auditable, staff
+    // created on behalf of a customer (Story 57) or the customer's own
+    // self-submission alike — `isStaffCreated` is carried in metadata so the
+    // two are still distinguishable in the log.
+    await recordAuditLog({
+      actor: creatorId.toString(),
+      action: "ticket_created",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { reference: referenceNumber, subject, customerId: String(customer._id), isStaffCreated, createdVia },
+      ipAddress: req.ip,
+    });
+
     // Oversight nudge: every new ticket, regardless of how it was created or
     // whether auto-assignment below succeeds, is visible to admins/permitted
     // subadmins immediately — best effort, same reasoning as every other
@@ -295,6 +310,12 @@ router.post(
         console.error("[tickets] assignment notification email failed", err);
       }
     }
+
+    // Wakes any staff queue that's currently open — a new ticket (and its
+    // auto-assignment above, already reflected on `ticket` by this point)
+    // should appear without a manual refresh. No customer room: the creator
+    // already has this ticket's data in the response below.
+    emitTicketUpdated(ticket.id);
 
     res.status(201).json({
       id: ticket._id.toString(),
@@ -771,9 +792,18 @@ router.patch(
       console.info(
         `[ticket-reassigned] ticket=${req.params.id} from=${previousAgentId ?? "null"} to=${ticket.assignedAgent ?? "null"} by=${req.user!.id} at=${new Date().toISOString()}`
       );
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_reassigned",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousAgentId ? String(previousAgentId) : null, to: ticket.assignedAgent ? String(ticket.assignedAgent) : null },
+        ipAddress: req.ip,
+      });
     }
 
     if ("category" in rawBody) {
+      const previousCategory = ticket.category;
       if (category === null) {
         ticket.category = null;
       } else {
@@ -790,9 +820,18 @@ router.patch(
         changedAt: new Date(),
       });
       console.info(`[tickets] ${req.params.id} category changed by ${req.user!.id} to ${ticket.category}`);
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_category_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousCategory, to: ticket.category },
+        ipAddress: req.ip,
+      });
     }
 
     if ("priority" in rawBody) {
+      const previousPriority = ticket.priority;
       ticket.priority = priority!;
       ticket.priorityHistory.push({
         priority: ticket.priority,
@@ -800,6 +839,14 @@ router.patch(
         changedAt: new Date(),
       });
       console.info(`[tickets] ${req.params.id} priority changed by ${req.user!.id} to ${priority}`);
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_priority_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousPriority, to: ticket.priority },
+        ipAddress: req.ip,
+      });
     }
 
     // sla-automation gap fix: category/priority are SLA-matching dimensions
@@ -810,6 +857,8 @@ router.patch(
     }
 
     await ticket.save();
+
+    emitTicketUpdated(ticket.id, ticket.customer.toString());
 
     // Story 25/54: notify both sides of an actual reassignment — best
     // effort, same reasoning as the auto-assignment notification in POST /
@@ -918,6 +967,7 @@ router.patch(
     }
 
     const wasClosed = ticket.status === "closed";
+    const previousStatus = ticket.status;
 
     try {
       await applyStatusTransition({
@@ -932,6 +982,18 @@ router.patch(
         return;
       }
       throw err;
+    }
+
+    if (ticket.status !== previousStatus) {
+      await recordAuditLog({
+        actor: req.user!.id,
+        action: "ticket_status_changed",
+        targetType: "Ticket",
+        targetId: ticket.id,
+        metadata: { from: previousStatus, to: ticket.status },
+        ipAddress: req.ip,
+      });
+      emitTicketUpdated(ticket.id, ticket.customer.toString());
     }
 
     // Reopening is oversight-worthy on its own (unlike a routine reassignment
@@ -1074,6 +1136,16 @@ router.post(
       }
       throw err;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_escalated",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { escalatedTo },
+      ipAddress: req.ip,
+    });
+    emitTicketUpdated(ticket.id, ticket.customer.toString());
 
     const populated = await ticket.populate<{
       customer: { _id: Types.ObjectId; name: string; email: string };
@@ -1272,6 +1344,15 @@ router.post(
       attachments,
     });
 
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_replied",
+      targetType: "Ticket",
+      targetId: ticket.id,
+      metadata: { messageId: String(messageId) },
+      ipAddress: req.ip,
+    });
+
     // ticket-management Story 11: route the automatic "answered" flip
     // through the same audited helper the manual PATCH /:id/status uses, so
     // this — the single most common status change — also lands in
@@ -1311,6 +1392,8 @@ router.post(
       console.error("[tickets] reply email failed", err);
     }
 
+    emitTicketUpdated(ticket.id, ticket.customer._id.toString());
+
     const sender = await User.findById(req.user!.id, { name: 1 });
     res.status(201).json(toMessageResponse(message, sender ? { id: sender.id, name: sender.name } : null));
   }
@@ -1331,10 +1414,11 @@ router.post(
 // to reuse or extract here; adding one only for internal notes would make
 // them *stricter* than customer-visible replies, which is backwards.
 //
-// No Socket.io emit: the ticket detail page has no ticket-scoped socket
-// channel today (sockets/chat.socket.ts is conversation-only), so there is
-// nothing to emit into — the page revalidates on the server action instead.
-// Left for the future story that gives tickets a live thread.
+// emitTicketUpdated below carries no customerId — an internal note is never
+// customer-visible (see toMessageResponse's omitInternalField), so there's
+// no reason to wake that customer's own ticket list, only the ticket room
+// itself (another staff member with this same ticket open) and the shared
+// staff queue.
 router.post(
   "/:id/internal-notes",
   requireAuth,
@@ -1403,6 +1487,16 @@ router.post(
       taggedUserIds: taggedUsers.map((u) => u._id),
       attachments: [],
     });
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_internal_note_added",
+      targetType: "Ticket",
+      targetId: String(ticket._id),
+      metadata: { messageId: String(message._id), taggedUserIds: taggedUsers.map((u) => String(u._id)) },
+      ipAddress: req.ip,
+    });
+    emitTicketUpdated(String(ticket._id));
 
     // Best-effort, in parallel, never rolling back the note: allSettled (not
     // Promise.all) so one failed insert can't reject the batch — same
@@ -1567,6 +1661,15 @@ router.post(
       res.status(summaryOutcomeStatus(outcome)).json({ error: outcome.reason });
       return;
     }
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "ticket_summarized",
+      targetType: "Ticket",
+      targetId: String(ticket._id),
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ summary: outcome.summary });
   }
 );

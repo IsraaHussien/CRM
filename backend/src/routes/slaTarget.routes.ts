@@ -12,6 +12,7 @@ import {
   updateSlaTargetBodySchema,
   updateSlaSystemSettingsBodySchema,
 } from "../validation/slaTarget.schema";
+import { recordAuditLog } from "../services/auditLog.service";
 
 const router = express.Router();
 
@@ -94,11 +95,22 @@ router.patch(
   requirePermission("sla:configure"),
   validateBody(updateSlaSystemSettingsBodySchema),
   async (req: Request, res: Response) => {
+    const before = await getSlaSystemSettings();
     const updated = await SlaSystemSettings.findByIdAndUpdate(
       "default",
       { $set: req.body, updatedBy: req.user!.id },
       { upsert: true, new: true }
     );
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "sla_settings_updated",
+      targetType: "SlaSystemSettings",
+      targetId: "default",
+      metadata: { before, after: { atRiskPercent: updated!.atRiskPercent, scanIntervalMinutes: updated!.scanIntervalMinutes } },
+      ipAddress: req.ip,
+    });
+
     res.status(200).json({ atRiskPercent: updated!.atRiskPercent, scanIntervalMinutes: updated!.scanIntervalMinutes });
   }
 );
@@ -127,6 +139,15 @@ router.post(
       after: snapshot(target),
       changedBy: req.user!.id,
       changedAt: new Date(),
+    });
+
+    await recordAuditLog({
+      actor: req.user!.id,
+      action: "sla_target_created",
+      targetType: "SlaTarget",
+      targetId: target.id,
+      metadata: { after: snapshot(target) },
+      ipAddress: req.ip,
     });
 
     res.status(201).json(toResponse(target));
@@ -190,6 +211,15 @@ router.patch("/:id", requireAuth, async (req: Request<{ id: string }>, res: Resp
     changedAt: new Date(),
   });
 
+  await recordAuditLog({
+    actor: req.user!.id,
+    action: "sla_target_updated",
+    targetType: "SlaTarget",
+    targetId: target.id,
+    metadata: { before, after: snapshot(target) },
+    ipAddress: req.ip,
+  });
+
   res.status(200).json(toResponse(target));
 });
 
@@ -215,6 +245,7 @@ router.delete("/:id", requireAuth, async (req: Request<{ id: string }>, res: Res
   }
 
   const before = snapshot(target);
+  const targetId = target.id;
   await target.deleteOne();
 
   await SlaTargetHistory.create({
@@ -224,6 +255,15 @@ router.delete("/:id", requireAuth, async (req: Request<{ id: string }>, res: Res
     after: null,
     changedBy: req.user!.id,
     changedAt: new Date(),
+  });
+
+  await recordAuditLog({
+    actor: req.user!.id,
+    action: "sla_target_deleted",
+    targetType: "SlaTarget",
+    targetId,
+    metadata: { before },
+    ipAddress: req.ip,
   });
 
   res.status(204).send();

@@ -2,6 +2,13 @@ import express, { Request, Response } from "express";
 import { requireAuth, requirePermission } from "../middleware/auth";
 import { AuditLog } from "../models/AuditLog";
 import { User } from "../models/User";
+import { Ticket } from "../models/Ticket";
+import { Conversation } from "../models/Conversation";
+import { TicketCategory } from "../models/TicketCategory";
+import { SlaTarget } from "../models/SlaTarget";
+import { Faq } from "../models/Faq";
+import { HelpArticle } from "../models/HelpArticle";
+import { Feedback } from "../models/Feedback";
 import { listAuditLogsQuerySchema } from "../validation/audit.schema";
 import { escapeRegex } from "../utils/regex";
 
@@ -64,16 +71,67 @@ router.get("/", requireAuth, requirePermission("audit:view"), async (req: Reques
     AuditLog.countDocuments(filter),
   ]);
 
-  // Resolve targetId -> {id,name,email,role} in one extra query, same
-  // shape as the populated actor — every targetType this story wires is
-  // "User", so this always applies. Keeps the response usable for the
-  // frontend's "{actor} updated permissions for {target}"-style lines
-  // without a second round trip per row.
-  const targetIds = entries.filter((e) => e.targetId).map((e) => e.targetId);
-  const targets = targetIds.length
-    ? await User.find({ _id: { $in: targetIds } }).select("name email role")
-    : [];
-  const targetMap = new Map(targets.map((u) => [String(u._id), { id: u.id, name: u.name, email: u.email, role: u.role }]));
+  // Resolve targetId -> a small display object in one extra query per
+  // collection, same reasoning as the populated actor — keeps the response
+  // usable for the frontend's "{actor} did X to {target}" lines (and its
+  // target link) without a second round trip per row. Which collection a
+  // targetId lives in depends on targetType (User vs. Ticket), so each is
+  // looked up separately rather than via a single populate() (targetId has
+  // no static `ref`, on purpose — see AuditLog.ts's schema comment).
+  const idsFor = (targetType: string) =>
+    entries.filter((e) => e.targetType === targetType && e.targetId).map((e) => e.targetId);
+
+  const [targetUsers, targetTickets, targetConversations, targetCategories, targetSlaTargets, targetFaqs, targetArticles, targetFeedback] =
+    await Promise.all([
+      User.find({ _id: { $in: idsFor("User") } }).select("name email role"),
+      Ticket.find({ _id: { $in: idsFor("Ticket") } }).select("subject ticketNumber"),
+      Conversation.find({ _id: { $in: idsFor("Conversation") } }).select("createdAt"),
+      TicketCategory.find({ _id: { $in: idsFor("TicketCategory") } }).select("name"),
+      SlaTarget.find({ _id: { $in: idsFor("SlaTarget") } }).select("priority category"),
+      Faq.find({ _id: { $in: idsFor("Faq") } }).select("question"),
+      HelpArticle.find({ _id: { $in: idsFor("HelpArticle") } }).select("title slug"),
+      Feedback.find({ _id: { $in: idsFor("Feedback") } }).select("parentType parentId rating"),
+    ]);
+
+  const userTargetMap = new Map(
+    targetUsers.map((u) => [String(u._id), { id: u.id, name: u.name, email: u.email, role: u.role }])
+  );
+  const ticketTargetMap = new Map(
+    targetTickets.map((t) => [String(t._id), { id: t.id, reference: `TCK-${t.ticketNumber}`, subject: t.subject }])
+  );
+  const conversationTargetMap = new Map(
+    targetConversations.map((c) => [String(c._id), { id: c.id, reference: `Chat — ${new Date(c.createdAt).toLocaleDateString()}` }])
+  );
+  const categoryTargetMap = new Map(targetCategories.map((c) => [String(c._id), { id: c.id, name: c.name }]));
+  const slaTargetMap = new Map(
+    targetSlaTargets.map((s) => [String(s._id), { id: s.id, name: `${s.priority ?? "Any priority"} / ${s.category ?? "Any category"}` }])
+  );
+  const faqTargetMap = new Map(targetFaqs.map((f) => [String(f._id), { id: f.id, name: f.question?.en ?? f.question?.ar ?? "FAQ" }]));
+  const articleTargetMap = new Map(
+    targetArticles.map((a) => [String(a._id), { id: a.id, name: a.title?.en ?? a.title?.ar ?? a.slug }])
+  );
+  const feedbackTargetMap = new Map(
+    targetFeedback.map((f) => [String(f._id), { id: f.id, name: `${f.parentType} feedback (${f.rating}★)` }])
+  );
+
+  const TARGET_MAPS: Record<string, Map<string, unknown>> = {
+    User: userTargetMap,
+    Ticket: ticketTargetMap,
+    Conversation: conversationTargetMap,
+    TicketCategory: categoryTargetMap,
+    SlaTarget: slaTargetMap,
+    Faq: faqTargetMap,
+    HelpArticle: articleTargetMap,
+    Feedback: feedbackTargetMap,
+  };
+
+  function resolveTarget(entry: (typeof entries)[number]) {
+    if (!entry.targetId) return null;
+    // SlaSystemSettings is a fixed singleton ("default") with nothing to
+    // look up in a collection — synthesize its display object directly.
+    if (entry.targetType === "SlaSystemSettings") return { id: "default", name: "SLA settings" };
+    return TARGET_MAPS[entry.targetType]?.get(String(entry.targetId)) ?? null;
+  }
 
   res.status(200).json({
     entries: entries.map((e) => ({
@@ -83,7 +141,7 @@ router.get("/", requireAuth, requirePermission("audit:view"), async (req: Reques
       category: e.category,
       targetType: e.targetType,
       targetId: e.targetId ? String(e.targetId) : null,
-      target: e.targetId ? (targetMap.get(String(e.targetId)) ?? null) : null,
+      target: resolveTarget(e),
       metadata: e.metadata,
       ipAddress: e.ipAddress,
       createdAt: e.createdAt,

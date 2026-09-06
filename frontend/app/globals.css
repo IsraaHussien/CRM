@@ -129,6 +129,10 @@ html {
   --color-icon-priority: var(--icon-priority);
   --color-icon-date: var(--icon-date);
   --color-icon-source: var(--icon-source);
+  --color-icon-chat: var(--icon-chat);
+  --color-icon-kb: var(--icon-kb);
+  --color-icon-sla: var(--icon-sla);
+  --color-icon-rating: var(--icon-rating);
 
   /* Per-channel accents for the ticket "source"/"created via" badges
      (StaffTicketQueue.tsx's Source column, the subject-line badge in
@@ -254,6 +258,14 @@ html {
 
   --icon-source: #6B9E1E;
 
+  --icon-chat: #B45F06;
+
+  --icon-kb: #157A6E;
+
+  --icon-sla: #6B4A9E;
+
+  --icon-rating: #B8951F;
+
   --channel-ai: #5A5FCC;
 
   --channel-phone: #0E8A93;
@@ -348,6 +360,14 @@ html {
   --icon-date: #F2679E;
 
   --icon-source: #A8E063;
+
+  --icon-chat: #E8935A;
+
+  --icon-kb: #4FD6C4;
+
+  --icon-sla: #C4A6F0;
+
+  --icon-rating: #F0D26B;
 
   --channel-ai: #9AA3F5;
 

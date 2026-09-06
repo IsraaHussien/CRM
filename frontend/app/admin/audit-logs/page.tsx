@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
@@ -17,10 +18,65 @@ export async function generateMetadata(): Promise<Metadata> {
 type AuditAction =
   | "login_success"
   | "login_failed"
+  | "logout"
+  | "customer_registered"
   | "permissions_changed"
+  | "staff_created"
+  | "staff_updated"
   | "staff_activated"
-  | "staff_deactivated";
-type AuditCategory = "auth" | "permissions" | "staff";
+  | "staff_deactivated"
+  | "staff_deleted"
+  | "agent_availability_changed"
+  | "customer_created"
+  | "customer_updated"
+  | "customer_contact_updated"
+  | "customer_email_change_requested"
+  | "customer_email_change_confirmed"
+  | "customer_note_added"
+  | "customer_note_updated"
+  | "customer_attachment_added"
+  | "customer_attachment_deleted"
+  | "customer_id_document_updated"
+  | "ticket_created"
+  | "ticket_reassigned"
+  | "ticket_category_changed"
+  | "ticket_priority_changed"
+  | "ticket_status_changed"
+  | "ticket_escalated"
+  | "ticket_replied"
+  | "ticket_internal_note_added"
+  | "ticket_summarized"
+  | "ticket_category_created"
+  | "ticket_category_updated"
+  | "ticket_referenced_in_chat"
+  | "chat_started"
+  | "chat_escalated"
+  | "chat_claimed"
+  | "chat_unclaimed"
+  | "chat_closed"
+  | "chat_summarized"
+  | "kb_faq_created"
+  | "kb_faq_updated"
+  | "kb_faq_deleted"
+  | "kb_article_created"
+  | "kb_article_updated"
+  | "kb_article_deleted"
+  | "sla_target_created"
+  | "sla_target_updated"
+  | "sla_target_deleted"
+  | "sla_settings_updated"
+  | "feedback_submitted";
+type AuditCategory = "auth" | "permissions" | "staff" | "customers" | "tickets" | "live-chat" | "knowledge-base" | "sla" | "feedback";
+type AuditTargetType =
+  | "User"
+  | "Ticket"
+  | "Conversation"
+  | "TicketCategory"
+  | "SlaTarget"
+  | "SlaSystemSettings"
+  | "Faq"
+  | "HelpArticle"
+  | "Feedback";
 
 interface AuditActor {
   id: string;
@@ -29,14 +85,28 @@ interface AuditActor {
   role: string;
 }
 
+interface AuditTicketTarget {
+  id: string;
+  reference: string;
+  subject: string;
+}
+
+// Every non-User, non-Ticket target type (Conversation, TicketCategory,
+// SlaTarget, SlaSystemSettings, Faq, HelpArticle, Feedback) resolves to this
+// same {id, name} shape server-side (audit.routes.ts's resolveTarget).
+interface AuditGenericTarget {
+  id: string;
+  name: string;
+}
+
 interface AuditLogEntry {
   id: string;
   actor: AuditActor | null;
   action: AuditAction;
   category: AuditCategory;
-  targetType: "User";
+  targetType: AuditTargetType;
   targetId: string | null;
-  target: AuditActor | null;
+  target: AuditActor | AuditTicketTarget | AuditGenericTarget | null;
   metadata: Record<string, unknown>;
   ipAddress?: string;
   createdAt: string;
@@ -52,6 +122,12 @@ const CATEGORY_ACCENT: Record<AuditCategory, string> = {
   auth: "bg-icon-status",
   permissions: "bg-icon-priority",
   staff: "bg-icon-category",
+  tickets: "bg-icon-source",
+  customers: "bg-icon-date",
+  "live-chat": "bg-icon-chat",
+  "knowledge-base": "bg-icon-kb",
+  sla: "bg-icon-sla",
+  feedback: "bg-icon-rating",
 };
 
 interface AuditLogListSearchParams {
@@ -134,8 +210,17 @@ export default async function AuditLogPage({
     return t("unknownActor", { email });
   }
 
+  function isTicketTarget(
+    target: AuditActor | AuditTicketTarget | AuditGenericTarget | null
+  ): target is AuditTicketTarget {
+    return Boolean(target) && "reference" in (target as object);
+  }
+
   function targetLabel(entry: AuditLogEntry): string {
-    return entry.target?.name ?? entry.target?.email ?? "—";
+    if (isTicketTarget(entry.target)) return entry.target.reference;
+    if (!entry.target) return "—";
+    if ("email" in entry.target) return entry.target.name ?? entry.target.email ?? "—";
+    return entry.target.name;
   }
 
   function actionLine(entry: AuditLogEntry): string {
@@ -153,15 +238,137 @@ export default async function AuditLogPage({
         if (reason === "account_deactivated") return t("actionLoginFailedAccountDeactivated", { actor });
         return t("actionLoginFailedWrongPassword", { actor });
       }
+      case "logout":
+        return t("actionLogout", { actor });
       case "permissions_changed":
         return t("actionPermissionsChanged", { actor, target });
       case "staff_activated":
         return t("actionStaffActivated", { actor, target });
       case "staff_deactivated":
         return t("actionStaffDeactivated", { actor, target });
+      case "agent_availability_changed":
+        return entry.metadata.isOnline
+          ? t("actionAvailabilityOnline", { actor })
+          : t("actionAvailabilityOffline", { actor });
+      case "customer_registered":
+        return t("actionCustomerRegistered", { actor });
+      case "staff_created":
+        return t("actionStaffCreated", { actor, target });
+      case "staff_updated":
+        return t("actionStaffUpdated", { actor, target });
+      case "staff_deleted":
+        return t("actionStaffDeleted", { actor, target });
+      case "customer_created":
+        return t("actionCustomerCreated", { actor, target });
+      case "customer_updated":
+        return t("actionCustomerUpdated", { actor, target });
+      case "customer_contact_updated":
+        return t("actionCustomerContactUpdated", { actor });
+      case "customer_email_change_requested":
+        return t("actionCustomerEmailChangeRequested", { actor });
+      case "customer_email_change_confirmed":
+        return t("actionCustomerEmailChangeConfirmed", { actor });
+      case "customer_note_added":
+        return t("actionCustomerNoteAdded", { actor, target });
+      case "customer_note_updated":
+        return t("actionCustomerNoteUpdated", { actor, target });
+      case "customer_attachment_added":
+        return t("actionCustomerAttachmentAdded", { actor, target });
+      case "customer_attachment_deleted":
+        return t("actionCustomerAttachmentDeleted", { actor, target });
+      case "customer_id_document_updated":
+        return t("actionCustomerIdDocumentUpdated", { actor, target });
+      case "ticket_created":
+        return entry.metadata.isStaffCreated
+          ? t("actionTicketCreated", { actor, target })
+          : t("actionTicketCreatedSelf", { actor, target });
+      case "ticket_reassigned":
+        return t("actionTicketReassigned", { actor, target });
+      case "ticket_category_changed":
+        return t("actionTicketCategoryChanged", { actor, target });
+      case "ticket_priority_changed":
+        return t("actionTicketPriorityChanged", { actor, target });
+      case "ticket_status_changed":
+        return t("actionTicketStatusChanged", { actor, target });
+      case "ticket_escalated":
+        return t("actionTicketEscalated", { actor, target });
+      case "ticket_replied":
+        return t("actionTicketReplied", { actor, target });
+      case "ticket_internal_note_added":
+        return t("actionTicketInternalNoteAdded", { actor, target });
+      case "ticket_summarized":
+        return t("actionTicketSummarized", { actor, target });
+      case "ticket_category_created":
+        return t("actionTicketCategoryCreated", { actor, target });
+      case "ticket_category_updated":
+        return t("actionTicketCategoryUpdated", { actor, target });
+      case "ticket_referenced_in_chat":
+        return t("actionTicketReferencedInChat", { actor, target });
+      case "chat_started":
+        return t("actionChatStarted", { actor });
+      case "chat_escalated":
+        return t("actionChatEscalated", { actor });
+      case "chat_claimed":
+        return t("actionChatClaimed", { actor });
+      case "chat_unclaimed":
+        return t("actionChatUnclaimed", { actor });
+      case "chat_closed":
+        return t("actionChatClosed", { actor });
+      case "chat_summarized":
+        return t("actionChatSummarized", { actor });
+      case "kb_faq_created":
+        return t("actionKbFaqCreated", { actor, target });
+      case "kb_faq_updated":
+        return t("actionKbFaqUpdated", { actor, target });
+      case "kb_faq_deleted":
+        return t("actionKbFaqDeleted", { actor, target });
+      case "kb_article_created":
+        return t("actionKbArticleCreated", { actor, target });
+      case "kb_article_updated":
+        return t("actionKbArticleUpdated", { actor, target });
+      case "kb_article_deleted":
+        return t("actionKbArticleDeleted", { actor, target });
+      case "sla_target_created":
+        return t("actionSlaTargetCreated", { actor });
+      case "sla_target_updated":
+        return t("actionSlaTargetUpdated", { actor });
+      case "sla_target_deleted":
+        return t("actionSlaTargetDeleted", { actor });
+      case "sla_settings_updated":
+        return t("actionSlaSettingsUpdated", { actor });
+      case "feedback_submitted":
+        return t("actionFeedbackSubmitted", { actor });
       default:
         return entry.action;
     }
+  }
+
+  // "Referring to a person or ticket" — the entry's own target when it has
+  // one (the ticket that was created, the account that was
+  // activated/deactivated/created, ...), falling back to the actor for
+  // actions with no distinct target (login/logout/availability). Null (no
+  // link, plain card) only for a failed login against an email with no
+  // matching account — there's nothing to navigate to.
+  function entryHref(entry: AuditLogEntry): string | null {
+    if (entry.targetId) {
+      switch (entry.targetType) {
+        case "Ticket":
+          return `/tickets/${entry.targetId}`;
+        case "Conversation":
+          return `/chats/${entry.targetId}`;
+        case "User": {
+          const userTarget = entry.target as AuditActor | null;
+          return userTarget?.role === "customer" ? `/customers/${entry.targetId}` : `/admin/users/${entry.targetId}`;
+        }
+        // TicketCategory, SlaTarget, SlaSystemSettings, Faq, HelpArticle and
+        // Feedback have no dedicated detail page to link to — the entry
+        // still renders, just as a plain (non-clickable) card.
+        default:
+          break;
+      }
+    }
+    if (entry.actor) return entry.actor.role === "customer" ? `/customers/${entry.actor.id}` : `/admin/users/${entry.actor.id}`;
+    return null;
   }
 
   function dayHeaderLabel(date: Date): string {
@@ -211,22 +418,37 @@ export default async function AuditLogPage({
                 </div>
                 <div className="min-w-0 flex-1 border-s border-border ps-4">
                   <div className="flex flex-col gap-3">
-                    {group.entries.map((entry) => (
-                      <div key={entry.id} className="flex items-start gap-3 rounded-xl border border-border bg-card/50 p-3">
-                        <span
-                          className={cn("mt-1.5 size-2 shrink-0 rounded-full", CATEGORY_ACCENT[entry.category])}
-                          aria-hidden
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm">{actionLine(entry)}</p>
-                          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                            <span>{format(new Date(entry.createdAt), "p")}</span>
-                            {entry.actor?.email && <span>{entry.actor.email}</span>}
-                            {entry.ipAddress && <span>{t("ipAddressLabel", { ip: entry.ipAddress })}</span>}
+                    {group.entries.map((entry) => {
+                      const href = entryHref(entry);
+                      const cardClass = cn(
+                        "flex items-start gap-3 rounded-xl border border-border bg-card/50 p-3",
+                        href && "transition-colors hover:border-primary/40 hover:bg-card"
+                      );
+                      const card = (
+                        <>
+                          <span
+                            className={cn("mt-1.5 size-2 shrink-0 rounded-full", CATEGORY_ACCENT[entry.category])}
+                            aria-hidden
+                          />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm">{actionLine(entry)}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                              <span>{format(new Date(entry.createdAt), "p")}</span>
+                              {entry.actor?.email && <span>{entry.actor.email}</span>}
+                            </div>
                           </div>
+                        </>
+                      );
+                      return href ? (
+                        <Link key={entry.id} href={href} className={cardClass}>
+                          {card}
+                        </Link>
+                      ) : (
+                        <div key={entry.id} className={cardClass}>
+                          {card}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </div>

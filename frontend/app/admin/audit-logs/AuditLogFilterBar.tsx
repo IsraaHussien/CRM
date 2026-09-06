@@ -80,7 +80,7 @@ export function AuditLogFilterBar() {
         <FilterField label={t("filterCategory")}>
           <Select value={category} onValueChange={(v) => updateParam("category", v)}>
             <SelectTrigger
-              className={cn("w-full sm:w-[9.5rem]", category !== ALL && "border-primary/50 bg-primary/5 text-primary")}
+              className={cn("w-full sm:w-64", category !== ALL && "border-primary/50 bg-primary/5 text-primary")}
               size="sm"
             >
               <ListFilter className={cn("size-3.5", category !== ALL ? "text-primary" : "text-muted-foreground")} />
@@ -91,6 +91,12 @@ export function AuditLogFilterBar() {
               <SelectItem value="auth">{t("categoryAuth")}</SelectItem>
               <SelectItem value="permissions">{t("categoryPermissions")}</SelectItem>
               <SelectItem value="staff">{t("categoryStaff")}</SelectItem>
+              <SelectItem value="tickets">{t("categoryTickets")}</SelectItem>
+              <SelectItem value="customers">{t("categoryCustomers")}</SelectItem>
+              <SelectItem value="live-chat">{t("categoryLiveChat")}</SelectItem>
+              <SelectItem value="knowledge-base">{t("categoryKnowledgeBase")}</SelectItem>
+              <SelectItem value="sla">{t("categorySla")}</SelectItem>
+              <SelectItem value="feedback">{t("categoryFeedback")}</SelectItem>
             </SelectContent>
           </Select>
         </FilterField>
@@ -100,7 +106,7 @@ export function AuditLogFilterBar() {
             <CalendarRange className="hidden size-3.5 shrink-0 text-icon-date sm:block" />
             <DatePickerField
               id="audit-log-date-from"
-              className="flex-1 sm:w-auto"
+              className="flex-1 sm:w-44"
               placeholder={t("filterDateFrom")}
               value={dateFromDate}
               maxDate={dateToDate}
@@ -111,7 +117,7 @@ export function AuditLogFilterBar() {
             </span>
             <DatePickerField
               id="audit-log-date-to"
-              className="flex-1 sm:w-auto"
+              className="flex-1 sm:w-44"
               placeholder={t("filterDateTo")}
               value={dateToDate}
               minDate={dateFromDate}

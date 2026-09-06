@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createApp } from "../../src/app";
 import { User } from "../../src/models/User";
+import { Ticket } from "../../src/models/Ticket";
 import { AuditLog } from "../../src/models/AuditLog";
 
 const app = createApp();
@@ -21,6 +22,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await User.deleteMany({});
+  await Ticket.deleteMany({});
   await AuditLog.deleteMany({});
 });
 
@@ -180,5 +182,33 @@ describe("GET /api/v1/admin/audit-logs (Story 47)", () => {
     expect(res.status).toBe(200);
     expect(res.body.entries[0].actor).toBeNull();
     expect(res.body.entries[0].metadata.attemptedEmail).toBe("nobody@example.com");
+  });
+
+  // Regression: a Ticket-targeted entry must resolve target.reference/subject
+  // via a Ticket lookup, not be silently dropped or mixed up with the
+  // User-lookup path the other actions use.
+  it("resolves a Ticket target to {id, reference, subject} for a ticket_created entry", async () => {
+    const { token } = await seedUser({ role: "admin" });
+    const { user: agent } = await seedUser({ role: "agent" });
+    const { user: customer } = await seedUser({ role: "customer" });
+    const ticket = await Ticket.create({ subject: "Refund request", description: "Details", customer: customer._id });
+
+    await AuditLog.create({
+      actor: agent._id,
+      action: "ticket_created",
+      category: "tickets",
+      targetType: "Ticket",
+      targetId: ticket._id,
+      metadata: { reference: `TCK-${ticket.ticketNumber}`, subject: ticket.subject, customerId: String(customer._id) },
+    });
+
+    const res = await request(app).get("/api/v1/admin/audit-logs").set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.entries[0].targetType).toBe("Ticket");
+    expect(res.body.entries[0].target).toMatchObject({
+      id: ticket.id,
+      reference: `TCK-${ticket.ticketNumber}`,
+      subject: "Refund request",
+    });
   });
 });

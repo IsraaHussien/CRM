@@ -17,6 +17,7 @@ export type TicketHistoryEventKind =
   | "internal_note_added"
   | "chat_participant_joined"
   | "chat_participant_left"
+  | "chat_inquiry"
   | "sla_at_risk"
   | "sla_breached";
 
@@ -153,6 +154,21 @@ export async function buildTicketHistory(
       at: entry.at,
       actor: actorFor(entry.user),
       data: {},
+    });
+  }
+
+  // ai-features/live-chat: always the ticket's own customer (see
+  // ITicketChatInquiryHistoryEntry's doc comment) — reuses the same
+  // customer/role fallback as the "created" event above rather than another
+  // batched lookup, since there's nobody else it could ever be.
+  for (const entry of ticket.chatInquiryHistory) {
+    events.push({
+      kind: "chat_inquiry",
+      at: entry.at,
+      actor: ticket.customer
+        ? { id: ticket.customer._id.toString(), name: ticket.customer.name, role: "customer" }
+        : null,
+      data: { conversationId: entry.conversation.toString() },
     });
   }
 

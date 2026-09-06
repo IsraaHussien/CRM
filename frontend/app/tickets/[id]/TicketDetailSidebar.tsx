@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 import {
@@ -11,6 +12,7 @@ import {
   History,
   LogIn,
   LogOut,
+  MessageCircleQuestionMark,
   MessageSquare,
   RefreshCw,
   StickyNote,
@@ -106,6 +108,7 @@ const HISTORY_EVENT_ICON: Record<TicketHistoryEvent["kind"], typeof CirclePlus> 
   internal_note_added: StickyNote,
   chat_participant_joined: LogIn,
   chat_participant_left: LogOut,
+  chat_inquiry: MessageCircleQuestionMark,
   sla_at_risk: Clock,
   sla_breached: AlertOctagon,
 };
@@ -387,6 +390,8 @@ export function TicketDetailSidebar({
         return t("history.event.chatParticipantJoined", { name });
       case "chat_participant_left":
         return t("history.event.chatParticipantLeft", { name });
+      case "chat_inquiry":
+        return t("history.event.chatInquiry", { name });
       // sla-automation Story 28: written by the periodic SLA monitor, not a
       // person — no {name} to interpolate (event.actor is always null for
       // these, see backend/src/services/ticketHistory.service.ts).
@@ -402,11 +407,22 @@ export function TicketDetailSidebar({
 
   function renderHistoryEventRow(event: TicketHistoryEvent, index: number) {
     const Icon = HISTORY_EVENT_ICON[event.kind];
+    // The whole point of recording this event (see backend/src/models/
+    // Ticket.ts's chatInquiryHistory doc comment) is giving the agent a path
+    // to the transcript instead of it only existing in a conversation they'd
+    // have no reason to go looking for — so this is the one history kind
+    // that links somewhere.
+    const conversationId = event.kind === "chat_inquiry" ? (event.data.conversationId as string) : null;
     return (
       <li key={`${event.kind}-${event.at}-${index}`} className="flex items-start gap-2 text-xs">
         <Icon className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
         <div className="flex min-w-0 flex-col">
           <span className="text-foreground">{historyEventLabel(event)}</span>
+          {conversationId && (
+            <Link href={`/chats/${conversationId}`} className="text-primary hover:underline">
+              {t("history.event.chatInquiryViewLink")}
+            </Link>
+          )}
           <span dir="ltr" className="text-muted-foreground">
             {new Date(event.at).toLocaleString()}
           </span>

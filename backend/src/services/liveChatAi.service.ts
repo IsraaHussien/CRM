@@ -1,7 +1,10 @@
+import { Types } from "mongoose";
 import { Message } from "../models/Message";
 import { Conversation } from "../models/Conversation";
+import { Ticket } from "../models/Ticket";
 import { generateText } from "./gemini.service";
 import { suggestKbContent, type KbSuggestion } from "./kbAi.service";
+import { recordAuditLog } from "./auditLog.service";
 
 export type { KbSuggestion };
 
@@ -85,13 +88,72 @@ async function fetchCustomerContext(conversationId: string): Promise<string> {
   }
 }
 
-export async function getAiReply(conversationId: string): Promise<string | null> {
+// Matches the "TCK-<n>" reference shown to customers everywhere a ticket is
+// surfaced (emails, the ticket list, tickets/[id] itself — see
+// ticket.routes.ts's referenceNumber) — customers naturally quote that exact
+// string back, or a loose variant of it ("TCK 5", "TCK5"). Deliberately not
+// matched more loosely (e.g. bare "ticket 5"): a wrong match here would ground
+// the AI's reply in the WRONG ticket's data and state it as fact.
+const TICKET_REFERENCE_PATTERN = /\bTCK-?\s*(\d+)\b/i;
+
+// ai-features/live-chat: the AI agent now has real grounding into the
+// customer's own tickets — when their latest message names one (by its
+// TCK-<n> reference), this looks up the real record scoped to THIS customer
+// (never confirms/denies a ticket number that isn't theirs) and returns a
+// context block Gemini must answer from, instead of guessing/inventing a
+// status. Records the inquiry on the ticket itself (chatInquiryHistory,
+// surfaced in its history timeline as "chat_inquiry" — see
+// ticketHistory.service.ts) and an audit log entry, but only once per
+// conversation — a customer repeating the same reference several times in one
+// chat should not spam the ticket's history with duplicate entries.
+async function fetchTicketContext(conversationId: string, latestCustomerMessage: string): Promise<string> {
+  const match = latestCustomerMessage.match(TICKET_REFERENCE_PATTERN);
+  if (!match) return "";
+  const ticketNumber = Number(match[1]);
+  if (!Number.isFinite(ticketNumber)) return "";
+
   try {
-    const [customerContext, transcript] = await Promise.all([
+    const conversation = await Conversation.findById(conversationId).select("customer");
+    if (!conversation) return "";
+
+    const ticket = await Ticket.findOne({ ticketNumber, customer: conversation.customer });
+    if (!ticket) return "";
+
+    const alreadyRecorded = ticket.chatInquiryHistory.some(
+      (entry) => entry.conversation.toString() === conversationId
+    );
+    if (!alreadyRecorded) {
+      ticket.chatInquiryHistory.push({ conversation: new Types.ObjectId(conversationId), at: new Date() });
+      await ticket.save();
+
+      await recordAuditLog({
+        actor: String(conversation.customer),
+        action: "ticket_referenced_in_chat",
+        targetType: "Ticket",
+        targetId: String(ticket._id),
+      });
+    }
+
+    return (
+      `The customer is asking about their existing ticket TCK-${ticket.ticketNumber} ("${ticket.subject}"). ` +
+      `Its real current status is "${ticket.status}", category "${ticket.category ?? "unspecified"}", ` +
+      `priority "${ticket.priority}". Answer using ONLY this information for this ticket -- do not guess or ` +
+      "invent any other detail (no made-up resolution, no made-up timeline) beyond what's stated here.\n\n"
+    );
+  } catch (err) {
+    console.error("[liveChatAi] fetchTicketContext failed:", (err as Error).message);
+    return "";
+  }
+}
+
+export async function getAiReply(conversationId: string, latestCustomerMessage: string): Promise<string | null> {
+  try {
+    const [customerContext, ticketContext, transcript] = await Promise.all([
       fetchCustomerContext(conversationId),
+      fetchTicketContext(conversationId, latestCustomerMessage),
       fetchTranscript(conversationId),
     ]);
-    const prompt = `${SYSTEM_PREAMBLE}\n\n${PLATFORM_FACTS}\n\n${customerContext}${transcript}\nAI Agent:`;
+    const prompt = `${SYSTEM_PREAMBLE}\n\n${PLATFORM_FACTS}\n\n${customerContext}${ticketContext}${transcript}\nAI Agent:`;
 
     const reply = await generateText(prompt);
     if (!reply || reply.trim().length === 0) {
