@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Shared by reports-management Story 40's ticket-volume trend and Story
 // 41's SLA breach trend — both are a single-series bar chart over daily/
@@ -35,6 +35,23 @@ export function TimeSeriesBarChart({
   emptyMessage: string;
 }) {
   const [tooltip, setTooltip] = useState<{ x: number; y: number; label: string; value: number } | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  // Mobile-safe default for the very first paint (before the observer below
+  // reports the real width) — a phone viewport is ~340-380px wide, not the
+  // 700px this chart used to hardcode as a floor, which forced every chart
+  // into horizontal scroll on mobile even with only a handful of bars.
+  const [containerWidth, setContainerWidth] = useState(340);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const observer = new ResizeObserver((entries) => {
+      const width = entries[0]?.contentRect.width;
+      if (width) setContainerWidth(width);
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   if (data.length === 0) {
     return <div className="flex items-center justify-center rounded-xl border border-dashed border-border p-10 text-sm text-muted-foreground">{emptyMessage}</div>;
@@ -49,7 +66,11 @@ export function TimeSeriesBarChart({
   const padB = 24;
   const H = 200;
   const contentW = padL + padR + n * barW + (n - 1) * gap;
-  const W = Math.max(700, contentW);
+  // Fill the real container width when there's room for it (so a handful of
+  // bars on a narrow phone screen renders natively, no scroll); only widen
+  // past the container — triggering the wrapper's own horizontal scroll —
+  // when there are enough buckets that they genuinely don't fit.
+  const W = Math.max(containerWidth, contentW);
   const plotW = W - padL - padR;
   const plotH = H - padT - padB;
   const maxV = niceMax(Math.max(...data.map((d) => d.value), 1));
@@ -59,7 +80,7 @@ export function TimeSeriesBarChart({
   const steps = Math.max(1, Math.min(4, maxV));
 
   return (
-    <div className="relative overflow-x-auto pb-0.5">
+    <div ref={containerRef} className="relative overflow-x-auto pb-0.5">
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} className="text-[10.5px]">
         {Array.from({ length: steps + 1 }, (_, g) => {
           const y = padT + plotH - (plotH * g) / steps;
