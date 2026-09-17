@@ -24,6 +24,10 @@ interface ConversationDetail {
   _id: string;
   status: "ai_handling" | "escalated" | "with_agent" | "resolved";
   assignedAgent: { _id: string; name: string } | null;
+  // customer-management Story 6: populated by conversation.routes.ts's
+  // GET /:id alongside assignedAgent, so the staff panel can link back to
+  // the customer's profile.
+  customer: { _id: string; name: string };
 }
 
 export default async function ChatDetailPage({
@@ -104,6 +108,7 @@ export default async function ChatDetailPage({
               ? { id: data.conversation.assignedAgent._id, name: data.conversation.assignedAgent.name }
               : null
           }
+          customer={{ id: data.conversation.customer._id, name: data.conversation.customer.name }}
           token={token}
           currentUserId={currentUserId}
           canSummarize={canSummarize}

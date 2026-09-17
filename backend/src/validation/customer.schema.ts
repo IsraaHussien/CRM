@@ -24,6 +24,13 @@ export const listCustomersQuerySchema = paginationQuerySchema.extend({
     .optional(),
 });
 
+// GET /api/v1/customers/:id/history — a "most recent N, merged across
+// Ticket + Conversation" read, not an offset-paginated list, so this
+// deliberately does NOT extend paginationQuerySchema (no `page` concept).
+export const customerHistoryQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+});
+
 export const createCustomerBodySchema = z.object({
   name: requiredString("name is required"),
   email: emailSchema(),

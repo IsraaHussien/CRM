@@ -5,6 +5,8 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createApp } from "../../src/app";
 import { User } from "../../src/models/User";
+import { Ticket } from "../../src/models/Ticket";
+import { Conversation } from "../../src/models/Conversation";
 import { customerFilePath } from "../../src/middleware/upload";
 
 const app = createApp();
@@ -873,5 +875,121 @@ describe("DELETE /api/v1/customers/:id/attachments/:attachmentId", () => {
       .delete(`/api/v1/customers/${customer.id}/attachments/${uploaded.body[0].id}`)
       .set("Authorization", `Bearer ${token}`);
     expect(res.status).toBe(403);
+  });
+});
+
+describe("GET /api/v1/customers/:id/history (Story 6)", () => {
+  beforeEach(async () => {
+    await Ticket.deleteMany({});
+    await Conversation.deleteMany({});
+  });
+
+  it("returns an empty list for a customer with no tickets or chats", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const { token } = await seedUser({ role: "agent", permissions: ["customers:manage"] });
+    const res = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.items).toEqual([]);
+  });
+
+  it("returns a merged, createdAt-desc list of tickets and chats", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const { token } = await seedUser({ role: "agent", permissions: ["customers:manage"] });
+
+    const ticket = await Ticket.create({
+      subject: "Cannot reset password",
+      description: "Details",
+      customer: customer._id,
+      status: "answered",
+      createdAt: new Date("2026-01-01T09:00:00.000Z"),
+    });
+    const chat = await Conversation.create({
+      customer: customer._id,
+      status: "resolved",
+      createdAt: new Date("2026-01-02T09:00:00.000Z"),
+    });
+
+    const res = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.items).toHaveLength(2);
+
+    const ticketItem = res.body.items.find((item: { type: string }) => item.type === "ticket");
+    const chatItem = res.body.items.find((item: { type: string }) => item.type === "chat");
+    expect(ticketItem).toMatchObject({ id: ticket.id, subject: "Cannot reset password", status: "answered" });
+    expect(chatItem).toMatchObject({ id: chat.id, status: "resolved" });
+    expect(chatItem.subject).toBeUndefined();
+
+    const createdAts = res.body.items.map((item: { createdAt: string }) => new Date(item.createdAt).getTime());
+    expect(createdAts).toEqual([...createdAts].sort((a, b) => b - a));
+  });
+
+  it("returns 400 for a non-ObjectId id", async () => {
+    const { token } = await seedUser({ role: "agent", permissions: ["customers:manage"] });
+    const res = await request(app)
+      .get("/api/v1/customers/not-an-id/history")
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 404 when the id belongs to a non-customer account", async () => {
+    const { user: agent } = await seedUser({ role: "agent" });
+    const { token } = await seedUser({ role: "admin" });
+    const res = await request(app)
+      .get(`/api/v1/customers/${agent.id}/history`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 401 without a token", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const res = await request(app).get(`/api/v1/customers/${customer.id}/history`);
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 403 for an agent lacking customers:manage; 200 for one holding it", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const { token: plainToken } = await seedUser({ role: "agent" });
+    const denied = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history`)
+      .set("Authorization", `Bearer ${plainToken}`);
+    expect(denied.status).toBe(403);
+
+    const { token: grantedToken } = await seedUser({ role: "agent", permissions: ["customers:manage"] });
+    const granted = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history`)
+      .set("Authorization", `Bearer ${grantedToken}`);
+    expect(granted.status).toBe(200);
+  });
+
+  it("respects and clamps the limit query param", async () => {
+    const { user: customer } = await seedUser({ role: "customer" });
+    const { token } = await seedUser({ role: "admin" });
+
+    for (let i = 0; i < 3; i += 1) {
+      await Ticket.create({
+        subject: `Ticket ${i}`,
+        description: "Details",
+        customer: customer._id,
+        status: "new",
+        createdAt: new Date(Date.UTC(2026, 0, i + 1)),
+      });
+    }
+
+    const res = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history?limit=2`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(res.status).toBe(200);
+    expect(res.body.items).toHaveLength(2);
+    expect(res.body.items[0].subject).toBe("Ticket 2");
+    expect(res.body.items[1].subject).toBe("Ticket 1");
+
+    const invalid = await request(app)
+      .get(`/api/v1/customers/${customer.id}/history?limit=0`)
+      .set("Authorization", `Bearer ${token}`);
+    expect(invalid.status).toBe(400);
   });
 });

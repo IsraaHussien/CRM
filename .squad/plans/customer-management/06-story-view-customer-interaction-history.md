@@ -6,221 +6,392 @@
 
 ## Prerequisites
 
-- Story 4 (customer profile) — this timeline is linked from the profile page. If `backend/src/routes/customer.routes.ts` exists from Story 4, mount the history sub-resource there; otherwise create the router as part of this story.
-- `backend/src/models/Ticket.ts` and `backend/src/models/Conversation.ts` are already in place — both have a `customer: Types.ObjectId` reference (see Ticket.ts line 19) and `{ timestamps: true }` for `createdAt`/`updatedAt`.
-- `backend/src/middleware/auth.ts` exports `requireAuth` and `requireRole` (per intake). Coordinate with Story 3 (RBAC) owners if role names change.
-- Ticket and Conversation create endpoints (Stories 8–13, 14–19) may still be stubs — this story reads existing documents only and must not require those endpoints to be complete.
+- Story 4 (`04-story-view-and-edit-a-customer-profile.md`) is implemented: `backend/src/routes/customer.routes.ts` exists with `GET /`, `POST /`, `GET /:id`, `PATCH /:id`; `frontend/app/customers/[id]/page.tsx` + `CustomerProfileForm.tsx` render the profile. This story extends both files — it does not create a new router or a new top-level page.
+- Story 7 (`07-story-add-internal-notes-and-attachments-to-a-customer.md`) is implemented: `toProfileResponse` in `customer.routes.ts` conditionally includes `internalNotes`/`attachments`, and `CustomerProfileForm.tsx` already branches on `profile.internalNotes !== undefined` to decide staff vs. self mode (`isStaffMode`, line 57). This story reuses that same signal to decide whether to show the new History tab — never a client-side role check.
+- `backend/src/constants/permissions.ts` (Story 46, security-admin) already defines `customers:manage` (line 22) as the one permission gating the whole customer resource for agent/subadmin — reused here rather than inventing a new key, since viewing a customer's history is scoped identically to viewing their profile (same `isFullStaffViewer`/`staffOrDelegatedSubadmin` boundary, see below).
+- Ticket detail (`frontend/app/tickets/[id]/page.tsx`) and chat detail (`frontend/app/chats/[id]/page.tsx` + `AgentChatPanel.tsx`) pages already exist — unlike when this story was first scoped, there are now real routes (`/tickets/:id`, `/chats/:id`) for timeline items to link to.
 
 ---
 
 ## Story Goal
 
-Provide agents (and admins) with a **read-only, chronological timeline** of every ticket and chat conversation belonging to a single customer, exposed via a JSON endpoint and rendered on the frontend as a merged list. Each item carries enough identifying data (`id`, `type`, `subject`/label, `status`, `createdAt`) for the frontend to route to the original ticket/conversation detail view when clicked.
+Give an agent, admin, or delegated sub-admin a **read-only, chronological timeline** of every ticket and chat conversation belonging to one customer, so they have full context before responding. Concretely:
 
-**Out of scope:** editing/replying inline, building ticket or conversation detail pages, paginating beyond a simple limit, or filtering by channel/status in this iteration.
+1. A new `GET /api/v1/customers/:id/history` endpoint merges that customer's `Ticket` and `Conversation` documents into one list, newest first, each item tagged `"ticket"` or `"chat"`.
+2. The customer profile page (`/customers/:id`) gains a **History** tab rendering this timeline, replacing the current dead link (see "Context" below).
+3. Because ticket/chat detail pages now exist, the ticket detail page and the staff chat detail panel each get a small "view profile" link back to the customer, closing the AC's "visible from ... any of their open tickets/chats" requirement from the other direction.
+
+**Out of scope** (per intake): editing/replying from the timeline, channel/status filtering, pagination beyond a simple "most recent N" cap, and a customer viewing their **own** history through this endpoint (that's the separate customer-portal Story 37, `/tickets` and `/chats`, already built — this endpoint stays staff-only).
 
 ---
 
 ## Context — Read These Files First
 
-1. `backend/src/models/Ticket.ts` — full file (~56 lines). Confirm `ITicket` fields at lines 16–28: **`subject: string`** (line 17), **`status: TicketStatus`** (line 23), **`customer: Types.ObjectId`** (line 19). `TicketStatus` union is defined on line 4: `"new" | "in_progress" | "answered" | "escalated" | "closed"`. `createdAt`/`updatedAt` are added by `{ timestamps: true }` on line 53.
-2. `backend/src/models/Conversation.ts` — full file (~44 lines). Confirm `IConversation` at lines 15–20 has **`status: ConversationStatus`** (line 18) and **no `subject` field**. Note the customer FK is on the schema (see intake); a display label must be synthesised (e.g. `"Live chat — <MMM D, YYYY>"` or `"Chat #<shortId>"`).
-3. `backend/src/middleware/auth.ts` — read the whole file. Confirm the exact exported names (`requireAuth`, `requireRole`) and the argument shape of `requireRole` (variadic role list vs array).
-4. `backend/src/app.ts` — lines 5–24. Note the current mount pattern: `app.use("/api/v1/tickets", ticketRoutes)` etc., and the TODO on lines 22–24 that explicitly lists **customers** as a router to be added.
-5. `backend/src/routes/ticket.routes.ts` and `backend/src/routes/conversation.routes.ts` — copy their structural pattern (Express `Router` factory + middleware + handler) so the new customer/history router matches the repo style.
-6. `backend/src/models/User.ts` — confirm that customers are stored as `User` documents (the `customer` refs use `ref: "User"`, see Ticket.ts line 34). The `:id` in the URL is a `User._id`.
-7. Intake: `.squad/stories/customer-management/view-customer-interaction-history/intake.md`. Re-read the acceptance criteria and "Extra notes".
-8. Sibling plan (once created): `../customer-management/` — for the profile page (Story 4), to match the customer-detail route/component naming.
+1. `backend/src/routes/customer.routes.ts` — full file (already read for this plan). Key regions:
+   - Lines 1-19: imports. `Ticket` and `Conversation` models are **not** imported yet — you'll add both.
+   - Lines 28-43: `staffOrDelegatedSubadmin(key)` — the gate used by `GET /` (line 158-162) and `POST /` (line 216-220): `requireRole("agent","admin","subadmin")` then this helper with a permission key. Use the exact same two-middleware chain for the new route, with `"customers:manage"`.
+   - Lines 102-116: `toProfileResponse` — `base.ticketHistoryUrl` (line 115) already reads `` `/api/v1/customers/${user.id}/history` ``, with a comment referencing this story. Leave this field as-is; the frontend will reuse it to build the fetch URL instead of hardcoding the path a second time.
+   - Lines 266-291: `GET /:id` — read this as the closest sibling pattern (`validateParams(userIdParamsSchema)`, 404 shape `{ error: "Customer not found" }`).
+2. `backend/src/middleware/auth.ts` — full file (already read). Confirm `requireAuth`, `requireRole(...roles)`, and `requirePermission(key)`'s exact behavior (admin bypasses the key but still gets a live `isActiveAccount` check; agent/subadmin get a live `hasPermission` DB check). Match this — do **not** use the old `requireRole("agent","admin")`-only shape the original version of this plan had; every route besides the dashboard goes through `requirePermission` per this file's own doc comment (line 44).
+3. `backend/src/middleware/validate.ts` — full file (already read, 36 lines). `validateParams(schema)` parses `req.params`; there is **no** `validateQuery` — every existing route (e.g. `customer.routes.ts` line 164) validates `req.query` inline with `schema.safeParse(req.query)` and a manual 400. Follow that inline pattern for the new `limit` query param, not a new middleware.
+4. `backend/src/validation/common.ts` — full file (already read). `userIdParamsSchema` (line 36) is `{ id: objectIdSchema("Invalid user id") }` — reuse directly for `:id`. `paginationQuerySchema` (lines 20-23) is `page`+`limit` for offset-based lists; this endpoint has no `page` concept (it merges two collections then slices), so define a separate one-field schema rather than reusing/misusing this one.
+5. `backend/src/validation/customer.schema.ts` — full file (already read). Add the new query schema near `listCustomersQuerySchema` (line 15), following its exact style (`z.object` built from `common.ts` primitives).
+6. `backend/src/models/Ticket.ts` — `ITicket` interface (lines 102-136): `subject: string` (104), `status: TicketStatus` (110), `customer: Types.ObjectId` (106), `createdAt: Date` (134, from `{ timestamps: true }` at line 254). `TicketStatus` union at line 5: `"new" | "in_progress" | "answered" | "escalated" | "closed"`.
+7. `backend/src/models/Conversation.ts` — full file (already read, 60 lines). `IConversation`: `status: ConversationStatus` (21), `customer: Types.ObjectId` (19), `createdAt`/`updatedAt` from `{ timestamps: true }` (56). **No `subject` field** — `ConversationStatus` union at line 3: `"ai_handling" | "escalated" | "with_agent" | "resolved"`.
+8. `backend/src/app.ts` — lines 11 and 35: `customerRoutes` is **already imported and mounted** at `/api/v1/customers`. No `app.ts` change is needed for this story (the original version of this plan predates this mount existing).
+9. `backend/src/routes/conversation.routes.ts` — lines 217-263 (`GET /:id`, the staff+customer chat detail read). Line 244 populates only `assignedAgent`, not `customer` — that's why `frontend/app/chats/[id]/page.tsx`'s `ConversationDetail` interface (lines 23-27) has no `customer` field today, unlike the **list** route (`GET /`, line 199) which already does `.populate<{ customer: { _id: Types.ObjectId; name: string } }>("customer", "name")`. You'll add the same populate to the detail route.
+10. `frontend/app/customers/[id]/page.tsx` — full file (already read, 71 lines). Server Component: cookie → access-token presence → silent-refresh redirect → `fetch` → 401 refresh dance (lines 23-46), then `isStaff = profile.internalNotes !== undefined` (line 53) decides the `StaffSidebar` branch. Add the history fetch inside the `isStaff` branch (lines 55-64), not for the self-view branch.
+11. `frontend/app/customers/[id]/CustomerProfileForm.tsx` — full file (already read, 204 lines). `Profile` interface (lines 17-31) already has `ticketHistoryUrl: string`. The current "View history" button (lines 91-96) renders **unconditionally** (not gated on `isStaffMode`) as `<Link href={profile.ticketHistoryUrl}>` — a plain Next.js `<Link>` to a raw Express backend path (`/api/v1/customers/...`), which the frontend's own router will try to resolve as an internal route and 404 on (this is the bug the user reported: "wasn't implemented yet"). It also has no `Authorization` header, so even if it somehow reached the backend it would 401. This is what Task 2 below replaces. `Tabs` is currently uncontrolled (`defaultValue="profile"`, line 99) — it becomes controlled so the button can switch tabs instead of navigating.
+12. `frontend/app/customers/[id]/actions.ts` — lines 1-16 (imports, `"use server"`, `API_URL`/`SESSION_COOKIE`). Mirror `frontend/app/tickets/[id]/actions.ts`'s `getTicketHistory` (lines 336-344, already read) — same shape: takes `accessToken` directly (not cookies), returns `[]` on any non-OK response, never throws.
+13. `frontend/app/tickets/[id]/page.tsx` — lines 242-259 (already read). The `isStaffViewer` block (lines 252-259) renders `ticket.customer.name — ticket.customer.email` as plain text, no link. `frontend/app/customers/page.tsx` (lines 147, 200, already read) establishes the existing "link customer name to their profile" convention: `className="font-medium text-primary hover:underline"`; `frontend/app/chats/page.tsx` (line 129-134, already read) uses the same idea with `className="text-sm font-medium hover:underline"`. Use one of these two exact classes (match whichever sits in a table row vs. a standalone line) rather than inventing new link styling.
+14. `frontend/app/chats/[id]/page.tsx` (lines 1-40, already read) and `frontend/app/chats/[id]/AgentChatPanel.tsx` (lines 1-75, already read). `ConversationDetail` (lines 23-27) and `AgentChatPanel`'s props (lines 53-69) currently carry no customer info at all — you're adding it.
+15. `frontend/lib/utils.ts` — `formatDateTime(iso: string)` (line 12-14, already read): `new Date(iso).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })`. Reuse this for every timestamp in the new timeline instead of a fresh `toLocaleString()` call.
+16. `frontend/app/tickets/CustomerSupportSummary.tsx` — full file (already read, 99 lines). This is the closest existing precedent for the timeline row UI: a `Card` containing `Link` rows, each with a status `Badge` (`variant="outline"`, a `border-transparent bg-*/10 text-*` class) and a right-aligned `formatDateTime(...)` timestamp. Copy this row shape for the history tab.
+17. `frontend/app/tickets/StaffTicketQueue.tsx` lines 63-69/80-86 (`STATUS_KEY` + `STATUS_BADGE_CLASS`, 5-way for tickets) and `frontend/app/chats/page.tsx` lines 32-44 (same pair, 4-way for chats) — copy both into the new timeline component so ticket/chat status pills look identical everywhere in the app.
+18. `frontend/app/globals.css` lines 121-135 (the `--color-icon-*` block inside `@theme inline`) and lines 251-277 (`:root`) / 354-380 (`.dark`) — the existing pattern for a decorative, categorical (non-status) accent color: one hex per concept, deliberately distinct from `--success`/`--warning`/`--destructive`/`--primary`, defined in both palettes and exposed as a `--color-icon-*` Tailwind token. `--icon-chat` (`#B45F06` light / `#E8935A` dark, line 261 / 364) already exists and renders as `text-icon-chat` — reuse it as-is for the **chat** dot in the timeline. There is no equivalent token for **ticket** yet; Task 3 below adds one (`--icon-ticket`) following this exact pattern rather than reusing an unrelated existing color (e.g. `--icon-status`'s blue already means "ticket status," not "this is a ticket").
+19. Intake: `.squad/stories/customer-management/view-customer-interaction-history/intake.md` — re-read the acceptance criteria and dependencies section.
+20. Design reference: the UI direction below (a left-rail timeline with a colored dot per item) is **Option B** from the three layouts sketched and reviewed with the user before this plan was finalized — a plain "Option A" card-of-rows (copying `CustomerSupportSummary.tsx`'s recent-chats list verbatim) was considered and rejected in favor of B specifically because chronology should be the visible point of a *history* tab, not just an incidental sort order.
 
-Greps to run first:
-
-- `grep -n "requireAuth" backend/src` — confirm the middleware export and how existing routers import it.
-- `grep -n "customer.routes" backend/src` — check whether Story 4 has already added the file/mount.
-- `grep -n "Router()" backend/src/routes` — pick a router file as the pattern template.
+Greps already run confirming the above (do not re-run — findings are baked into this plan): `requireAuth`/`requirePermission` usage in `customer.routes.ts`; `Router()` factories in `backend/src/routes`; `/customers/${` across `frontend/`; `history` across both `backend/src` and `frontend/`.
 
 ---
 
 ## Backend Tasks
 
-### 1 — Add or extend the customers router
+### 1 — Add the history query schema
 
-**File:** `backend/src/routes/customer.routes.ts` (create if absent; otherwise extend).
+**File:** `backend/src/validation/customer.schema.ts`.
 
-**Do not create a `backend/src/controllers/` directory.** This project has no controllers layer anywhere — every existing route file (`auth.routes.ts`, `ticket.routes.ts`, `conversation.routes.ts`, and Story 4's `customer.routes.ts`) puts the handler directly inline in the route file. Match that: the `GET /:id/history` handler (Task 3's logic) goes directly in `customer.routes.ts`, not a separate controller file.
-
-Mount pattern (match `backend/src/routes/ticket.routes.ts`'s import style — default `express` import, not a named `Router` import):
+Add, near `listCustomersQuerySchema` (after line 25):
 
 ```ts
-import express, { Request, Response, NextFunction } from "express";
-import { requireAuth, requireRole } from "../middleware/auth";
-
-const router = express.Router();
-
-router.get("/:id/history", requireAuth, requireRole("agent", "admin"), async (req: Request, res: Response, next: NextFunction) => {
-  // handler body — see Task 3
+// GET /api/v1/customers/:id/history — a "most recent N, merged across
+// Ticket + Conversation" read, not an offset-paginated list, so this
+// deliberately does NOT extend paginationQuerySchema (no `page` concept).
+export const customerHistoryQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
 });
-
-export default router;
 ```
 
-If Story 4 already defined this router with other routes, **append** the `/:id/history` route only; do not touch existing routes.
+### 2 — Extend `backend/src/routes/customer.routes.ts`
 
-### 2 — Mount the router in `app.ts`
-
-**File:** `backend/src/app.ts`.
-
-- Add `import customerRoutes from "./routes/customer.routes";` next to the other router imports (lines 5–8).
-- Add `app.use("/api/v1/customers", customerRoutes);` immediately after line 21.
-- Remove `customers` from the TODO comment on lines 22–24 once mounted.
-
-### 3 — Controller: aggregate tickets + conversations
-
-Handler contract (inline in `backend/src/routes/customer.routes.ts`, per Task 1 — no separate controller file):
+**Imports** — add alongside the existing model import (after line 6):
 
 ```ts
-// GET /api/v1/customers/:id/history?limit=<n>
-// Response 200:
-// { items: TimelineItem[] }
-//
-// TimelineItem =
-//   | { type: "ticket"; id: string; subject: string; status: TicketStatus; createdAt: string }
-//   | { type: "chat";   id: string; subject: string; status: ConversationStatus; createdAt: string }
+import { Ticket } from "../models/Ticket";
+import { Conversation } from "../models/Conversation";
 ```
 
-Implementation notes:
+Add `customerHistoryQuerySchema` to the existing import from `../validation/customer.schema` (line 13-18).
 
-- Validate `req.params.id` with `mongoose.isValidObjectId`; return **400** `{ error: "Invalid customer id" }` on failure.
-- Parse optional `limit` query param; default **50**, clamp to **[1, 200]**.
-- Verify the customer exists: `User.findById(id).lean()` — if `null` or role is not `"customer"`, return **404** `{ error: "Customer not found" }`.
-- Fetch in parallel:
-  ```ts
-  const [tickets, chats] = await Promise.all([
-    Ticket.find({ customer: id })
-      .select("_id subject status createdAt")
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean(),
-    Conversation.find({ customer: id })
-      .select("_id status createdAt")
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .lean(),
-  ]);
-  ```
-- Map each ticket to `{ type: "ticket", id: String(t._id), subject: t.subject, status: t.status, createdAt: t.createdAt.toISOString() }`.
-- Map each chat to `{ type: "chat", id: String(c._id), subject: \`Live chat — \${formatDate(c.createdAt)}\`, status: c.status, createdAt: c.createdAt.toISOString() }`. Use a small inline formatter (no new date library).
-- **Merge** the two arrays, sort by `createdAt` descending, then slice to `limit`.
-- Return `res.json({ items })`.
+**Route** — insert immediately after the `GET /:id` handler closes (after line 291), before `PATCH /:id` (line 293):
 
-Wrap in try/catch and forward to `next(err)` so `errorHandler` (see `backend/src/middleware/errorHandler.ts`) handles it.
+```ts
+// customer-management Story 6: merged, read-only ticket+chat timeline.
+// Same access boundary as the roster (GET /) and GET /:id's staff branch —
+// agent/subadmin need customers:manage, admin is unconditional (still
+// isActive-checked). Deliberately NOT reachable by the customer themselves
+// (customer-portal Story 37 covers that via /tickets and /chats instead).
+router.get(
+  "/:id/history",
+  requireAuth,
+  requireRole("agent", "admin", "subadmin"),
+  staffOrDelegatedSubadmin("customers:manage"),
+  validateParams(userIdParamsSchema),
+  async (req: Request, res: Response) => {
+    const parsed = customerHistoryQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid query" });
+      return;
+    }
+    const { limit } = parsed.data;
 
-### 4 — Type export
+    const customer = await User.findById(req.params.id).select("role");
+    if (!customer || customer.role !== "customer") {
+      res.status(404).json({ error: "Customer not found" });
+      return;
+    }
 
-Add a shared type file **`backend/src/types/history.ts`** exporting `TimelineItem` so the response shape can be reused by tests (and later by an OpenAPI/SDK step). Keep the union tagged by `type`.
+    const [tickets, chats] = await Promise.all([
+      Ticket.find({ customer: req.params.id })
+        .select("_id subject status createdAt")
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+      Conversation.find({ customer: req.params.id })
+        .select("_id status createdAt")
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+    ]);
+
+    const items = [
+      ...tickets.map((t) => ({
+        type: "ticket" as const,
+        id: String(t._id),
+        subject: t.subject,
+        status: t.status,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      // Conversation has no subject (see Ticket.ts vs Conversation.ts) — the
+      // frontend synthesises a "Live chat — <date>" label from createdAt
+      // instead of persisting a fake subject onto the model.
+      ...chats.map((c) => ({
+        type: "chat" as const,
+        id: String(c._id),
+        status: c.status,
+        createdAt: c.createdAt.toISOString(),
+      })),
+    ]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+
+    res.status(200).json({ items });
+  }
+);
+```
+
+No new backend response-type file: this repo has no precedent of a shared DTO file for a route's JSON shape (`backend/src/types/` only holds `express.d.ts`) — every other route's response shape is just mirrored ad hoc in the frontend's own interface (e.g. `TicketDetailResponse` in `frontend/app/tickets/[id]/page.tsx`). Don't introduce one here either.
+
+### 3 — Populate `customer` on the conversation detail read
+
+**File:** `backend/src/routes/conversation.routes.ts`, `GET /:id` (lines 217-263).
+
+Change line 244's single populate call into two, so the customer's name is available for the frontend cross-link (Frontend Task 4):
+
+```ts
+await conversation.populate<{ assignedAgent: { _id: Types.ObjectId; name: string } | null }>(
+  "assignedAgent",
+  "name"
+);
+await conversation.populate<{ customer: { _id: Types.ObjectId; name: string } }>("customer", "name");
+```
+
+This is additive to the existing `res.status(200).json({ conversation: { ...conversation.toObject(), ... } })` (lines 254-261) — `customer` already rides along inside `conversation.toObject()`, it was just unpopulated (a bare ObjectId) before. No response-shape change needed beyond the populate itself.
 
 ---
 
 ## Frontend Tasks
 
-Per intake, no ticket or conversation detail pages exist yet in `frontend/`. Scope frontend work to the **timeline list only**; leave routing targets as TODO strings and land them when the detail screens exist.
+### 1 — `getCustomerHistory` server action
 
-### 1 — Client helper
+**File:** `frontend/app/customers/[id]/actions.ts`.
 
-**Create file:** `frontend/lib/api/customers.ts` (create the `lib/api/` directory if missing).
+Add, mirroring `frontend/app/tickets/[id]/actions.ts`'s `getTicketHistory` (lines 336-344) exactly:
 
 ```ts
-export type TimelineItem = {
+export interface CustomerTimelineItem {
   type: "ticket" | "chat";
   id: string;
-  subject: string;
+  subject?: string;
   status: string;
   createdAt: string;
-};
+}
 
-export async function fetchCustomerHistory(
-  customerId: string,
-  opts?: { limit?: number },
-): Promise<TimelineItem[]> {
-  const url = new URL(
-    `/api/v1/customers/${customerId}/history`,
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
-  );
-  if (opts?.limit) url.searchParams.set("limit", String(opts.limit));
-  const res = await fetch(url.toString(), { credentials: "include" });
-  if (!res.ok) throw new Error(`History request failed: ${res.status}`);
-  const body = (await res.json()) as { items: TimelineItem[] };
+export async function getCustomerHistory(customerId: string, accessToken: string): Promise<CustomerTimelineItem[]> {
+  const res = await fetch(`${API_URL}/api/v1/customers/${customerId}/history`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  const body = (await res.json()) as { items: CustomerTimelineItem[] };
   return body.items;
 }
 ```
 
-Match whatever fetch/auth pattern Story 4 established for the customer profile page; if Story 4 introduced an axios wrapper, use that instead of `fetch`.
+### 2 — Fetch history in the profile page, staff branch only
 
-### 2 — Timeline component
+**File:** `frontend/app/customers/[id]/page.tsx`.
 
-**Create file:** `frontend/components/customers/CustomerHistoryTimeline.tsx`.
+Inside the `if (isStaff)` branch (lines 55-64), fetch history before rendering and pass it down:
 
-- Client component (`"use client"`).
-- Props: `{ customerId: string }`.
-- Fetch history on mount with `useEffect` + `useState`, or reuse whatever data-fetching hook Story 4 uses.
-- Render loading, empty ("No past tickets or chats"), and error states.
-- Use existing UI primitives from `frontend/components/ui/`: `Card`, `Badge` (for channel `ticket`/`chat`), `ScrollArea` for long lists.
-- Each row shows: channel badge (`Ticket` / `Chat`), subject/label, status pill, and a locale-formatted date (`new Date(item.createdAt).toLocaleString()`).
-- Wrap each row in an anchor pointing to the future detail route: `/tickets/${id}` or `/chats/${id}`. If those routes 404 today, that is acceptable — the intake calls this out.
+```ts
+if (isStaff) {
+  const history = await getCustomerHistory(id, token);
+  return (
+    <div className="flex min-h-[calc(100vh-57px)]">
+      <StaffSidebar active="customers" />
+      <main className="min-w-0 flex-1 p-4 md:p-8">
+        <CustomerProfileForm profile={profile} history={history} />
+      </main>
+    </div>
+  );
+}
+```
 
-### 3 — Wire into customer profile page
+Add the `getCustomerHistory` import from `./actions`. The self-view branch (lines 66-70) passes no `history` prop — `CustomerProfileForm` treats its absence the same way it already treats `internalNotes`' absence (a staff-only signal, never a client-side role check).
 
-Add `<CustomerHistoryTimeline customerId={customer.id} />` to the customer profile page introduced by Story 4. If that page is not yet merged, create a **placeholder** page at `frontend/app/customers/[id]/page.tsx` that renders only this component so the story is testable end-to-end, and document in a `TODO` comment that Story 4 will replace the wrapper.
+### 3 — History tab in `CustomerProfileForm.tsx` (Option B: left-rail timeline)
 
-Also expose the timeline as a tab inside any ticket/chat detail page **once those exist** — track as a follow-up TODO in the component if the detail pages are not built yet.
+**File:** `frontend/app/customers/[id]/CustomerProfileForm.tsx`.
+
+- Add `history?: CustomerTimelineItem[]` to the `Profile`-adjacent props (import `CustomerTimelineItem` from `./actions`) and destructure it in the component's argument list: `export function CustomerProfileForm({ profile, history }: { profile: Profile; history?: CustomerTimelineItem[] })`.
+- Make `Tabs` controlled instead of uncontrolled, so the header button (see below) can jump straight to the History tab:
+  ```tsx
+  const [tab, setTab] = useState("profile");
+  // ...
+  <Tabs value={tab} onValueChange={setTab}>
+  ```
+- Add a third `TabsTrigger value="history"` next to the existing two (after line 112), labeled `t("stepHistory")`, **only rendered when `history` is defined** (`isStaffMode` is already exactly this same signal — reuse it, don't add a second check):
+  ```tsx
+  {isStaffMode && (
+    <TabsTrigger value="history" className="px-1 pb-2.5 text-sm data-active:text-primary dark:data-active:text-primary after:bg-primary group-data-horizontal/tabs:after:bottom-0">
+      {t("stepHistory")}
+    </TabsTrigger>
+  )}
+  ```
+- Add the matching `TabsContent value="history"` (sibling of the `value="step2"` block, lines 185-200) rendering a **left-rail timeline**, not a plain row list: a single vertical line down the left edge of the tab, with one dot per item sitting on that line, and the item's content to its right. Build it as a new file **`frontend/app/customers/[id]/CustomerHistoryTimeline.tsx`** (keeps `CustomerProfileForm.tsx` from growing another few hundred lines, matching how `InternalStep.tsx`/`AttachmentsGalleryStep.tsx` are already split out as siblings) and render `{isStaffMode && <CustomerHistoryTimeline items={history ?? []} />}` inside the `TabsContent`.
+
+  `CustomerHistoryTimeline.tsx` structure:
+  - A wrapping `<div className="relative flex flex-col gap-5 ps-6">` (use `ps-*`/logical properties, not `pl-*` — this app ships real RTL for Arabic, see CLAUDE.md's i18n section) with a `::before`-style rail: a `<div className="absolute inset-y-1.5 start-[3px] w-px bg-border" />` positioned inside that wrapper (an absolutely-positioned sibling div is simpler and more RTL-safe here than a CSS pseudo-element with hardcoded `left`).
+  - One row per item: `<Link href={item.type === "ticket" ? \`/tickets/${item.id}\` : \`/chats/${item.id}\`} className="relative block">`, with:
+    - A dot: `<span className="absolute -start-6 top-1 size-3 rounded-full border-2 bg-card" style={{ borderColor: item.type === "ticket" ? "var(--icon-ticket)" : "var(--icon-chat)" }} />` (inline `style` for the dynamic per-item color is consistent with how this codebase already does per-value dynamic coloring for SLA/priority elsewhere when a Tailwind arbitrary class can't express a runtime value — check `frontend/app/tickets/[id]/TicketDetailSidebar.tsx` for a precedent before introducing a new pattern; if that file uses a Tailwind arbitrary-value class like `border-[var(--icon-chat)]` instead, match that form exactly rather than inline `style`).
+    - A head row: subject (`item.subject` for a ticket; a synthesised `` `Live chat — ${formatDateTime(item.createdAt)}` `` label for a chat — do this synthesis here, not in the backend, since `Conversation` has no `subject` field) in `text-sm font-semibold`, plus the status `Badge` (reuse the `STATUS_KEY`/`STATUS_BADGE_CLASS` maps from Context item 17 — merge the ticket and chat maps into one `Record<string, string>` keyed by the union of both status types, since a single component now renders both).
+    - A meta row below it: a small type chip (`Ticket` / `Chat`, colored via the same `--icon-ticket`/`--icon-chat` token as its dot — text color, not just the dot) and `formatDateTime(item.createdAt)`, separated by a small dot character or `·`.
+  - Render `t("historyEmpty")` as plain centered muted text when `items.length === 0` (no rail/dots in the empty state).
+- Gate the existing header "View history" button (lines 91-96) on `isStaffMode` (it currently renders unconditionally, which is itself a small pre-existing bug — a self-viewing customer sees a button that would 401 against the new staff-only endpoint) and change its action from navigating to `profile.ticketHistoryUrl` to switching tabs locally:
+  ```tsx
+  {isStaffMode && (
+    <Button variant="outline" size="sm" className="sm:self-start" onClick={() => setTab("history")}>
+      <History className="size-4" />
+      {t("viewHistory")}
+    </Button>
+  )}
+  ```
+  (Drop `asChild`/`Link` — this is now a same-page tab switch, not navigation.) `profile.ticketHistoryUrl` remains used server-side only (Task 2's fetch), never rendered as a client `href` again.
+
+### 3a — Add the `--icon-ticket` token
+
+**File:** `frontend/app/globals.css`.
+
+Following the exact pattern of the other `--icon-*` tokens (Context item 18): add one new categorical accent for "this row is a ticket," distinct from `--icon-status`'s blue (which already means ticket *status*, not ticket *type*) and from every other hue in use.
+
+- In the `@theme inline` block's icon-accent group (after line 132's `--color-icon-chat: var(--icon-chat);`): add `--color-icon-ticket: var(--icon-ticket);`.
+- In `:root` (after line 261's `--icon-chat: #B45F06;`): add `--icon-ticket: #3B5BDB;`.
+- In `.dark` (after line 364's `--icon-chat: #E8935A;`): add `--icon-ticket: #8B9EFC;`.
+
+This makes `text-icon-ticket`/`border-icon-ticket` available as real Tailwind utilities, the same way `text-icon-chat` already is — prefer those utility classes over inline `style` in Task 3 if Tailwind's arbitrary-value/token-class support in this project resolves them (confirm against how `TicketDetailSidebar.tsx` already consumes `--icon-*`/`--channel-*` tokens in JSX before picking the final form).
+
+### 4 — Cross-link from the ticket detail page
+
+**File:** `frontend/app/tickets/[id]/page.tsx`, lines 252-259.
+
+Wrap the customer name in a link to their profile, matching `frontend/app/customers/page.tsx`'s established link styling:
+
+```tsx
+{isStaffViewer && (
+  <div className="flex flex-col gap-1 border-t border-border pt-4">
+    <span className="text-xs uppercase tracking-wide text-muted-foreground">{t("customer")}</span>
+    <span className="text-sm">
+      <Link href={`/customers/${ticket.customer.id}`} className="font-medium text-primary hover:underline">
+        {ticket.customer.name}
+      </Link>{" "}
+      — {ticket.customer.email}
+    </span>
+  </div>
+)}
+```
+
+`Link` is already imported in this file (line 4).
+
+### 5 — Cross-link from the chat detail page
+
+**File:** `frontend/app/chats/[id]/page.tsx`.
+
+- Add `customer: { _id: string; name: string }` to `ConversationDetail` (lines 23-27), matching what Backend Task 3 now populates.
+- Pass it to `AgentChatPanel` (lines 98-110): `customer={{ id: data.conversation.customer._id, name: data.conversation.customer.name }}`.
+
+**File:** `frontend/app/chats/[id]/AgentChatPanel.tsx`.
+
+- Add `customer: { id: string; name: string }` to the props type (lines 61-68) and destructure it.
+- Import `Link` from `next/link`.
+- Render a small header line above the message thread — same link style as `frontend/app/chats/page.tsx` line 129-134:
+  ```tsx
+  <Link href={`/customers/${customer.id}`} className="text-sm font-medium hover:underline">
+    {customer.name}
+  </Link>
+  ```
+  Place it in the existing `Card`/`CardHeader` (this file already imports `Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter` — read the render body around the current `CardHeader` usage to slot this in without restructuring the panel).
+
+### 6 — i18n
+
+**Files:** `frontend/messages/en.json` and `frontend/messages/ar.json` (add both together — see CLAUDE.md's i18n section).
+
+In the `"CustomerProfile"` section (starts line 1019 in `en.json`), add:
+
+```json
+"stepHistory": "History",
+"historyEmpty": "No past tickets or chats.",
+"historyTicketLabel": "Ticket",
+"historyChatLabel": "Chat",
+"historyChatSubject": "Live chat — {date}"
+```
+
+(`statusNew`/`statusInProgress`/`statusAnswered`/`statusEscalated`/`statusClosed`/`statusAiHandling`/`statusWithAgent`/`statusResolved` already exist verbatim in other sections per Context item 17 — if you keep the new timeline's status labels in the `"CustomerProfile"` namespace rather than importing another section's `useTranslations`, duplicate just those 8 keys into `"CustomerProfile"` too, matching how `StaffTicketQueue.tsx`, `TicketFilterBar.tsx`, and `chats/page.tsx` each already keep their own local copies rather than sharing one namespace.)
+
+Add matching keys to `ar.json` in the same change.
 
 ---
 
 ## Edge Cases & Failure Modes
 
-- **Invalid ObjectId** in `:id` → 400, handled in controller before any DB call (see controller step 3).
-- **Customer id belongs to a non-customer user (agent/admin)** → 404 to avoid leaking timelines across roles. Enforced by the `role !== "customer"` check in the controller.
-- **Customer with zero tickets and zero chats** → 200 with `{ items: [] }`. Frontend shows the empty-state text.
-- **Very active customer (>200 items)** → cap at `limit`, sorted so the newest are returned; document that pagination is a follow-up.
-- **`Conversation` has no `subject`** → controller synthesises a label (see step 3). Do not attempt to persist a subject onto the Conversation model.
-- **Concurrent ticket/chat writes during the read** → `Promise.all` is non-transactional; acceptable for a read-only timeline. Note in a comment.
-- **Auth missing or wrong role** → `requireAuth` / `requireRole` return 401/403 before the handler runs; do not duplicate the check inside the controller.
-- **Timezone rendering** — backend returns ISO UTC; frontend uses `toLocaleString()` so the browser's timezone is used.
+- **Invalid ObjectId in `:id`** → `validateParams(userIdParamsSchema)` returns 400 before the handler body runs (Backend Task 2).
+- **`:id` belongs to a non-customer user (agent/admin/subadmin)** → 404, enforced by the `customer.role !== "customer"` check — same "don't leak that a staff account exists at this id" reasoning as `GET /:id`'s existing behavior.
+- **Customer with zero tickets and zero chats** → `{ items: [] }`; frontend renders `t("historyEmpty")`.
+- **Unauthenticated / wrong role / caller lacks `customers:manage`** → `requireAuth`/`requireRole`/`staffOrDelegatedSubadmin` reject before the handler runs (401/403); the handler never re-checks this itself, matching every other route in this file.
+- **A just-deactivated agent/subadmin's still-unexpired token** → caught by `requirePermission`'s (via `staffOrDelegatedSubadmin`) live `hasPermission`/`isActiveAccount` DB check, same as every other staff route in this file — no special-casing needed here.
+- **Very active customer (> `limit` combined items)** → capped at `limit` (default 50, max 200), newest first; pagination beyond this is out of scope (documented in Story Goal).
+- **`limit` query param invalid (non-numeric, 0, > 200)** → 400 from the inline `safeParse`, same shape as `GET /`'s existing query validation.
+- **Concurrent ticket/chat writes during the read** — `Promise.all` is not transactional; acceptable for a read-only timeline (same accepted tradeoff as every other multi-collection read in this codebase).
+- **A conversation with no messages yet / a ticket with no replies yet** — still appears in the timeline; the timeline only reads `subject`/`status`/`createdAt`, never message content.
+- **Chat detail page's `customer` populate failing to resolve** (e.g. the customer account was hard-deleted, which this app otherwise never does) — `conversation.toObject().customer` would stay a bare ObjectId with no `name`; not handled specially since customer accounts are never hard-deleted elsewhere in this codebase (only `isActive: false`), matching the existing `assignedAgent` populate's same unhandled-but-impossible-in-practice case.
+- **Timezone rendering** — backend returns ISO UTC (`toISOString()`); `formatDateTime` uses the browser's locale/timezone via `toLocaleString`.
 
 ---
 
 ## Test Plan
 
-1. **Unit / integration test — customer history endpoint.** This project's test runner is Vitest (introduced by `.squad/plans/auth/03-story-role-based-access-control.md`; see `CLAUDE.md`'s "Testing" section), not Jest. Create `backend/tests/routes/customer.history.test.ts` (matching the `backend/tests/` location Story 3 establishes, not a colocated `__tests__/` folder). Cases:
-   - Returns merged, `createdAt`-desc list of tickets and chats for a valid customer.
-   - Ticket items carry `type: "ticket"` + real `subject`; chat items carry `type: "chat"` + synthesised label.
-   - Empty result when the customer has no tickets/chats.
-   - 400 on non-ObjectId id.
-   - 404 when the user id does not belong to a customer.
-   - 401 without auth token; 403 with role `customer`.
-   - `limit` query respected and clamped.
-2. **Frontend component test** — `frontend/components/customers/__tests__/CustomerHistoryTimeline.test.tsx`. Mock `fetchCustomerHistory` and assert loading, empty, error, and populated states render correctly. Match the test setup used by any existing component tests; if none exist, add React Testing Library setup only if absolutely required, otherwise omit and note as follow-up.
-3. **Smoke** — hit `curl http://localhost:4000/api/v1/customers/<seededId>/history` with a valid agent JWT and verify chronological ordering.
+1. **Backend integration tests** — extend `backend/tests/routes/customer.routes.test.ts` (this project's Vitest convention: one test file per route file, not a new colocated file — see CLAUDE.md's "Testing" section). Add a new `describe("GET /api/v1/customers/:id/history (Story 6)", ...)` block. The file's existing `beforeEach` only clears `User` (line 23-25); this new block needs its own `beforeEach` also clearing `Ticket`/`Conversation` (import both models at the top of the test file alongside the existing `User` import). Cases:
+   - Returns `{ items: [] }` for a customer with no tickets/chats.
+   - Returns a merged, `createdAt`-desc list when the customer has both a `Ticket` and a `Conversation` — assert ticket items carry `type: "ticket"` + real `subject`, chat items carry `type: "chat"` with no `subject` key.
+   - 400 on a non-ObjectId `:id`.
+   - 404 when `:id` belongs to an agent/admin account instead of a customer.
+   - 401 with no token.
+   - 403 for an agent lacking `customers:manage`; 200 for one holding it (seed via `seedUser({ role: "agent", permissions: ["customers:manage"] })`, matching this file's existing `seedUser` helper, lines 31-42).
+   - `limit` is respected and clamped (seed more than `limit` combined items, assert the response length and that they're the newest ones).
+2. **Backend integration test — conversation detail customer populate.** Extend `backend/tests/routes/conversation.routes.test.ts`: for the existing `GET /:id` staff-viewer test case(s), assert `res.body.conversation.customer.name` is present (was previously just an unpopulated id).
+3. **Smoke** — `cd backend && npm run dev`, then `curl -H "Authorization: Bearer <agentJwt>" http://localhost:4000/api/v1/customers/<seededCustomerId>/history` returns 200 with `{ items: [...] }` in `createdAt`-desc order.
+4. No frontend test runner exists yet (per CLAUDE.md's Testing section) — cover the new UI via the manual Verification Steps below instead.
 
 ---
 
 ## Verification Steps
 
-1. **Backend builds:** `cd backend && npm run build` (or `npx tsc --noEmit`) — must succeed with no new TS errors.
-2. **Backend runs:** `cd backend && npm run dev`. Then `curl -H "Authorization: Bearer <agentJwt>" http://localhost:4000/api/v1/customers/<id>/history` returns 200 with `{ items: [...] }`.
-3. **Backend tests:** `cd backend && npm test` — new test file passes.
-4. **Frontend runs:** `cd frontend && npm run dev`, open `/customers/<id>`, confirm the timeline renders with mixed ticket + chat rows, correct badges, and links pointing to `/tickets/:id` / `/chats/:id`.
-5. **Regression:** existing ticket and conversation routes still respond (`curl http://localhost:4000/api/v1/tickets` etc.); the mount order in `app.ts` was not disturbed.
+1. **Backend builds:** `cd backend && npm run typecheck` (this project's `strict` TS — no new `any`).
+2. **Backend tests:** `cd backend && npm test` — new and existing tests pass.
+3. **Backend runs:** `cd backend && npm run dev`. Confirm the smoke-test `curl` from Test Plan item 3.
+4. **Frontend builds:** `cd frontend && npm run build`.
+5. **Frontend manual walkthrough:** `cd frontend && npm run dev`.
+   - Open `/customers/:id` as an agent with `customers:manage` (or an admin). Click "View history" in the header — confirm it switches to the History tab in place (no navigation, no 404) and renders the left-rail timeline: one connected vertical line, a dot per item colored by type (ticket vs. chat), newest first, correct status pills, and correct light/dark colors for the new `--icon-ticket` token.
+   - Click a ticket row → lands on `/tickets/:id`. Click a chat row → lands on `/chats/:id`.
+   - Open the same `/customers/:id` as the customer themselves (self-view) — confirm the "View history"/History tab does **not** appear.
+   - Open a ticket detail page as staff — confirm the customer's name is now a link to `/customers/:id`.
+   - Open a chat detail page as staff — confirm the customer's name now appears (previously absent entirely) and links to `/customers/:id`.
+   - Switch the UI language to Arabic — confirm the new strings render translated and RTL-correct (no leftover English).
+6. **Regression:** existing `/customers`, `/customers/:id` (profile tab, internal-notes/documents tab), `/tickets/:id`, and `/chats/:id` still behave exactly as before for every case this story didn't touch.
 
 ---
 
 ## Done Criteria
 
-- [ ] `GET /api/v1/customers/:id/history` implemented, mounted, guarded by `requireAuth` + `requireRole("agent","admin")`.
-- [ ] Response merges `Ticket` and `Conversation` documents for the given customer into one chronological (desc) list, each item tagged `"ticket"` or `"chat"`.
-- [ ] Ticket items include real `subject`; chat items include a synthesised label plus `status` and `createdAt`.
-- [ ] Invalid id → 400; unknown customer → 404; unauthenticated → 401; wrong role → 403.
-- [ ] `TimelineItem` type exported from `backend/src/types/history.ts`.
-- [ ] Frontend `CustomerHistoryTimeline` component fetches and renders the timeline on the customer profile page (or placeholder page if Story 4 not yet landed).
-- [ ] Backend and frontend build clean; new tests pass; existing endpoints unaffected.
+- [x] `GET /api/v1/customers/:id/history` implemented in `customer.routes.ts`, gated by `requireAuth` + `requireRole("agent","admin","subadmin")` + `staffOrDelegatedSubadmin("customers:manage")` — no bare `requireRole`-only gating.
+- [x] Response merges `Ticket` and `Conversation` documents for the given customer into one chronological (desc) list capped at `limit` (default 50, max 200), each item tagged `"ticket"` or `"chat"`.
+- [x] Invalid id → 400; non-customer/unknown id → 404; unauthenticated → 401; caller without `customers:manage` → 403.
+- [x] Conversation detail (`GET /api/v1/conversations/:id`) now populates `customer.name` alongside the existing `assignedAgent` populate.
+- [x] `CustomerProfileForm.tsx` renders a staff-only History tab (new `CustomerHistoryTimeline.tsx`, left-rail timeline layout — Option B) from real data, no more dead link to a raw backend URL; the header button switches tabs instead of navigating.
+- [x] `globals.css` defines `--icon-ticket` (light + dark + `@theme inline` mapping) alongside the existing `--icon-chat`, used to color-distinguish ticket vs. chat dots/labels in the timeline.
+- [x] Ticket detail page and staff chat detail panel each link the customer's name to `/customers/:id`.
+- [x] `en.json`/`ar.json` updated together with no hardcoded English strings introduced.
+- [x] Backend and frontend build clean; new/extended tests pass; existing customer/ticket/chat routes and pages unaffected.
 
 **STOP HERE. Report to the user and wait for confirmation before proceeding to the next story.**
