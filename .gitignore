@@ -11,6 +11,10 @@ build/
 HOW-TO-USE.md
 # Uploaded customer files (customer-management Story 7) — runtime data, not source.
 backend/uploads/
+# Local-only bulk demo-data volume generator for reports testing — additive
+# on top of seed-data/*.json, never meant to be committed (see its own header
+# comment for why).
+backend/scripts/seed-bulk-report-data.ts
 .claude/scheduled_tasks.lock
 # .squad/ is intentionally NOT ignored — its intake.md and plan files are part of
 # the project's history and are meant to be committed.
