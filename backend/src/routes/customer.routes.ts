@@ -4,6 +4,8 @@ import { Types } from "mongoose";
 import bcrypt from "bcryptjs";
 import { requireAuth, requireRole, requirePermission } from "../middleware/auth";
 import { User, IUser, IAttachment } from "../models/User";
+import { Ticket } from "../models/Ticket";
+import { Conversation } from "../models/Conversation";
 import { hasPermission, isActiveAccount } from "../services/permissions";
 import { recordAuditLog } from "../services/auditLog.service";
 import { uploadIdDocument, uploadGeneralAttachments, customerFilePath } from "../middleware/upload";
@@ -12,6 +14,7 @@ import { validateBody, validateParams } from "../middleware/validate";
 import { userIdParamsSchema } from "../validation/common";
 import {
   createCustomerBodySchema,
+  customerHistoryQuerySchema,
   listCustomersQuerySchema,
   noteBodySchema,
   updateCustomerBodySchema,
@@ -289,6 +292,69 @@ router.get("/:id", requireAuth, validateParams(userIdParamsSchema), async (req: 
   // customer's own files — only internalNotes narrows further to staff.
   res.status(200).json(await toProfileResponse(user, { includeNotes: isFullStaff, includeAttachments: true }));
 });
+
+// customer-management Story 6: merged, read-only ticket+chat timeline.
+// Same access boundary as the roster (GET /) and GET /:id's staff branch —
+// agent/subadmin need customers:manage, admin is unconditional (still
+// isActive-checked). Deliberately NOT reachable by the customer themselves
+// (customer-portal Story 37 covers that via /tickets and /chats instead).
+router.get(
+  "/:id/history",
+  requireAuth,
+  requireRole("agent", "admin", "subadmin"),
+  staffOrDelegatedSubadmin("customers:manage"),
+  validateParams(userIdParamsSchema),
+  async (req: Request, res: Response) => {
+    const parsed = customerHistoryQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid query" });
+      return;
+    }
+    const { limit } = parsed.data;
+
+    const customer = await User.findById(req.params.id).select("role");
+    if (!customer || customer.role !== "customer") {
+      res.status(404).json({ error: "Customer not found" });
+      return;
+    }
+
+    const [tickets, chats] = await Promise.all([
+      Ticket.find({ customer: req.params.id })
+        .select("_id subject status createdAt")
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+      Conversation.find({ customer: req.params.id })
+        .select("_id status createdAt")
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .lean(),
+    ]);
+
+    const items = [
+      ...tickets.map((t) => ({
+        type: "ticket" as const,
+        id: String(t._id),
+        subject: t.subject,
+        status: t.status,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      // Conversation has no subject (see Ticket.ts vs Conversation.ts) — the
+      // frontend synthesises a "Live chat — <date>" label from createdAt
+      // instead of persisting a fake subject onto the model.
+      ...chats.map((c) => ({
+        type: "chat" as const,
+        id: String(c._id),
+        status: c.status,
+        createdAt: c.createdAt.toISOString(),
+      })),
+    ]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, limit);
+
+    res.status(200).json({ items });
+  }
+);
 
 router.patch("/:id", requireAuth, validateParams(userIdParamsSchema), async (req: Request, res: Response) => {
   const user = await User.findById(req.params.id);

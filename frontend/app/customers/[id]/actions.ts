@@ -333,3 +333,26 @@ export async function deleteAttachment(customerId: string, attachmentId: string)
   revalidatePath(`/customers/${customerId}`);
   return { error: null };
 }
+
+// customer-management Story 6: mirrors tickets/[id]/actions.ts's
+// getTicketHistory exactly — takes the access token directly (called from
+// page.tsx right after it resolves its own token, same reasoning that file
+// documents) and degrades to [] on any failure rather than throwing, so a
+// history-fetch problem never blocks the rest of the profile page.
+export interface CustomerTimelineItem {
+  type: "ticket" | "chat";
+  id: string;
+  subject?: string;
+  status: string;
+  createdAt: string;
+}
+
+export async function getCustomerHistory(customerId: string, accessToken: string): Promise<CustomerTimelineItem[]> {
+  const res = await fetch(`${API_URL}/api/v1/customers/${customerId}/history`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  });
+  if (!res.ok) return [];
+  const body = (await res.json()) as { items: CustomerTimelineItem[] };
+  return body.items;
+}

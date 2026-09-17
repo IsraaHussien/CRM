@@ -1,5 +1,6 @@
 import request from "supertest";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { createApp } from "../../src/app";
@@ -7,6 +8,8 @@ import { User } from "../../src/models/User";
 import { Ticket } from "../../src/models/Ticket";
 import { Conversation } from "../../src/models/Conversation";
 import { Notification } from "../../src/models/Notification";
+import { RefreshFamily } from "../../src/models/RefreshFamily";
+import { AuditLog } from "../../src/models/AuditLog";
 import * as emailService from "../../src/services/email.service";
 
 const app = createApp();
@@ -27,6 +30,8 @@ beforeEach(async () => {
   await Ticket.deleteMany({});
   await Conversation.deleteMany({});
   await Notification.deleteMany({});
+  await RefreshFamily.deleteMany({});
+  await AuditLog.deleteMany({});
   vi.restoreAllMocks();
 });
 
@@ -746,5 +751,160 @@ describe("GET /api/v1/me/workspace (agent-workspace Story 35)", () => {
     expect(res.status).toBe(200);
     expect(res.body.columns.breached.items).toHaveLength(25);
     expect(res.body.columns.breached.total).toBe(27);
+  });
+});
+
+// auth Story 64: change password.
+describe("PATCH /api/v1/me/password", () => {
+  const CURRENT_PASSWORD = "CurrentPass1";
+  const NEW_PASSWORD = "BrandNewPass2";
+
+  async function seedUserWithPassword(
+    email = "current@example.com",
+    overrides: Partial<{ role: string; isActive: boolean }> = {}
+  ) {
+    const passwordHash = await bcrypt.hash(CURRENT_PASSWORD, 10);
+    const user = await User.create({
+      name: "Test User",
+      email,
+      passwordHash,
+      role: overrides.role ?? "customer",
+      isActive: overrides.isActive ?? true,
+    });
+    return { user, token: tokenFor({ id: user.id, role: user.role }) };
+  }
+
+  async function seedFamily(userId: string, overrides: Partial<{ revoked: boolean }> = {}) {
+    const familyId = new mongoose.Types.ObjectId().toString();
+    await RefreshFamily.create({
+      familyId,
+      userId,
+      currentHeadHash: "irrelevant-hash",
+      sessionExpiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+      revoked: overrides.revoked ?? false,
+    });
+    return `${familyId}.some-secret`;
+  }
+
+  it("returns 401 without a token", async () => {
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(401);
+  });
+
+  it("changes the password on the happy path", async () => {
+    vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const { token, user } = await seedUserWithPassword();
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({ ok: true });
+    const reloaded = await User.findById(user.id);
+    expect(await bcrypt.compare(NEW_PASSWORD, reloaded!.passwordHash)).toBe(true);
+  });
+
+  it("rejects a wrong current password with a field-level error, leaving the hash unchanged", async () => {
+    const { token, user } = await seedUserWithPassword();
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: "WrongPass1", newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(400);
+    expect(res.body.fieldErrors.currentPassword).toBeTruthy();
+    const reloaded = await User.findById(user.id);
+    expect(await bcrypt.compare(CURRENT_PASSWORD, reloaded!.passwordHash)).toBe(true);
+  });
+
+  it("rejects a new password shorter than 8 characters", async () => {
+    const { token } = await seedUserWithPassword();
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: "short1" });
+    expect(res.status).toBe(400);
+  });
+
+  it("rejects a new password identical to the current one", async () => {
+    const { token } = await seedUserWithPassword();
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: CURRENT_PASSWORD });
+    expect(res.status).toBe(400);
+    expect(res.body.fieldErrors.newPassword).toBeTruthy();
+  });
+
+  it("returns 403 for a deactivated account", async () => {
+    const { token } = await seedUserWithPassword("deactivated@example.com", { isActive: false });
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(403);
+  });
+
+  it("revokes every other RefreshFamily but exempts the caller's own current family", async () => {
+    vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const { token, user } = await seedUserWithPassword();
+    const currentRefreshToken = await seedFamily(user.id);
+    const otherRefreshTokenA = await seedFamily(user.id);
+    const otherRefreshTokenB = await seedFamily(user.id);
+
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD, refreshToken: currentRefreshToken });
+    expect(res.status).toBe(200);
+
+    const families = await RefreshFamily.find({ userId: user.id });
+    const byId = (raw: string) => families.find((f) => f.familyId === raw.split(".")[0])!;
+    expect(byId(currentRefreshToken).revoked).toBe(false);
+    expect(byId(otherRefreshTokenA).revoked).toBe(true);
+    expect(byId(otherRefreshTokenB).revoked).toBe(true);
+  });
+
+  it("revokes every family when no refreshToken is supplied", async () => {
+    vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const { token, user } = await seedUserWithPassword();
+    await seedFamily(user.id);
+    await seedFamily(user.id);
+
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(200);
+
+    const families = await RefreshFamily.find({ userId: user.id });
+    expect(families.every((f) => f.revoked)).toBe(true);
+  });
+
+  it("still changes the password and responds 200 when the confirmation email fails to send", async () => {
+    vi.spyOn(emailService, "sendEmail").mockRejectedValue(new Error("SMTP down"));
+    const { token, user } = await seedUserWithPassword();
+    const res = await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+    expect(res.status).toBe(200);
+    const reloaded = await User.findById(user.id);
+    expect(await bcrypt.compare(NEW_PASSWORD, reloaded!.passwordHash)).toBe(true);
+  });
+
+  it("records a password_changed audit log entry", async () => {
+    vi.spyOn(emailService, "sendEmail").mockResolvedValue({ dryRun: true });
+    const { token, user } = await seedUserWithPassword();
+    await request(app)
+      .patch("/api/v1/me/password")
+      .set("Authorization", `Bearer ${token}`)
+      .send({ currentPassword: CURRENT_PASSWORD, newPassword: NEW_PASSWORD });
+
+    const entry = await AuditLog.findOne({ action: "password_changed" });
+    expect(entry).toBeTruthy();
+    expect(entry!.actor?.toString()).toBe(user.id);
+    expect(entry!.targetId?.toString()).toBe(user.id);
   });
 });

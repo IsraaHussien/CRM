@@ -273,7 +273,31 @@
     "invalidEmail": "Enter a valid email address.",
     "passwordRequired": "Password is required.",
     "fillDemo": "Fill demo credentials",
-    "fillAdmin": "Fill admin credentials"
+    "fillAdmin": "Fill admin credentials",
+    "forgotPasswordLink": "Forgot password?"
+  },
+  "ForgotPassword": {
+    "title": "Forgot your password?",
+    "description": "Enter your email and we'll send you a reset link.",
+    "emailLabel": "Email",
+    "invalidEmail": "Enter a valid email address.",
+    "submit": "Send reset link",
+    "genericError": "Something went wrong. Try again shortly.",
+    "genericSuccess": "If an account exists for this email, we've sent a reset link.",
+    "backToSignIn": "Back to sign in"
+  },
+  "ResetPassword": {
+    "title": "Choose a new password",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm new password",
+    "submit": "Reset password",
+    "mismatch": "The two passwords don't match.",
+    "tooShort": "Password must be at least 8 characters.",
+    "success": "Your password has been reset. You can now sign in.",
+    "invalidLink": "This reset link is invalid or has expired.",
+    "missingToken": "This reset link is invalid or has expired.",
+    "requestNewLink": "Request a new link",
+    "backToSignIn": "Back to sign in"
   },
   "AuthHero": {
     "heading": "Get help your way",
@@ -312,7 +336,25 @@
     "emailSendFailed": "Could not send the confirmation email. Try again shortly.",
     "emailConfirmationSent": "Confirmation email sent to {email}. Click the link to complete the change.",
     "phoneUpdateFailed": "Could not update phone.",
-    "emailUpdateFailed": "Could not update email."
+    "emailUpdateFailed": "Could not update email.",
+    "changePassword": {
+      "title": "Change password",
+      "currentLabel": "Current password",
+      "newLabel": "New password",
+      "confirmLabel": "Confirm new password",
+      "submit": "Change password",
+      "success": "Your password was changed. Other signed-in devices have been logged out.",
+      "errors": {
+        "currentIncorrect": "Current password is incorrect.",
+        "currentRequired": "Current password is required.",
+        "tooShort": "Password must be at least 8 characters.",
+        "mismatch": "Passwords do not match.",
+        "sameAsCurrent": "New password must differ from the current password.",
+        "confirmRequired": "Confirm your new password.",
+        "inactive": "Your account is not active.",
+        "failed": "Could not change your password. Try again."
+      }
+    }
   },
   "EmailConfirmed": {
     "successHeading": "Email confirmed",
@@ -1000,6 +1042,19 @@
     "stepProfile": "Profile",
     "stepInternal": "Internal",
     "stepDocuments": "Documents",
+    "stepHistory": "History",
+    "historyEmpty": "No past tickets or chats.",
+    "historyTicketLabel": "Ticket",
+    "historyChatLabel": "Chat",
+    "historyChatSubject": "Live chat — {date}",
+    "statusNew": "New",
+    "statusInProgress": "In Progress",
+    "statusAnswered": "Answered",
+    "statusEscalated": "Escalated",
+    "statusClosed": "Closed",
+    "statusAiHandling": "AI Handling",
+    "statusWithAgent": "With Agent",
+    "statusResolved": "Resolved",
     "back": "Back",
     "notesHeading": "Internal notes",
     "noNotes": "No notes yet.",

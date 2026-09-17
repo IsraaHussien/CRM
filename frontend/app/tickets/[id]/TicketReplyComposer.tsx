@@ -279,21 +279,43 @@ function InternalNoteTab({ ticketId }: { ticketId: string }) {
   // Fetched once, lazily, the first time "@" is typed — a staff roster is
   // small and rarely changes mid-session, and an agent who only ever writes
   // untagged notes never pays for the request at all.
+  //
+  // Re-entrancy is guarded with a ref, not the `candidatesLoading` state:
+  // `mention` gets a new object identity on every keystroke, so this effect
+  // re-runs on every keystroke regardless. Guarding with state that's set
+  // inside the effect's own async body used to cause React to run this
+  // effect's cleanup (cancelling the fetch it had just started) the instant
+  // `setCandidatesLoading(true)` committed — the request always got thrown
+  // away before it could land, so the popover stayed empty forever. A ref
+  // update is synchronous, so the very next re-run (still within the same
+  // "@" session) sees it immediately and skips without ever cancelling the
+  // original request.
+  const fetchStartedRef = useRef(false);
+  const isMountedRef = useRef(true);
   useEffect(() => {
-    if (mention === null || candidatesLoaded || candidatesLoading) return;
-    let cancelled = false;
+    // Strict Mode (dev) mounts every component twice: it runs this effect,
+    // immediately fires its cleanup as a simulated unmount, then runs the
+    // effect again. Without setting the ref back to true here on that
+    // second run, `isMountedRef.current` would be stuck `false` forever
+    // after that one simulated cycle, silently discarding every fetch
+    // result below for the rest of the component's real lifetime.
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (mention === null || fetchStartedRef.current) return;
+    fetchStartedRef.current = true;
     setCandidatesLoading(true);
     void (async () => {
       const targets = await listInternalNoteTagTargets();
-      if (cancelled) return;
+      if (!isMountedRef.current) return;
       setCandidates(targets);
       setCandidatesLoaded(true);
       setCandidatesLoading(false);
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [mention, candidatesLoaded, candidatesLoading]);
+  }, [mention]);
 
   // Re-measure the caret's pixel position whenever the mention trigger or
   // the surrounding text changes — the text affects line-wrapping, so the

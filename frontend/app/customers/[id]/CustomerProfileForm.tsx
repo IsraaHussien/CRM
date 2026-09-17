@@ -12,7 +12,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { InternalStep, type HydratedAttachment, type HydratedNote } from "./InternalStep";
 import { AttachmentsGalleryStep } from "./AttachmentsGalleryStep";
-import { updateProfile, type ProfileActionState } from "./actions";
+import { CustomerHistoryTimeline } from "./CustomerHistoryTimeline";
+import { updateProfile, type ProfileActionState, type CustomerTimelineItem } from "./actions";
 
 interface Profile {
   id: string;
@@ -44,7 +45,15 @@ function initials(name: string): string {
 // growing attachments list. Tab 2's content depends entirely on whether the
 // backend included internalNotes, never a client-side role check (see the
 // Profile interface's comment above).
-export function CustomerProfileForm({ profile }: { profile: Profile }) {
+export function CustomerProfileForm({
+  profile,
+  history,
+  initialTab,
+}: {
+  profile: Profile;
+  history?: CustomerTimelineItem[];
+  initialTab?: string;
+}) {
   const t = useTranslations("CustomerProfile");
   const tNav = useTranslations("Nav");
   const updateProfileForId = updateProfile.bind(null, profile.id);
@@ -53,6 +62,7 @@ export function CustomerProfileForm({ profile }: { profile: Profile }) {
   const [name, setName] = useState(profile.name);
   const [email, setEmail] = useState(profile.email);
   const [phone, setPhone] = useState(profile.phone ?? "");
+  const [tab, setTab] = useState(initialTab ?? "profile");
 
   const isStaffMode = profile.internalNotes !== undefined;
 
@@ -88,15 +98,15 @@ export function CustomerProfileForm({ profile }: { profile: Profile }) {
             {t("createdAt", { date: new Date(profile.createdAt).toLocaleDateString() })}
           </p>
         </div>
-        <Button asChild variant="outline" size="sm" className="sm:self-start">
-          <Link href={profile.ticketHistoryUrl}>
+        {isStaffMode && (
+          <Button variant="outline" size="sm" className="sm:self-start" onClick={() => setTab("history")}>
             <History className="size-4" />
             {t("viewHistory")}
-          </Link>
-        </Button>
+          </Button>
+        )}
       </div>
 
-      <Tabs defaultValue="profile">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList variant="line" className="h-auto gap-4 border-b border-border p-0">
           <TabsTrigger
             value="profile"
@@ -110,6 +120,14 @@ export function CustomerProfileForm({ profile }: { profile: Profile }) {
           >
             {t(isStaffMode ? "stepInternal" : "stepDocuments")}
           </TabsTrigger>
+          {isStaffMode && (
+            <TabsTrigger
+              value="history"
+              className="px-1 pb-2.5 text-sm data-active:text-primary dark:data-active:text-primary after:bg-primary group-data-horizontal/tabs:after:bottom-0"
+            >
+              {t("stepHistory")}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="pt-6">
@@ -198,6 +216,12 @@ export function CustomerProfileForm({ profile }: { profile: Profile }) {
             />
           )}
         </TabsContent>
+
+        {isStaffMode && (
+          <TabsContent value="history" className="pt-6">
+            <CustomerHistoryTimeline items={history ?? []} />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

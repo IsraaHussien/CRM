@@ -253,7 +253,10 @@ export default async function TicketDetailPage({
                   <div className="flex flex-col gap-1 border-t border-border pt-4">
                     <span className="text-xs uppercase tracking-wide text-muted-foreground">{t("customer")}</span>
                     <span className="text-sm">
-                      {ticket.customer.name} — {ticket.customer.email}
+                      <Link href={`/customers/${ticket.customer.id}`} className="font-medium text-primary hover:underline">
+                        {ticket.customer.name}
+                      </Link>{" "}
+                      — {ticket.customer.email}
                     </span>
                   </div>
                 )}

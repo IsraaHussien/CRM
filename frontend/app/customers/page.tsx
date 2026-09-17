@@ -168,7 +168,7 @@ export default async function CustomersListPage({
                   </div>
                   {canViewCustomerDetail && (
                     <Link
-                      href={`/api/v1/customers/${c.id}/history`}
+                      href={`/customers/${c.id}?tab=history`}
                       className="mt-3 inline-block text-sm text-primary hover:underline"
                     >
                       {t("history")}
@@ -219,10 +219,7 @@ export default async function CustomersListPage({
                       <TableCell>{new Date(c.createdAt).toLocaleDateString()}</TableCell>
                       <TableCell>
                         {canViewCustomerDetail && (
-                          <Link
-                            href={`/api/v1/customers/${c.id}/history`}
-                            className="text-sm text-primary hover:underline"
-                          >
+                          <Link href={`/customers/${c.id}?tab=history`} className="text-sm text-primary hover:underline">
                             {t("history")}
                           </Link>
                         )}

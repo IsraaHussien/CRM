@@ -25,6 +25,8 @@ export type AuditAction =
   | "login_failed"
   | "logout"
   | "customer_registered"
+  | "password_changed"
+  | "password_reset"
   // permissions
   | "permissions_changed"
   // staff
@@ -85,6 +87,8 @@ export const AUDIT_ACTION_CATEGORY: Record<AuditAction, AuditActionCategory> = {
   login_failed: "auth",
   logout: "auth",
   customer_registered: "auth",
+  password_changed: "auth",
+  password_reset: "auth",
   permissions_changed: "permissions",
   staff_created: "staff",
   staff_updated: "staff",

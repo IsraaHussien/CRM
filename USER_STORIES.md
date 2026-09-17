@@ -58,6 +58,29 @@ then paste that story's **User Story** + **Acceptance Criteria** into the genera
 - Unauthorized/forbidden requests return a clear 401/403 response.
 - Role is read from the verified session/JWT, never trusted from client input.
 
+> **Numbering note:** Stories 64 and 65 below were added after the rest of this backlog was already numbered — same reason, same fix as the other numbering notes in this file: high number, correct position. They come last in this section since both build on login (Story 2) and its session model already existing.
+
+### Story 64: Change password
+**As a** logged-in customer, agent, or admin, **I want to** change my own account password from Settings, **so that** I can update my credentials myself without contacting an admin.
+- Requires the current password, re-verified server-side, before accepting a new one — a wrong current password is rejected with a clear error.
+- New password must satisfy the same password rules used at sign-up (Story 1) — reuse, don't reinvent.
+- On success, every other active session for this account is revoked — the device that just changed the password stays logged in, everywhere else is forced to log in again.
+- On success, a security-notification email is sent to the account's email on file confirming the password was changed (never includes the new password).
+- One shared flow for all three roles — no per-role duplication.
+- **Frontend:** a "Change password" section on the existing Settings page — current/new/confirm fields, controlled inputs, validated inline. **Backend:** a new endpoint gated by standard auth only (no extra permission needed — it only ever acts on the caller's own account).
+- Out of scope: "forgot password" for a logged-out user (Story 65), and admin-initiated reset of *another* user's password (not scoped yet).
+
+### Story 65: Forgot password (reset via email)
+**As a** customer, agent, or admin who can't log in, **I want to** reset my password via a link emailed to me, **so that** I can regain access without an admin manually resetting it for me.
+- A public "Forgot password" page collects just the email address; the response is generic either way ("if an account exists, we sent a reset link") — same email-enumeration protection as Story 2's login error.
+- Backend issues a single-use, time-limited reset token (expires in 15 minutes) tied to that user, stored hashed (not plaintext), same principle as how session tokens are already stored hashed rather than raw.
+- Emails a reset link via the existing email service.
+- The reset page lets the user set a new password (same password rules as sign-up/Story 64); submitting a valid, unexpired, unused token updates the password and marks the token used — an expired/reused/invalid token shows a clear error and doesn't reveal why.
+- On success: same fallout as Story 64 — revoke all active sessions and send a "your password was changed" confirmation email.
+- Requesting a new reset link for the same email invalidates any earlier unused token for that account (only the newest link works).
+- **Frontend:** two new public pages, `/forgot-password` and `/reset-password`, both with real SEO metadata and translated strings per project convention for public pages. **Backend:** two new unauthenticated endpoints — one to request a reset link, one to consume the token.
+- Out of scope: rate-limiting reset requests (a gap worth flagging for `security-admin` later, not building here); changing the account's email address itself (separate story if ever scoped).
+
 ---
 
 ## Feature: customer-management

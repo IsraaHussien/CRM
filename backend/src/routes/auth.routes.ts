@@ -5,8 +5,22 @@ import { RefreshFamily } from "../models/RefreshFamily";
 import type { JwtPayload } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import { validateBody } from "../middleware/validate";
-import { registerBodySchema, RegisterBody } from "../validation/auth.schema";
+import {
+  registerBodySchema,
+  RegisterBody,
+  forgotPasswordBodySchema,
+  ForgotPasswordBody,
+  resetPasswordBodySchema,
+  ResetPasswordBody,
+} from "../validation/auth.schema";
 import { recordAuditLog } from "../services/auditLog.service";
+import {
+  generateResetToken,
+  hashResetToken,
+  RESET_TOKEN_TTL_MS,
+  revokeSessionsAndNotify,
+} from "../services/passwordChange.service";
+import { sendEmail, renderEmailHtml } from "../services/email.service";
 import {
   generateFamilyId,
   generateRootToken,
@@ -19,7 +33,7 @@ import {
 
 const router = express.Router();
 
-const BCRYPT_SALT_ROUNDS = 10;
+export const BCRYPT_SALT_ROUNDS = 10;
 const REFRESH_TOKEN_TTL = process.env.REFRESH_TOKEN_TTL || "30d";
 
 function signToken(payload: JwtPayload): string {
@@ -298,5 +312,109 @@ router.post("/logout", async (req: Request<unknown, unknown, LogoutBody>, res: R
   }
   res.status(200).json({ message: "Logged out" });
 });
+
+// auth feature, Story 65: forgot password. Always returns the same generic
+// 200 response — whether the email matches a real, active account or not —
+// same anti-enumeration reasoning as /login's generic 401 and
+// me.routes.ts's email-confirmation flow. No audit log entry here: the
+// request itself isn't privileged, and logging every attempt (including
+// unknown emails) would just be abuse-noise.
+// TODO(security-admin): rate-limit this route per IP + per email — not
+// enforced by this story (auth Story 65), tracked as a security-admin gap.
+router.post(
+  "/forgot-password",
+  validateBody(forgotPasswordBodySchema),
+  async (req: Request<unknown, unknown, ForgotPasswordBody>, res: Response) => {
+    const genericResponse = {
+      message: "If an account exists for this email, we've sent a reset link.",
+    };
+
+    const user = await User.findOne({ email: req.body.email });
+
+    // Silently no-op on unknown email or inactive account — identical
+    // response shape either way, so a caller can't distinguish "no such
+    // account" from "email sent" by the response alone.
+    if (!user || !user.isActive) {
+      res.json(genericResponse);
+      return;
+    }
+
+    const { rawToken, tokenHash } = generateResetToken();
+    user.passwordResetTokenHash = tokenHash;
+    user.passwordResetTokenExpiresAt = new Date(Date.now() + RESET_TOKEN_TTL_MS);
+    user.passwordResetTokenUsedAt = null; // invalidates any earlier unused link for this account
+    await user.save();
+
+    // Wrapped in try/catch (unlike me.routes.ts's email-change flow, which
+    // rolls back on failure): this route's anti-enumeration property depends
+    // on ALWAYS returning the same 200 response regardless of account
+    // existence, so a transient SMTP hiccup for a real account must not
+    // surface as a 500 that a caller could use to distinguish it from an
+    // unknown email.
+    const resetUrl = `${process.env.CLIENT_ORIGIN || "http://localhost:3000"}/reset-password?token=${rawToken}`;
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: "Reset your password",
+        text: `Hi ${user.name},\n\nClick the link below to reset your password. It expires in 15 minutes.\n\n${resetUrl}\n\nIf you didn't request this, you can ignore this email.`,
+        html: renderEmailHtml({
+          heading: "Reset your password",
+          bodyHtml: `<p>Hi ${user.name},</p><p>Click the button below to reset your password. This link expires in 15 minutes. If you didn't request this, you can ignore this email.</p>`,
+          ctaText: "Reset password",
+          ctaUrl: resetUrl,
+        }),
+      });
+    } catch (err) {
+      console.warn("[auth/forgot-password] reset email failed to send", err);
+    }
+
+    res.json(genericResponse);
+  }
+);
+
+// auth feature, Story 65: consumes a forgot-password link. Invalid, expired,
+// and already-used tokens all collapse to the same generic error — the
+// caller must not be able to tell which of the three occurred.
+router.post(
+  "/reset-password",
+  validateBody(resetPasswordBodySchema),
+  async (req: Request<unknown, unknown, ResetPasswordBody>, res: Response) => {
+    const genericError = { error: "This reset link is invalid or has expired." };
+
+    const tokenHash = hashResetToken(req.body.token);
+    const user = await User.findOne({ passwordResetTokenHash: tokenHash });
+
+    if (
+      !user ||
+      !user.isActive ||
+      !user.passwordResetTokenExpiresAt ||
+      user.passwordResetTokenExpiresAt.getTime() < Date.now() ||
+      user.passwordResetTokenUsedAt !== null
+    ) {
+      res.status(400).json(genericError);
+      return;
+    }
+
+    user.passwordHash = await bcrypt.hash(req.body.newPassword, BCRYPT_SALT_ROUNDS);
+    user.passwordResetTokenUsedAt = new Date();
+    user.passwordResetTokenHash = null; // one-shot: the token can never be replayed
+    user.passwordResetTokenExpiresAt = null;
+    await user.save();
+
+    // No exemption — there's no "current session" here, the caller was
+    // logged out to begin with.
+    await revokeSessionsAndNotify({ userId: user.id, userEmail: user.email, userName: user.name });
+
+    await recordAuditLog({
+      actor: user.id,
+      action: "password_reset",
+      targetType: "User",
+      targetId: user.id,
+      ipAddress: req.ip,
+    });
+
+    res.json({ message: "Your password has been reset. You can now sign in." });
+  }
+);
 
 export default router;

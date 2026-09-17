@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { io, type Socket } from "socket.io-client";
 import { useTranslations } from "next-intl";
 import { Send, CircleAlert, Sparkles } from "lucide-react";
@@ -55,6 +56,7 @@ export function AgentChatPanel({
   initialStatus,
   initialMessages,
   initialClaimant,
+  customer,
   token,
   currentUserId,
   canSummarize,
@@ -63,6 +65,7 @@ export function AgentChatPanel({
   initialStatus: ConversationStatus;
   initialMessages: AgentChatMessage[];
   initialClaimant: ChatClaimant | null;
+  customer: { id: string; name: string };
   token: string;
   currentUserId?: string;
   canSummarize: boolean;
@@ -194,6 +197,9 @@ export function AgentChatPanel({
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div>
           <CardTitle>{t("detailHeading")}</CardTitle>
+          <Link href={`/customers/${customer.id}`} className="text-sm font-medium hover:underline">
+            {customer.name}
+          </Link>
           <CardDescription>
             {status === "connecting" && t("connecting")}
             {status === "connected" && !isClosed && t("connected")}

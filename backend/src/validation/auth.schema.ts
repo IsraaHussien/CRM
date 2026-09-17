@@ -15,3 +15,19 @@ export const registerBodySchema = z.object({
 });
 
 export type RegisterBody = z.infer<typeof registerBodySchema>;
+
+// auth Story 65 (forgot password). Unlike /login, these two routes' body
+// shape is not itself a credential-enumeration surface — the anti-
+// enumeration behavior lives in the handler (always the same 200/400 shape
+// regardless of whether the email/token is valid), not in whether the body
+// is well-formed — so going through zod here is safe.
+export const forgotPasswordBodySchema = z.object({
+  email: emailSchema("valid email is required"),
+});
+export type ForgotPasswordBody = z.infer<typeof forgotPasswordBodySchema>;
+
+export const resetPasswordBodySchema = z.object({
+  token: requiredString("token is required"),
+  newPassword: passwordSchema("password is required"),
+});
+export type ResetPasswordBody = z.infer<typeof resetPasswordBodySchema>;

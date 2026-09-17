@@ -51,6 +51,14 @@ export interface IUser extends Document {
   pendingEmail?: string | null;
   emailConfirmToken?: string | null;
   emailConfirmTokenExpiresAt?: Date | null;
+  // auth Story 65 (forgot password): unlike emailConfirmToken above, this is
+  // stored HASHED (SHA-256, see backend/src/services/passwordChange.service.ts)
+  // — a leaked password-reset token is a full account takeover, not just an
+  // email change, so the raw token is never persisted. `passwordResetTokenUsedAt`
+  // makes the token one-shot even if a future code path left the hash intact.
+  passwordResetTokenHash?: string | null;
+  passwordResetTokenExpiresAt?: Date | null;
+  passwordResetTokenUsedAt?: Date | null;
   isOnline: boolean;
   internalNotes: IInternalNote[];
   attachments: IAttachment[];
@@ -114,6 +122,11 @@ const userSchema = new Schema<IUser>(
     pendingEmail: { type: String, default: null, lowercase: true, trim: true },
     emailConfirmToken: { type: String, default: null, index: true },
     emailConfirmTokenExpiresAt: { type: Date, default: null },
+
+    // Story 65 (forgot password) — see IUser above for why this is hashed.
+    passwordResetTokenHash: { type: String, default: null, index: true },
+    passwordResetTokenExpiresAt: { type: Date, default: null },
+    passwordResetTokenUsedAt: { type: Date, default: null },
 
     // Agent-specific (agent-workspace feature, Story 21)
     isOnline: { type: Boolean, default: false },

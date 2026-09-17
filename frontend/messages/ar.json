@@ -273,7 +273,31 @@
     "invalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا.",
     "passwordRequired": "كلمة المرور مطلوبة.",
     "fillDemo": "تعبئة بيانات الدخول التجريبية",
-    "fillAdmin": "تعبئة بيانات دخول المسؤول"
+    "fillAdmin": "تعبئة بيانات دخول المسؤول",
+    "forgotPasswordLink": "هل نسيت كلمة المرور؟"
+  },
+  "ForgotPassword": {
+    "title": "هل نسيت كلمة المرور؟",
+    "description": "أدخل بريدك الإلكتروني وسنرسل لك رابط إعادة التعيين.",
+    "emailLabel": "البريد الإلكتروني",
+    "invalidEmail": "أدخل بريدًا إلكترونيًا صحيحًا.",
+    "submit": "إرسال رابط إعادة التعيين",
+    "genericError": "حدث خطأ ما. حاول مرة أخرى بعد قليل.",
+    "genericSuccess": "إذا كان هناك حساب مرتبط بهذا البريد الإلكتروني، فسنرسل لك رابط إعادة التعيين.",
+    "backToSignIn": "العودة لتسجيل الدخول"
+  },
+  "ResetPassword": {
+    "title": "اختر كلمة مرور جديدة",
+    "newPasswordLabel": "كلمة المرور الجديدة",
+    "confirmPasswordLabel": "تأكيد كلمة المرور الجديدة",
+    "submit": "إعادة تعيين كلمة المرور",
+    "mismatch": "كلمتا المرور غير متطابقتين.",
+    "tooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+    "success": "تمت إعادة تعيين كلمة مرورك. يمكنك الآن تسجيل الدخول.",
+    "invalidLink": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية.",
+    "missingToken": "رابط إعادة التعيين غير صالح أو منتهي الصلاحية.",
+    "requestNewLink": "طلب رابط جديد",
+    "backToSignIn": "العودة لتسجيل الدخول"
   },
   "AuthHero": {
     "heading": "احصل على المساعدة بالطريقة التي تناسبك",
@@ -312,7 +336,25 @@
     "emailSendFailed": "تعذر إرسال رسالة التأكيد. حاول مرة أخرى بعد قليل.",
     "emailConfirmationSent": "تم إرسال رسالة تأكيد إلى {email}. انقر على الرابط لإتمام التغيير.",
     "phoneUpdateFailed": "تعذر تحديث رقم الهاتف.",
-    "emailUpdateFailed": "تعذر تحديث البريد الإلكتروني."
+    "emailUpdateFailed": "تعذر تحديث البريد الإلكتروني.",
+    "changePassword": {
+      "title": "تغيير كلمة المرور",
+      "currentLabel": "كلمة المرور الحالية",
+      "newLabel": "كلمة المرور الجديدة",
+      "confirmLabel": "تأكيد كلمة المرور الجديدة",
+      "submit": "تغيير كلمة المرور",
+      "success": "تم تغيير كلمة مرورك. تم تسجيل الخروج من الأجهزة الأخرى المسجّلة الدخول.",
+      "errors": {
+        "currentIncorrect": "كلمة المرور الحالية غير صحيحة.",
+        "currentRequired": "كلمة المرور الحالية مطلوبة.",
+        "tooShort": "يجب أن تتكون كلمة المرور من 8 أحرف على الأقل.",
+        "mismatch": "كلمتا المرور غير متطابقتين.",
+        "sameAsCurrent": "يجب أن تختلف كلمة المرور الجديدة عن الحالية.",
+        "confirmRequired": "أكّد كلمة المرور الجديدة.",
+        "inactive": "حسابك غير نشط.",
+        "failed": "تعذر تغيير كلمة المرور. حاول مرة أخرى."
+      }
+    }
   },
   "EmailConfirmed": {
     "successHeading": "تم تأكيد البريد الإلكتروني",
@@ -1000,6 +1042,19 @@
     "stepProfile": "الملف الشخصي",
     "stepInternal": "ملاحظات داخلية",
     "stepDocuments": "المستندات",
+    "stepHistory": "السجل",
+    "historyEmpty": "لا توجد تذاكر أو محادثات سابقة.",
+    "historyTicketLabel": "تذكرة",
+    "historyChatLabel": "محادثة",
+    "historyChatSubject": "محادثة مباشرة — {date}",
+    "statusNew": "جديدة",
+    "statusInProgress": "قيد المعالجة",
+    "statusAnswered": "تم الرد",
+    "statusEscalated": "تم التصعيد",
+    "statusClosed": "مغلقة",
+    "statusAiHandling": "يعالجها الذكاء الاصطناعي",
+    "statusWithAgent": "مع موظف الدعم",
+    "statusResolved": "تم الحل",
     "back": "رجوع",
     "notesHeading": "الملاحظات الداخلية",
     "noNotes": "لا توجد ملاحظات بعد.",

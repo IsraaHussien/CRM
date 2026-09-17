@@ -2,8 +2,9 @@
 
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { getTranslations } from "next-intl/server";
-import { API_URL, SESSION_COOKIE } from "@/lib/auth";
+import { API_URL, SESSION_COOKIE, REFRESH_COOKIE } from "@/lib/auth";
 import { refreshSession } from "@/lib/session";
 import { isValidPhone } from "@/lib/phone";
 
@@ -89,4 +90,116 @@ export async function updateEmail(
   }
   revalidatePath("/settings");
   return { error: null, message: t("emailConfirmationSent", { email }) };
+}
+
+// auth Story 64 (change password). Same z.string().min(8) rule as
+// register/actions.ts's password schema — reused verbatim, not reinvented.
+const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1),
+    newPassword: z.string().min(8),
+    confirmNewPassword: z.string().min(1),
+  })
+  .refine((v) => v.newPassword === v.confirmNewPassword, { path: ["confirmNewPassword"] })
+  .refine((v) => v.currentPassword !== v.newPassword, { path: ["newPassword"] });
+
+export interface ChangePasswordActionState {
+  ok: boolean;
+  error: string | null;
+  fieldErrors?: Partial<Record<"currentPassword" | "newPassword" | "confirmNewPassword", string>>;
+}
+
+// Same bearer-token + one-retry-on-401 shape as callContactApi above, but
+// this call also forwards the caller's own REFRESH_COOKIE value as
+// `refreshToken` in the body — the backend uses it only to identify which
+// RefreshFamily is the caller's current session, so it can be exempted from
+// the bulk revoke that follows a successful password change (see
+// backend/src/routes/me.routes.ts's PATCH /password).
+async function callChangePasswordApi(body: { currentPassword: string; newPassword: string }) {
+  const cookieStore = await cookies();
+  let token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) {
+    token = (await refreshSession()) ?? undefined;
+  }
+  if (!token) {
+    return { ok: false, data: { error: "Not signed in" } };
+  }
+  const refreshToken = cookieStore.get(REFRESH_COOKIE)?.value;
+
+  const doFetch = (bearer: string) =>
+    fetch(`${API_URL}/api/v1/me/password`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${bearer}` },
+      body: JSON.stringify({ ...body, refreshToken }),
+    });
+
+  let res = await doFetch(token);
+  if (res.status === 401) {
+    const refreshedToken = await refreshSession();
+    if (!refreshedToken) {
+      return { ok: false, status: 401, data: { error: "Not signed in" } };
+    }
+    res = await doFetch(refreshedToken);
+  }
+  return { ok: res.ok, status: res.status, data: await res.json() };
+}
+
+export async function changePassword(
+  _prevState: ChangePasswordActionState,
+  formData: FormData
+): Promise<ChangePasswordActionState> {
+  const t = await getTranslations("Settings");
+  const parsed = changePasswordSchema.safeParse({
+    currentPassword: formData.get("currentPassword"),
+    newPassword: formData.get("newPassword"),
+    confirmNewPassword: formData.get("confirmNewPassword"),
+  });
+
+  if (!parsed.success) {
+    const fieldErrors: ChangePasswordActionState["fieldErrors"] = {};
+    for (const issue of parsed.error.issues) {
+      const key = issue.path[0] as keyof NonNullable<ChangePasswordActionState["fieldErrors"]>;
+      if (!key) continue;
+      if (key === "newPassword" && issue.code === "custom") {
+        fieldErrors[key] = t("changePassword.errors.sameAsCurrent");
+      } else if (key === "confirmNewPassword" && issue.code === "custom") {
+        fieldErrors[key] = t("changePassword.errors.mismatch");
+      } else if (key === "newPassword") {
+        fieldErrors[key] = t("changePassword.errors.tooShort");
+      } else if (key === "currentPassword") {
+        fieldErrors[key] = t("changePassword.errors.currentRequired");
+      } else if (key === "confirmNewPassword") {
+        fieldErrors[key] = t("changePassword.errors.confirmRequired");
+      }
+    }
+    return { ok: false, error: null, fieldErrors };
+  }
+
+  const { ok, status, data } = await callChangePasswordApi({
+    currentPassword: parsed.data.currentPassword,
+    newPassword: parsed.data.newPassword,
+  });
+
+  if (!ok) {
+    if (data?.fieldErrors?.currentPassword) {
+      return {
+        ok: false,
+        error: null,
+        fieldErrors: { currentPassword: t("changePassword.errors.currentIncorrect") },
+      };
+    }
+    if (data?.fieldErrors?.newPassword) {
+      return {
+        ok: false,
+        error: null,
+        fieldErrors: { newPassword: t("changePassword.errors.sameAsCurrent") },
+      };
+    }
+    if (status === 403) {
+      return { ok: false, error: t("changePassword.errors.inactive") };
+    }
+    return { ok: false, error: t("changePassword.errors.failed") };
+  }
+
+  return { ok: true, error: null };
 }

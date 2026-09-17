@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { Types } from "mongoose";
 import { requireAuth, requireRole } from "../middleware/auth";
 import { User } from "../models/User";
@@ -10,7 +11,15 @@ import { sendEmail, renderEmailHtml } from "../services/email.service";
 import { isActiveAccount } from "../services/permissions";
 import { recordAuditLog } from "../services/auditLog.service";
 import { computeSlaStatus, type SlaStatus } from "../services/sla.service";
-import { contactBodySchema, availabilityBodySchema, notificationHistoryQuerySchema } from "../validation/me.schema";
+import { BCRYPT_SALT_ROUNDS } from "./auth.routes";
+import { parseFamilyId } from "../utils/refreshToken";
+import { revokeSessionsAndNotify } from "../services/passwordChange.service";
+import {
+  contactBodySchema,
+  availabilityBodySchema,
+  notificationHistoryQuerySchema,
+  changePasswordSchema,
+} from "../validation/me.schema";
 
 const router = express.Router();
 
@@ -513,6 +522,74 @@ router.patch("/contact", requireAuth, async (req: Request, res: Response) => {
   }
 
   res.status(200).json({ phone: user.phone ?? null, email: user.email, pendingEmail: user.pendingEmail });
+});
+
+// PATCH /api/v1/me/password — auth Story 64: change-your-own-password,
+// identical for all three roles (no permission key, self-scoped only —
+// same convention as /availability and /contact above). `refreshToken` in
+// the body is NOT a cookie the backend can read directly — it's the raw
+// value the frontend Server Action forwards from its own httpOnly
+// REFRESH_COOKIE, same body-field convention POST /auth/refresh and
+// POST /auth/logout already use — used only to identify which RefreshFamily
+// is the caller's current session so it's exempted from the bulk revoke
+// below; if it's missing/unparseable, every session including this one is
+// revoked (safest fallback when the current session can't be identified).
+router.patch("/password", requireAuth, async (req: Request, res: Response) => {
+  const parsed = changePasswordSchema.safeParse(req.body ?? {});
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.issues[0]?.message ?? "Invalid request" });
+    return;
+  }
+  const { currentPassword, newPassword, refreshToken } = parsed.data;
+
+  const user = await User.findById(req.user!.id);
+  if (!user) {
+    res.status(404).json({ error: "User not found" });
+    return;
+  }
+  if (!user.isActive) {
+    res.status(403).json({ error: "account is not active" });
+    return;
+  }
+
+  const currentOk = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!currentOk) {
+    res.status(400).json({
+      error: "current password is incorrect",
+      fieldErrors: { currentPassword: "current password is incorrect" },
+    });
+    return;
+  }
+
+  const sameAsCurrent = await bcrypt.compare(newPassword, user.passwordHash);
+  if (sameAsCurrent) {
+    res.status(400).json({
+      error: "new password must differ from current password",
+      fieldErrors: { newPassword: "new password must differ from current password" },
+    });
+    return;
+  }
+
+  user.passwordHash = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
+  await user.save();
+
+  const currentFamilyId = typeof refreshToken === "string" ? parseFamilyId(refreshToken) : null;
+  await revokeSessionsAndNotify({
+    userId: user.id,
+    userEmail: user.email,
+    userName: user.name,
+    exemptFamilyId: currentFamilyId,
+  });
+
+  await recordAuditLog({
+    actor: user.id,
+    action: "password_changed",
+    targetType: "User",
+    targetId: user.id,
+    ipAddress: req.ip,
+  });
+
+  res.status(200).json({ ok: true });
 });
 
 // This is a link a human clicks from their email client, not an API call a

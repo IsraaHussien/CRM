@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { API_URL, SESSION_COOKIE, REFRESH_COOKIE } from "@/lib/auth";
 import { StaffSidebar } from "@/components/StaffSidebar";
 import { CustomerProfileForm } from "./CustomerProfileForm";
+import { getCustomerHistory } from "./actions";
 
 // Same 401/refresh handling as settings/page.tsx — see that file's comment
 // and .squad/plans/auth/02-story-login-customer-agent-or-admin.md for why.
@@ -12,10 +13,10 @@ export default async function CustomerProfilePage({
   searchParams,
 }: {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ _refreshed?: string }>;
+  searchParams: Promise<{ _refreshed?: string; tab?: string }>;
 }) {
   const { id } = await params;
-  const { _refreshed } = await searchParams;
+  const { _refreshed, tab } = await searchParams;
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   const hasRefreshToken = Boolean(cookieStore.get(REFRESH_COOKIE)?.value);
@@ -53,11 +54,12 @@ export default async function CustomerProfilePage({
   const isStaff = profile.internalNotes !== undefined;
 
   if (isStaff) {
+    const history = await getCustomerHistory(id, token);
     return (
       <div className="flex min-h-[calc(100vh-57px)]">
         <StaffSidebar active="customers" />
         <main className="min-w-0 flex-1 p-4 md:p-8">
-          <CustomerProfileForm profile={profile} />
+          <CustomerProfileForm profile={profile} history={history} initialTab={tab === "history" ? "history" : "profile"} />
         </main>
       </div>
     );

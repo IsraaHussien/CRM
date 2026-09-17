@@ -130,6 +130,7 @@ html {
   --color-icon-date: var(--icon-date);
   --color-icon-source: var(--icon-source);
   --color-icon-chat: var(--icon-chat);
+  --color-icon-ticket: var(--icon-ticket);
   --color-icon-kb: var(--icon-kb);
   --color-icon-sla: var(--icon-sla);
   --color-icon-rating: var(--icon-rating);
@@ -260,6 +261,8 @@ html {
 
   --icon-chat: #B45F06;
 
+  --icon-ticket: #3B5BDB;
+
   --icon-kb: #157A6E;
 
   --icon-sla: #6B4A9E;
@@ -362,6 +365,8 @@ html {
   --icon-source: #A8E063;
 
   --icon-chat: #E8935A;
+
+  --icon-ticket: #8B9EFC;
 
   --icon-kb: #4FD6C4;
 

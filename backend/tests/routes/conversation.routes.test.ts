@@ -324,6 +324,9 @@ describe("GET /api/v1/conversations/:id (Story 18)", () => {
     expect(res.body.conversation._id).toBe(conversation.id);
     expect(res.body.messages).toHaveLength(2);
     expect(res.body.messages.map((m: { senderType: string }) => m.senderType)).toEqual(["customer", "ai"]);
+    // customer-management Story 6: populated so the staff panel can link
+    // back to the customer's profile.
+    expect(res.body.conversation.customer.name).toBe(customer.name);
   });
 
   it("lets the owning customer view their own conversation", async () => {

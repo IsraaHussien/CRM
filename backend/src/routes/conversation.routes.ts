@@ -245,6 +245,10 @@ router.get(
       "assignedAgent",
       "name"
     );
+    // customer-management Story 6: needed so the staff chat detail panel can
+    // link back to the customer's profile — same populate the list route
+    // (GET /, above) already does.
+    await conversation.populate<{ customer: { _id: Types.ObjectId; name: string } }>("customer", "name");
     const messages = await Message.find({ parentType: "conversation", parentId: conversation._id })
       .sort({ createdAt: 1 })
       .limit(500)
