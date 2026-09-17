@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isValidPhone } from "../utils/phone";
-import { emailSchema, flexibleDateSchema } from "./common";
+import { emailSchema, flexibleDateSchema, passwordSchema, requiredString } from "./common";
 
 // Format-only — "this is already your current email" / "email already in
 // use" / the confirm-email send both depend on the loaded user document and
@@ -17,6 +17,20 @@ export const contactBodySchema = z.object({
 
 export const availabilityBodySchema = z.object({
   isOnline: z.boolean({ error: "isOnline must be a boolean" }),
+});
+
+// auth Story 64 (change password). "Differs from current" and "current
+// password is correct" both need the loaded User document (bcrypt.compare),
+// so they're enforced in the me.routes.ts handler, not here — same division
+// of labor as contactBodySchema above. `refreshToken` is the raw value the
+// frontend Server Action forwards from its own REFRESH_COOKIE, used only to
+// identify the caller's current RefreshFamily so it can be exempted from the
+// bulk revoke — optional, since a caller with no refresh session can still
+// change their password (they just lose every session, including this one).
+export const changePasswordSchema = z.object({
+  currentPassword: requiredString("currentPassword is required"),
+  newPassword: passwordSchema("newPassword is required"),
+  refreshToken: z.string().optional(),
 });
 
 // Backs the "view all notifications" history page. All fields optional and

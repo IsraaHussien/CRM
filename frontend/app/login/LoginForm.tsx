@@ -63,7 +63,15 @@ export function LoginForm() {
           {state.fieldErrors?.email && <p className="text-sm text-destructive">{state.fieldErrors.email}</p>}
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="password">{t("password")}</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">{t("password")}</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline-offset-4 hover:text-primary hover:underline"
+            >
+              {t("forgotPasswordLink")}
+            </Link>
+          </div>
           <PasswordInput
             id="password"
             name="password"

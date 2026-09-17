@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { RefreshFamily } from "../models/RefreshFamily";
 
 const FAMILY_ID_BYTES = 16;
 const ROOT_SECRET_BYTES = 32;
@@ -60,4 +61,22 @@ export function hashesEqual(a: string, b: string): boolean {
   const bufB = Buffer.from(b, "hex");
   if (bufA.length !== bufB.length) return false;
   return crypto.timingSafeEqual(bufA, bufB);
+}
+
+/**
+ * Revoke every active RefreshFamily for a user, optionally exempting one
+ * familyId (the caller's own current session) from the bulk revoke. Used by
+ * both the change-password (auth Story 64) and forgot-password (auth Story
+ * 65) flows via services/passwordChange.service.ts's revokeSessionsAndNotify —
+ * change-password exempts the caller's current family so they stay logged
+ * in; forgot-password never does, since the caller wasn't logged in.
+ */
+export async function revokeAllRefreshFamiliesForUser(
+  userId: string,
+  exemptFamilyId: string | null
+): Promise<number> {
+  const filter: Record<string, unknown> = { userId, revoked: false };
+  if (exemptFamilyId) filter.familyId = { $ne: exemptFamilyId };
+  const result = await RefreshFamily.updateMany(filter, { $set: { revoked: true } });
+  return result.modifiedCount ?? 0;
 }

@@ -9,6 +9,8 @@ Entry point for the **auth** feature. Stories execute in order by their `NN` pre
 | 01 | `01-story-customer-sign-up.md` | Customer sign-up | customer-sign-up | — |
 | 02 | `02-story-login-customer-agent-or-admin.md` | Login (customer, agent, or admin) | login-customer-agent-or-admin | — |
 | 03 | `03-story-role-based-access-control.md` | Role-based access control | role-based-access-control | — |
+| 49 | `49-story-64.md` | Change password | 64 | — |
+| 50 | `50-story-65.md` | Forgot password (reset via email) | 65 | — |
 
 ## Dependency notes
 
